@@ -1,0 +1,80 @@
+/* Ensure the sidebar stays fixed */
+.brandPage {
+    display: flex;
+    padding-top: 80px; /* Adjust this according to the height of your header */
+  }
+  
+  /* Sidebar should remain unchanged */
+  .sidebar-container {
+    position: fixed; /* Fixes the sidebar position so it doesn't move */
+    top: 80px; /* Adjust this according to the header height */
+    height: calc(100vh - 80px); /* Makes sidebar full height minus the header */
+    width: 200px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 12px;
+  }
+  
+  /* Content should fill the remaining space */
+  .brandContent {
+    margin-left: 300px; /* Leaves space for the sidebar */
+    flex: 1;
+    padding: 20px;
+    margin-top: 80px; /* Adjust this based on your header height */
+  }
+  
+  /* Style the "Add User" button to be pink */
+  /* Style the "Add User" button to be pink */
+  .addBrandButton {
+      background-color: #EFA2C6;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      font-weight: bold;
+      border-radius: 5px;
+      text-align: center;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      text-decoration: none; /* Removes the underline */
+    }
+    
+    /* Change button background color on hover, but keep text white */
+    .addBrandButton:hover {
+      background-color: #ff85c1; /* Slightly lighter pink on hover */
+      color: white; /* Ensure font stays white */
+      text-decoration: none; /* Ensure no underline on hover */
+    }
+    
+  
+    /* Optional: Style the search input to ensure proper spacing */
+    .form-control {
+      margin-right: 10px; /* Adds some space between search input and Add User button */
+    }
+    
+    input[type="texts"] {
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #EFA2C6;
+    color: white;
+    font-size: 1rem;
+  }
+  
+  input[type="texts"]::placeholder {
+    color: white;  /* White color for the placeholder */
+    opacity: 1;    /* Ensures the placeholder text is fully opaque */
+  }
+  
+  .datatable-images-container {
+    display: flex;          /* Use flexbox for horizontal layout */
+    gap: 10px;             /* Space between images */
+    overflow-x: auto;      /* Allow horizontal scrolling if necessary */
+    white-space: nowrap;   /* Prevent wrapping of images */
+  }
+  
+  .datatable-image {
+    width: 50px;           /* Set image width */
+    height: 50px;          /* Set image height */
+    object-fit: cover;     /* Maintain aspect ratio */
+  }

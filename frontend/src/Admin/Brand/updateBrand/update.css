@@ -1,0 +1,155 @@
+/* Container styling */
+.updateBrandContainer {
+    display: flex;
+    justify-content: space-between;
+    width: 60%;  /* Adjusted to make the container narrower */
+    height: auto;  /* Let the height adjust automatically */
+    margin: 0 auto;
+    background-color: white;  /* Outer container stays white */
+    border-radius: 10px;
+    padding: 40px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);  /* Center the container */
+    padding-top: 450px; /* Adjust this according to the height of your header */
+  }
+  
+  /* Left Section styling */
+  .leftSections {
+    width: 40%;  /* Maintain 40% width */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px;
+    background-color: #ff69b4;  /* Background color for the inner container */
+    border-radius: 20px;
+    border-top-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+  }
+  
+  .leftSections h2 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: white;  /* Font text color */
+    background-color: #ff85c1;  /* Background color for title section */
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  .leftSections .buttonGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .leftSections .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background-color: #ff85c1;  /* Button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  .leftSections .btn:hover {
+    background-color: #e574a8;  /* Button hover effect */
+  }
+  
+  /* Right Section styling */
+  .rightSections {
+    width: 60%;  /* Maintain 60% width */
+    padding: 40px;
+    background-color: #efa2c6;  /* Background color for the inner container */
+    border-radius: 20px;
+    border-top-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+  }
+  
+  .rightSections .inputGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 25px;
+  }
+  
+  .rightSections .inputGroup label {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    color: white;  /* Font text color */
+  }
+  
+  .rightSections .inputGroup input {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #ff85c1;  /* Input background color */
+    color: white;  /* Input text color */
+  }
+  
+  .rightSections .inputGroup input::placeholder {
+    color: #f5f5f5;  /* Placeholder text */
+  }
+  
+  .rightSections .inputGroup input:focus {
+    outline: none;
+    border-color: #e574a8;
+  }
+  
+  .rightSections .inputGroup i {
+    color: white;  /* Icon color */
+    font-size: 18px;
+  }
+  
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  .inputGroup label {
+    font-size: 16px;
+    color: white;
+    margin-bottom: 5px;
+  }
+  
+  .inputGroup input {
+    padding: 10px;
+    font-size: 14px;
+    background-color: #ff85c1;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  .inputGroup input::placeholder {
+    color: white;
+  }
+  
+  .inputGroup {
+    display: flex;                  /* Use flexbox for layout */
+    flex-wrap: wrap;               /* Allow wrapping to a new line */
+    overflow-x: auto;              /* Allow horizontal scrolling */
+    overflow-y: hidden;            /* Hide vertical overflow */
+    gap: 10px;                     /* Space between images */
+    padding: 10px 0;               /* Padding around the input group */
+    max-height: 120px;             /* Limit the height of the image container */
+  }
+  
+  .inputGroup img {
+    width: 100px;                  /* Fixed width for images */
+    height: 100px;                 /* Fixed height for images */
+    object-fit: cover;             /* Maintain aspect ratio */
+    border-radius: 5px;            /* Rounded corners */
+    flex-shrink: 0;                /* Prevent images from shrinking */
+  }
+  
+  
+  
