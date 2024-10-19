@@ -4,9 +4,14 @@ import axios from "axios";
 import { IconButton, Button } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
+import AddCategoryModal from "./AddCategoryModal"; // Modal for adding category
+import UpdateCategoryModal from "./UpdateCategoryModal"; // Modal for updating category
 
 const Categories = () => {
   const [data, setData] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState(null); // Unique identifier (slug) for update
 
   useEffect(() => {
     const fetchData = async () => {
@@ -14,15 +19,14 @@ const Categories = () => {
         const response = await axios.get("http://localhost:4000/api/categories/all");
         const categories = response.data.categories;
 
-        // Map the categories into rows
         const rows = categories.map((category, index) => ({
           id: index + 1,
           _id: category._id,
           name: category.name,
           description: category.description,
           slug: category.slug,
-          images: handleCategoryImages(category.image), // Process images
-          actions: category.slug // For edit/delete actions
+          images: handleCategoryImages(category.image),
+          actions: category.slug,
         }));
 
         setData(rows);
@@ -33,7 +37,6 @@ const Categories = () => {
     fetchData();
   }, []);
 
-  // Function to handle rendering category images
   const handleCategoryImages = (imageData) => {
     if (Array.isArray(imageData) && imageData.length) {
       return (
@@ -62,9 +65,9 @@ const Categories = () => {
 
   const deleteCategory = async (categorySlug) => {
     try {
-      const response = await axios.delete("http://localhost:4000/api/categories/${categorySlug}");
+      const response = await axios.delete(`http://localhost:4000/api/categories/${categorySlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== categorySlug));
-      alert(response.data.message); // Show message to user
+      alert(response.data.message);
     } catch (error) {
       console.error(error);
     }
@@ -76,7 +79,10 @@ const Categories = () => {
         <Delete style={{ color: "red" }} />
       </IconButton>
 
-      <IconButton href={`/category/update/${slug}`}>
+      <IconButton onClick={() => { 
+        setSelectedSlug(slug); // Set selected category slug
+        setUpdateModalOpen(true); // Open update modal
+      }}>
         <Edit style={{ color: "blue" }} />
       </IconButton>
     </Box>
@@ -129,7 +135,7 @@ const Categories = () => {
       options: {
         filter: false,
         sort: false,
-        customBodyRender: (value) => value, // This will render the images
+        customBodyRender: (value) => value, // Render images
       },
     },
     {
@@ -145,7 +151,7 @@ const Categories = () => {
 
   const options = {
     filterType: "checkbox",
-    selectableRows: "none", // To remove checkbox column
+    selectableRows: "none",
     responsive: "standard",
     download: true,
     print: true,
@@ -154,23 +160,26 @@ const Categories = () => {
     jumpToPage: true,
   };
 
+  const handleCategoryAdded = (newCategory) => {
+    setData((prevData) => [
+      ...prevData,
+      {
+        id: prevData.length + 1,
+        ...newCategory,
+      },
+    ]);
+  };
+
   return (
     <div style={{ margin: "20px" }}>
       <Box mb={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => console.log("Add Category button clicked")} // Add Category button action
-        >
+        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
           Add Category
         </Button>
       </Box>
-      <MUIDataTable
-        title={"Category List"}
-        data={data}
-        columns={columns}
-        options={options}
-      />
+      <MUIDataTable title={"Category List"} data={data} columns={columns} options={options} />
+      <AddCategoryModal open={modalOpen} handleClose={() => setModalOpen(false)} onCategoryAdded={handleCategoryAdded} />
+      <UpdateCategoryModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
     </div>
   );
 };

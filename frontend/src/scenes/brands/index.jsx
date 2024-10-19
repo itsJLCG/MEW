@@ -22,6 +22,7 @@ const Brands = () => {
 
         // Map the brands into rows
         const rows = brands.map((brand, index) => ({
+          
           id: index + 1,
           _id: brand._id,
           name: brand.name,
@@ -36,10 +37,15 @@ const Brands = () => {
         setData(rows);
       } catch (error) {
         console.error("Error fetching data", error);
+        
       }
+      
     };
+   
     fetchData();
   }, []);
+
+ 
 
   // Function to handle rendering brand images
   const handleBrandImages = (imageData) => {
@@ -67,6 +73,7 @@ const Brands = () => {
     }
     return <img src="/default-brand.png" alt="Default Brand" style={{ width: 50, height: 50 }} />;
   };
+
 
   const deleteBrand = async (brandSlug) => {
     try {
@@ -191,6 +198,8 @@ const Brands = () => {
       },
     ]);
   };
+
+  
 
   return (
     <div style={{ margin: "20px" }}>
