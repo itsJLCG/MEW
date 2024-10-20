@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import MUIDataTable from "mui-datatables";
-import { IconButton, Button } from "@mui/material";
+import { Button, Box, IconButton } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
-import { Box } from "@mui/system";
+import MUIDataTable from "mui-datatables";
+import AddPromoModal from "./AddPromoModal";
+import UpdatePromoModal from "./UpdatePromoModal";
 
 const Promos = () => {
   const [data, setData] = useState([]);
+  const [openAddModal, setOpenAddModal] = useState(false);
+  const [openUpdateModal, setOpenUpdateModal] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,7 +18,6 @@ const Promos = () => {
         const response = await axios.get("http://localhost:4000/api/promos/all");
         const promos = response.data.promos;
 
-        // Map promos into rows
         const rows = promos.map((promo, index) => ({
           id: index + 1,
           _id: promo._id,
@@ -25,8 +27,8 @@ const Promos = () => {
           startDate: new Date(promo.startDate).toLocaleDateString(),
           endDate: new Date(promo.endDate).toLocaleDateString(),
           slug: promo.slug,
-          images: handlePromoImages(promo.image), // Process images
-          actions: promo.slug // For edit/delete actions
+          images: handlePromoImages(promo.image),
+          actions: promo.slug
         }));
 
         setData(rows);
@@ -37,7 +39,6 @@ const Promos = () => {
     fetchData();
   }, []);
 
-  // Function to handle rendering promo images
   const handlePromoImages = (imageData) => {
     if (Array.isArray(imageData) && imageData.length) {
       return (
@@ -66,9 +67,9 @@ const Promos = () => {
 
   const deletePromo = async (promoSlug) => {
     try {
-      const response = await axios.delete("http://localhost:4000/api/promos/${promoSlug}");
+      await axios.delete(`http://localhost:4000/api/promos/${promoSlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== promoSlug));
-      alert(response.data.message); // Show message to user
+      alert("Promo deleted successfully");
     } catch (error) {
       console.log(error);
     }
@@ -79,24 +80,51 @@ const Promos = () => {
       <IconButton onClick={() => deletePromo(slug)}>
         <Delete style={{ color: "red" }} />
       </IconButton>
-
-      <IconButton href={`/promo/update/${slug}`}>
+      <IconButton onClick={() => handleOpenUpdateModal(slug)}>
         <Edit style={{ color: "blue" }} />
       </IconButton>
     </Box>
   );
 
+  const handleOpenUpdateModal = (slug) => {
+    setSelectedSlug(slug);
+    setOpenUpdateModal(true);
+  };
+
+  const handlePromoAdded = (newPromo) => {
+    setData((prevData) => [...prevData, newPromo]);
+  };
+
+  const handlePromoUpdated = () => {
+    axios.get("http://localhost:4000/api/promos/all").then((response) => {
+      const promos = response.data.promos;
+      const rows = promos.map((promo, index) => ({
+        id: index + 1,
+        _id: promo._id,
+        name: promo.name,
+        description: promo.description,
+        discount: promo.discount,
+        startDate: new Date(promo.startDate).toLocaleDateString(),
+        endDate: new Date(promo.endDate).toLocaleDateString(),
+        slug: promo.slug,
+        images: handlePromoImages(promo.image),
+        actions: promo.slug
+      }));
+      setData(rows);
+    });
+  };
+
   const columns = [
-    { name: 'id', label: 'S.No.', options: { filter: false, sort: true }},
-    { name: '_id', label: 'Promo _id', options: { filter: false, sort: true }},
-    { name: 'name', label: 'Name', options: { filter: true, sort: true }},
-    { name: 'description', label: 'Description', options: { filter: true, sort: true }},
-    { name: 'discount', label: 'Discount', options: { filter: true, sort: true }},
-    { name: 'startDate', label: 'Start Date', options: { filter: true, sort: true }},
-    { name: 'endDate', label: 'End Date', options: { filter: true, sort: true }},
-    { name: 'slug', label: 'Slug', options: { filter: true, sort: true }},
-    { name: 'images', label: 'Images', options: { filter: false, sort: false, customBodyRender: (value) => value }},
-    { name: 'actions', label: 'Actions', options: { filter: false, sort: false, customBodyRender: (value) => renderActions(value) }}
+    { name: "id", label: "S.No.", options: { filter: false, sort: true } },
+    { name: "_id", label: "Promo _id", options: { filter: false, sort: true } },
+    { name: "name", label: "Name", options: { filter: true, sort: true } },
+    { name: "description", label: "Description", options: { filter: true, sort: true } },
+    { name: "discount", label: "Discount", options: { filter: true, sort: true } },
+    { name: "startDate", label: "Start Date", options: { filter: true, sort: true } },
+    { name: "endDate", label: "End Date", options: { filter: true, sort: true } },
+    { name: "slug", label: "Slug", options: { filter: true, sort: true } },
+    { name: "images", label: "Images", options: { filter: false, sort: false } },
+    { name: "actions", label: "Actions", options: { filter: false, sort: false, customBodyRender: (value) => renderActions(value) } },
   ];
 
   const options = {
@@ -107,18 +135,20 @@ const Promos = () => {
     print: true,
     rowsPerPage: 10,
     rowsPerPageOptions: [5, 10, 20],
-    jumpToPage: true
+    jumpToPage: true,
   };
 
   return (
-    <div className="promoPage" style={{ display: 'flex' }}>
-      <div className="promoContent" style={{ flex: '1', padding: '20px' }}>
+    <div className="promoPage" style={{ display: "flex" }}>
+      <div className="promoContent" style={{ flex: "1", padding: "20px" }}>
         <Box mb={2}>
-          <Button variant="contained" color="primary" onClick={() => console.log("Add Promo button clicked")}>
+          <Button variant="contained" color="primary" onClick={() => setOpenAddModal(true)}>
             Add Promo
           </Button>
         </Box>
         <MUIDataTable title={"Promo List"} data={data} columns={columns} options={options} />
+        <AddPromoModal open={openAddModal} handleClose={() => setOpenAddModal(false)} onPromoAdded={handlePromoAdded} />
+        <UpdatePromoModal open={openUpdateModal} handleClose={() => setOpenUpdateModal(false)} slug={selectedSlug} onPromoUpdated={handlePromoUpdated} />
       </div>
     </div>
   );
