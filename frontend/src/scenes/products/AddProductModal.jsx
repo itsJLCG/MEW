@@ -10,69 +10,69 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import Loader from '../../components/Loader.jsx'; // Adjust the path if necessary
 
-const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
-  const [promo, setPromo] = useState({
+const AddProductModal = ({ open, handleClose, onProductAdded }) => {
+  const [product, setProduct] = useState({
     name: "",
     description: "",
-    discount: "",
-    startDate: "",
-    endDate: "",
+    price: "",
+    stock: "",
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setPromo((prevPromo) => ({
-      ...prevPromo,
+    setProduct((prevProduct) => ({
+      ...prevProduct,
       [name]: value,
     }));
   };
 
   const imageHandler = (e) => {
-    setImageFiles([...e.target.files]); // Store selected image files
+    setImageFiles([...e.target.files]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Start loading state immediately upon submission
     const formData = new FormData();
-    formData.append("name", promo.name);
-    formData.append("description", promo.description);
-    formData.append("discount", promo.discount);
-    formData.append("startDate", promo.startDate);
-    formData.append("endDate", promo.endDate);
+    formData.append('name', product.name);
+    formData.append('description', product.description);
+    formData.append('price', product.price);
+    formData.append('stock', product.stock);
 
     // Append image files to FormData
     imageFiles.forEach((file) => {
-      formData.append("image", file);
+      formData.append('image', file);
     });
 
     try {
-      const response = await axios.post("http://localhost:4000/api/promos", formData, {
+      const response = await axios.post("http://localhost:4000/api/products", formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Ensure the response contains the newly added promo
-      const newPromo = response.data.promo;
+      // Ensure the response contains image URLs
+      const newProduct = {
+        ...response.data.product,
+        images: response.data.product.images || [], // Assuming this is the correct path to images in response
+      };
 
-      onPromoAdded(newPromo); // Callback to update the parent component
+      onProductAdded(newProduct); // Callback to update the parent component
       toast.success(response.data.message, { position: "top-right" }); // Success notification
       handleClose(); // Close the modal after adding
 
       // Reset the form fields after submission
-      setPromo({
+      setProduct({
         name: "",
         description: "",
-        discount: "",
-        startDate: "",
-        endDate: "",
+        price: "",
+        stock: "",
       });
       setImageFiles([]); // Clear the image files
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'An error occurred';
       toast.error(errorMessage, { position: "top-right" }); // Error notification
-      console.error("Error adding promo:", errorMessage);
+      console.error("Error adding product:", errorMessage);
     } finally {
       setLoading(false); // Reset loading state
     }
@@ -99,15 +99,15 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
         }}
       >
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-          Add New Promo
+          Add New Product
         </Typography>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <TextField
             fullWidth
             margin="normal"
-            label="Promo Name"
+            label="Product Name"
             name="name"
-            value={promo.name}
+            value={product.name}
             onChange={handleInputChange}
             required
           />
@@ -116,45 +116,29 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
             margin="normal"
             label="Description"
             name="description"
-            value={promo.description}
+            value={product.description}
             onChange={handleInputChange}
             required
           />
           <TextField
             fullWidth
             margin="normal"
-            label="Discount (%)"
-            name="discount"
+            label="Price"
+            name="price"
             type="number"
-            value={promo.discount}
+            value={product.price}
             onChange={handleInputChange}
             required
           />
           <TextField
             fullWidth
             margin="normal"
-            label="Start Date"
-            name="startDate"
-            type="date"
-            value={promo.startDate}
+            label="Stock"
+            name="stock"
+            type="number"
+            value={product.stock}
             onChange={handleInputChange}
             required
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="End Date"
-            name="endDate"
-            type="date"
-            value={promo.endDate}
-            onChange={handleInputChange}
-            required
-            InputLabelProps={{
-              shrink: true,
-            }}
           />
           <input
             type="file"
@@ -166,14 +150,14 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
           />
           
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2 }}>
-            {/* Loader to the left of the Add Promo button */}
+            {/* Loader to the left of the Add Product button */}
             {loading && (
               <Loader 
                 style={{ width: '24px', height: '24px', marginRight: '8px' }} // Set size and margin for spacing
               />
             )}
             <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 1 }}>
-              {loading ? "Adding..." : "Add Promo"}
+              {loading ? "Adding..." : "Add Product"}
             </Button>
             
             <Button 
@@ -190,4 +174,4 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
   );
 };
 
-export default AddPromoModal;
+export default AddProductModal;

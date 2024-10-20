@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { Hearts } from "@agney/react-loading";
+import Loader from '../../components/Loader.jsx'; // Adjust the path if necessary
 
 const AddCategoryModal = ({ open, handleClose, onCategoryAdded }) => {
   const [category, setCategory] = useState({
@@ -32,7 +32,7 @@ const AddCategoryModal = ({ open, handleClose, onCategoryAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(true); // Start loader
 
     const formData = new FormData();
     formData.append("name", category.name);
@@ -47,14 +47,20 @@ const AddCategoryModal = ({ open, handleClose, onCategoryAdded }) => {
       const response = await axios.post("http://localhost:4000/api/categories", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      onCategoryAdded(response.data.category); // Callback to update the category list
+
+      onCategoryAdded(response.data.category); // Update the category list
       toast.success(response.data.message, { position: "top-right" });
-      handleClose(); // Close modal
+
+      // Reset form and image inputs
+      setCategory({ name: "", description: "" });
+      setImageFiles([]);
+
+      handleClose(); // Close the modal
     } catch (error) {
       const errorMessage = error.response?.data?.error || "An error occurred";
       toast.error(errorMessage, { position: "top-right" });
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop loader
     }
   };
 
@@ -109,25 +115,25 @@ const AddCategoryModal = ({ open, handleClose, onCategoryAdded }) => {
             style={{ marginTop: 8 }}
           />
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-            <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2 }}>
+            {/* Loader to the left of the Add Category button */}
+            {loading && (
+              <Loader 
+                style={{ width: '24px', height: '24px', marginRight: '8px' }} // Set size and margin for spacing
+              />
+            )}
+            <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 1 }}>
               {loading ? "Adding..." : "Add Category"}
             </Button>
-
-            <Button
+            
+            <Button 
               variant="contained"
               onClick={handleClose}
-              sx={{ backgroundColor: "#4ccdac", color: "white", "&:hover": { backgroundColor: "#3cb8a9" } }}
+              sx={{ backgroundColor: '#4ccdac', color: 'white', '&:hover': { backgroundColor: '#3cb8a9' }, ml: 1 }}
             >
               Back
             </Button>
           </Box>
-
-          {loading && (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-              <Hearts color="#4ccdac" height="100" width="100" />
-            </Box>
-          )}
         </form>
       </Box>
     </Modal>

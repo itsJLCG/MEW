@@ -4,9 +4,14 @@ import axios from "axios";
 import { IconButton, Button } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
+import AddUserModal from "./AddUserModal"; // Import your new modal component
+import UpdateUserModal from "./UpdateUserModal";
 
 const Users = () => {
   const [data, setData] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState(null); // State to hold the slug of the user to update
 
   useEffect(() => {
     const fetchData = async () => {
@@ -16,6 +21,7 @@ const Users = () => {
 
         // Map the users into rows
         const rows = users.map((user, index) => ({
+          
           id: index + 1,
           _id: user._id,
           name: user.name,
@@ -29,10 +35,15 @@ const Users = () => {
         setData(rows);
       } catch (error) {
         console.error("Error fetching data", error);
+        
       }
+      
     };
+   
     fetchData();
   }, []);
+
+ 
 
   // Function to handle rendering user images
   const handleUserImages = (imageData) => {
@@ -61,6 +72,7 @@ const Users = () => {
     return <img src="/default-user.png" alt="Default User" style={{ width: 50, height: 50 }} />;
   };
 
+
   const deleteUser = async (userSlug) => {
     try {
       const response = await axios.delete(`http://localhost:4000/api/users/${userSlug}`);
@@ -77,7 +89,10 @@ const Users = () => {
         <Delete style={{ color: "red" }} />
       </IconButton>
 
-      <IconButton href={`/user/update/${slug}`}>
+      <IconButton onClick={() => { 
+        setSelectedSlug(slug); // Set selected slug
+        setUpdateModalOpen(true); // Open update modal
+      }}>
         <Edit style={{ color: "blue" }} />
       </IconButton>
     </Box>
@@ -163,23 +178,29 @@ const Users = () => {
     jumpToPage: true,
   };
 
+  // Callback function to add new user data
+  const handleUserAdded = (newUser) => {
+    setData((prevData) => [
+      ...prevData,
+      {
+        id: prevData.length + 1, // Update the ID accordingly
+        ...newUser,
+      },
+    ]);
+  };  
+
+  
+
   return (
     <div style={{ margin: "20px" }}>
       <Box mb={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => console.log("Add User button clicked")} // Add User button action
-        >
+        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
           Add User
         </Button>
       </Box>
-      <MUIDataTable
-        title={"Team Members"}
-        data={data}
-        columns={columns}
-        options={options}
-      />
+      <MUIDataTable title={"User List"} data={data} columns={columns} options={options} />
+      <AddUserModal open={modalOpen} handleClose={() => setModalOpen(false)} onUserAdded={handleUserAdded} />
+      <UpdateUserModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
     </div>
   );
 };

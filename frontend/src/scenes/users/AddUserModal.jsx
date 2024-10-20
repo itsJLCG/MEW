@@ -10,69 +10,66 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import Loader from '../../components/Loader.jsx'; // Adjust the path if necessary
 
-const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
-  const [promo, setPromo] = useState({
+const AddUserModal = ({ open, handleClose, onUserAdded }) => {
+  const [user, setUser] = useState({
     name: "",
-    description: "",
-    discount: "",
-    startDate: "",
-    endDate: "",
+    email: "",
+    address: "",
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setPromo((prevPromo) => ({
-      ...prevPromo,
+    setUser((prevUser) => ({
+      ...prevUser,
       [name]: value,
     }));
   };
 
   const imageHandler = (e) => {
-    setImageFiles([...e.target.files]); // Store selected image files
+    setImageFiles([...e.target.files]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Start loading state immediately upon submission
     const formData = new FormData();
-    formData.append("name", promo.name);
-    formData.append("description", promo.description);
-    formData.append("discount", promo.discount);
-    formData.append("startDate", promo.startDate);
-    formData.append("endDate", promo.endDate);
+    formData.append('name', user.name);
+    formData.append('email', user.email);
+    formData.append('address', user.address);-
 
     // Append image files to FormData
     imageFiles.forEach((file) => {
-      formData.append("image", file);
+      formData.append('image', file);
     });
 
     try {
-      const response = await axios.post("http://localhost:4000/api/promos", formData, {
+      const response = await axios.post("http://localhost:4000/api/users", formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Ensure the response contains the newly added promo
-      const newPromo = response.data.promo;
+      // Ensure the response contains image URLs
+      const newUser = {
+        ...response.data.user,
+        images: response.data.user.images || [], // Assuming this is the correct path to images in response
+      };
 
-      onPromoAdded(newPromo); // Callback to update the parent component
+      onUserAdded(newUser); // Callback to update the parent component
       toast.success(response.data.message, { position: "top-right" }); // Success notification
       handleClose(); // Close the modal after adding
 
       // Reset the form fields after submission
-      setPromo({
+      setUser({
         name: "",
-        description: "",
-        discount: "",
-        startDate: "",
-        endDate: "",
+        email: "",
+        address: "",
       });
       setImageFiles([]); // Clear the image files
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'An error occurred';
       toast.error(errorMessage, { position: "top-right" }); // Error notification
-      console.error("Error adding promo:", errorMessage);
+      console.error("Error adding user:", errorMessage);
     } finally {
       setLoading(false); // Reset loading state
     }
@@ -99,62 +96,35 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
         }}
       >
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-          Add New Promo
+          Add New User
         </Typography>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <TextField
             fullWidth
             margin="normal"
-            label="Promo Name"
+            label="User Name"
             name="name"
-            value={promo.name}
+            value={user.name}
             onChange={handleInputChange}
             required
           />
           <TextField
             fullWidth
             margin="normal"
-            label="Description"
-            name="description"
-            value={promo.description}
+            label="Email"
+            name="email"
+            value={user.email}
             onChange={handleInputChange}
             required
           />
           <TextField
             fullWidth
             margin="normal"
-            label="Discount (%)"
-            name="discount"
-            type="number"
-            value={promo.discount}
+            label="Address"
+            name="address"
+            value={user.address}
             onChange={handleInputChange}
             required
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Start Date"
-            name="startDate"
-            type="date"
-            value={promo.startDate}
-            onChange={handleInputChange}
-            required
-            InputLabelProps={{
-              shrink: true,
-            }}
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="End Date"
-            name="endDate"
-            type="date"
-            value={promo.endDate}
-            onChange={handleInputChange}
-            required
-            InputLabelProps={{
-              shrink: true,
-            }}
           />
           <input
             type="file"
@@ -166,14 +136,14 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
           />
           
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2 }}>
-            {/* Loader to the left of the Add Promo button */}
+            {/* Loader to the left of the Add User button */}
             {loading && (
               <Loader 
                 style={{ width: '24px', height: '24px', marginRight: '8px' }} // Set size and margin for spacing
               />
             )}
             <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 1 }}>
-              {loading ? "Adding..." : "Add Promo"}
+              {loading ? "Adding..." : "Add User"}
             </Button>
             
             <Button 
@@ -190,4 +160,4 @@ const AddPromoModal = ({ open, handleClose, onPromoAdded }) => {
   );
 };
 
-export default AddPromoModal;
+export default AddUserModal;
