@@ -190,7 +190,7 @@ const Brands = () => {
         ...newBrand,
       },
     ]);
-  };
+  };  
 
   return (
     <div style={{ margin: "20px" }}>
