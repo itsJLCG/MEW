@@ -4,22 +4,33 @@ import axios from "axios";
 import { IconButton, Button } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
-import AddProductModal from "./AddProductModal"; // Import your new modal component
+import AddProductModal from "./AddProductModal";
 import UpdateProductModal from "./UpdateProductModal";
 
 const Products = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState(null); // State to hold the slug of the product to update
+  const [selectedSlug, setSelectedSlug] = useState(null); 
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:4000/api/products/all");
-        const products = response.data.products;
+        const [productsResponse, categoriesResponse, brandsResponse] = await Promise.all([
+          axios.get("http://localhost:4000/api/products/all"),
+          axios.get("http://localhost:4000/api/categories/all"),
+          axios.get("http://localhost:4000/api/brands/all"),
+        ]);
 
-        // Map the products into rows
+        const products = productsResponse.data.products;
+        const categories = categoriesResponse.data.categories; 
+        const brands = brandsResponse.data.brands; 
+
+        // Create a mapping for categories and brands by ID
+        const categoryMap = Object.fromEntries(categories.map((category) => [category._id, category.name]));
+        const brandMap = Object.fromEntries(brands.map((brand) => [brand._id, brand.name]));
+
+        // Map the products into rows, including category and brand names
         const rows = products.map((product, index) => ({
           id: index + 1,
           _id: product._id,
@@ -28,8 +39,10 @@ const Products = () => {
           price: product.price,
           stock: product.stock,
           slug: product.slug,
-          images: handleProductImages(product.image), // Process images
-          actions: product.slug // For edit/delete actions
+          categoryName: categoryMap[product.category] || 'Unknown', // Use category name directly
+          brandName: brandMap[product.brand] || 'Unknown', // Use brand name directly
+          images: handleProductImages(product.image),
+          actions: product.slug,
         }));
 
         setData(rows);
@@ -85,8 +98,8 @@ const Products = () => {
       </IconButton>
 
       <IconButton onClick={() => { 
-        setSelectedSlug(slug); // Set selected slug
-        setUpdateModalOpen(true); // Open update modal
+        setSelectedSlug(slug);
+        setUpdateModalOpen(true);
       }}>
         <Edit style={{ color: "blue" }} />
       </IconButton>
@@ -143,6 +156,22 @@ const Products = () => {
       },
     },
     {
+      name: "categoryName", // Changed to categoryName
+      label: "Category Name",
+      options: {
+        filter: true,
+        sort: true,
+      },
+    },
+    {
+      name: "brandName", // Changed to brandName
+      label: "Brand Name",
+      options: {
+        filter: true,
+        sort: true,
+      },
+    },
+    {
       name: "slug",
       label: "Slug",
       options: {
@@ -156,7 +185,7 @@ const Products = () => {
       options: {
         filter: false,
         sort: false,
-        customBodyRender: (value) => value, // This will render the images
+        customBodyRender: (value) => value, 
       },
     },
     {
@@ -172,7 +201,7 @@ const Products = () => {
 
   const options = {
     filterType: "checkbox",
-    selectableRows: "none", // To remove checkbox column
+    selectableRows: "none",
     responsive: "standard",
     download: true,
     print: true,
@@ -181,12 +210,11 @@ const Products = () => {
     jumpToPage: true,
   };
 
-  // Callback function to add new product data
   const handleProductAdded = (newProduct) => {
     setData((prevData) => [
       ...prevData,
       {
-        id: prevData.length + 1, // Update the ID accordingly
+        id: prevData.length + 1, 
         ...newProduct,
       },
     ]);

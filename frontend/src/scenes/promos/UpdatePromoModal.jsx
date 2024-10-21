@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Box, TextField, Button, Typography } from "@mui/material";
 import axios from "axios";
+import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from '@agney/react-loading'; 
 
@@ -23,11 +24,17 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
       axios
         .get(`http://localhost:4000/api/promos/${slug}`)
         .then((response) => {
-          setPromo(response.data.promo);
+          const fetchedPromo = response.data.promo;
+          setPromo({
+            ...fetchedPromo,
+            startDate: new Date(fetchedPromo.startDate).toISOString().split('T')[0], 
+            endDate: new Date(fetchedPromo.endDate).toISOString().split('T')[0],     
+          });
         })
         .catch((error) => console.log(error));
     }
   }, [slug]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,14 +136,22 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
           <div className="inputGroup">
             <label>Current Images:</label>
             {promo.image && promo.image.length > 0 ? (
-              promo.image.map((image, index) => (
-                <img
-                  key={index}
-                  src={image} 
-                  alt="brand"
-                  style={{ width: '100px', margin: '5px' }}
-                />
-              ))
+              <Carousel 
+                sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+                autoPlay={false}
+                navButtonsAlwaysVisible={true}
+                animation="slide"
+                indicators={false}
+              >
+                {promo.image.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image} 
+                    alt={`promo-${index}`}
+                    style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
+                  />
+                ))}
+              </Carousel>
             ) : (
               <p>No images uploaded</p>
             )}
@@ -156,10 +171,23 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
           </div>
           
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-            <Button type="submit" variant="contained" color="primary" disabled={loading}>
+            <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 2 }}>
               {loading ? "Updating..." : "Update Promo"}
             </Button>
+            <Button 
+              variant="contained" 
+              onClick={handleClose} 
+              sx={{ backgroundColor: "#4ccdac", color: "white", "&:hover": { backgroundColor: "#3cb8a9" } }}
+            >
+              Back
+            </Button>
           </Box>
+
+          {loading && (
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+              <Hearts color="#4ccdac" height="100" width="100" />
+            </Box>
+          )}
         </form>
       </Box>
     </Modal>

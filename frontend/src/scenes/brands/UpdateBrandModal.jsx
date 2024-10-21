@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from '@agney/react-loading';
 
@@ -132,20 +133,28 @@ const UpdateBrandModal = ({ open, handleClose, slug }) => { // Add slug here
           />
 
           <div className="inputGroup">
-            <label>Current Images:</label>
-            {brand.image && brand.image.length > 0 ? (
-              brand.image.map((image, index) => (
+          <label>Current Images:</label>
+          {brand.image && brand.image.length > 0 ? (
+            <Carousel 
+              sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+              autoPlay={false}
+              navButtonsAlwaysVisible={true}
+              animation="slide"
+              indicators={false}
+            >
+              {brand.image.map((image, index) => (
                 <img
                   key={index}
                   src={image} 
-                  alt="brand"
-                  style={{ width: '100px', margin: '5px' }}
+                  alt={`brand-${index}`}
+                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
                 />
-              ))
-            ) : (
-              <p>No images uploaded</p>
-            )}
-          </div>
+              ))}
+            </Carousel>
+          ) : (
+            <p>No images uploaded</p>
+          )}
+        </div>
 
           <div className="inputGroup">
             <label htmlFor="images">Upload New Images:</label>

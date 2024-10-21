@@ -5,7 +5,9 @@ import {
   TextField,
   Button,
   Typography,
+  MenuItem,
 } from "@mui/material";
+import Carousel from "react-material-ui-carousel";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Hearts } from '@agney/react-loading';
@@ -16,29 +18,47 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
     description: "",
     price: "",
     stock: "",
-    images: [], // Use array for images
+    images: [],
+    category: "", // To store category ID
+    brand: "", // To store brand ID
   };
 
   const [product, setProduct] = useState(initialProductState);
   const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   // Fetch product data using the slug
   useEffect(() => {
-    if (slug) {
-      axios
-        .get(`http://localhost:4000/api/products/${slug}`) // Ensure URL is correct
-        .then((response) => {
-          setProduct(response.data.product);
-        })
-        .catch((error) => {
-          console.log(error);
+    const fetchProductData = async () => {
+      if (slug) {
+        try {
+          const response = await axios.get(`http://localhost:4000/api/products/${slug}`);
+          setProduct(response.data.product); // Ensure the product data includes category and brand IDs
+        } catch (error) {
+          console.error(error);
           toast.error("Failed to fetch product data", { position: "top-right" });
-        });
-    }
+        }
+      }
+    };
+
+    const fetchCategoriesAndBrands = async () => {
+      try {
+        const categoryResponse = await axios.get("http://localhost:4000/api/categories/all");
+        const brandResponse = await axios.get("http://localhost:4000/api/brands/all");
+
+        setCategories(categoryResponse.data.categories || []);
+        setBrands(brandResponse.data.brands || []);
+      } catch (error) {
+        console.error("Error fetching categories and brands:", error);
+      }
+    };
+
+    fetchProductData();
+    fetchCategoriesAndBrands();
   }, [slug]);
 
-  // Handle form submission
   const submitForm = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -48,9 +68,11 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
     formData.append("description", product.description);
     formData.append("price", product.price);
     formData.append("stock", product.stock);
+    formData.append("category", product.category);
+    formData.append("brand", product.brand);
 
     newImages.forEach((file) => {
-      formData.append("images", file); // Use "images" for the new images field
+      formData.append("images", file);
     });
 
     try {
@@ -60,7 +82,7 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
         },
       });
       toast.success("Product updated successfully", { position: "top-right" });
-      handleClose(); // Close the modal after updating
+      handleClose();
     } catch (error) {
       console.error("Error updating product:", error);
       toast.error("Failed to update product", { position: "top-right" });
@@ -133,21 +155,63 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
             type="number"
           />
 
-            <div className="inputGroup">
-            <label>Current Images:</label>
-            {product.image && product.image.length > 0 ? (
-              product.image.map((image, index) => (
+          <TextField
+            select
+            fullWidth
+            margin="normal"
+            label="Category"
+            name="category"
+            value={product.category} // Should hold the ID of the category
+            onChange={(e) => setProduct({ ...product, category: e.target.value })}
+            required
+          >
+            {categories.map((cat) => (
+              <MenuItem key={cat._id} value={cat._id}>
+                {cat.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            fullWidth
+            margin="normal"
+            label="Brand"
+            name="brand"
+            value={product.brand} // Should hold the ID of the brand
+            onChange={(e) => setProduct({ ...product, brand: e.target.value })}
+            required
+          >
+            {brands.map((br) => (
+              <MenuItem key={br._id} value={br._id}>
+                {br.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <div className="inputGroup">
+          <label>Current Images:</label>
+          {product.image && product.image.length > 0 ? (
+            <Carousel 
+              sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+              autoPlay={false}
+              navButtonsAlwaysVisible={true}
+              animation="slide"
+              indicators={false}
+            >
+              {product.image.map((image, index) => (
                 <img
                   key={index}
                   src={image} 
-                  alt="product"
-                  style={{ width: '100px', margin: '5px' }}
+                  alt={`product-${index}`}
+                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
                 />
-              ))
-            ) : (
-              <p>No images uploaded</p>
-            )}
-          </div>
+              ))}
+            </Carousel>
+          ) : (
+            <p>No images uploaded</p>
+          )}
+        </div>
 
           <div className="inputGroup">
             <label htmlFor="images">Upload New Images:</label>

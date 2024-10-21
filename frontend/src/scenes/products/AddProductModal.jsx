@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Box,
   TextField,
   Button,
   Typography,
+  MenuItem,
 } from "@mui/material";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -16,9 +17,29 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
     description: "",
     price: "",
     stock: "",
+    category: "",
+    brand: "",
   });
   const [imageFiles, setImageFiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+
+  // Fetch categories and brands when the component is mounted
+  useEffect(() => {
+    const fetchCategoriesAndBrands = async () => {
+      try {
+        const categoryResponse = await axios.get("http://localhost:4000/api/categories/all");
+        const brandResponse = await axios.get("http://localhost:4000/api/brands/all");
+
+        setCategories(categoryResponse.data.categories || []); // Adjust the path as necessary
+        setBrands(brandResponse.data.brands || []); // Adjust the path as necessary
+      } catch (error) {
+        console.error("Error fetching categories and brands:", error);
+      }
+    };
+    fetchCategoriesAndBrands();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -34,14 +55,16 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading state immediately upon submission
+    setLoading(true);
+
     const formData = new FormData();
     formData.append('name', product.name);
     formData.append('description', product.description);
     formData.append('price', product.price);
     formData.append('stock', product.stock);
+    formData.append('category', product.category); // Add category
+    formData.append('brand', product.brand);       // Add brand
 
-    // Append image files to FormData
     imageFiles.forEach((file) => {
       formData.append('image', file);
     });
@@ -51,30 +74,30 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      // Ensure the response contains image URLs
       const newProduct = {
         ...response.data.product,
-        images: response.data.product.images || [], // Assuming this is the correct path to images in response
+        images: response.data.product.images || [],
       };
 
-      onProductAdded(newProduct); // Callback to update the parent component
-      toast.success(response.data.message, { position: "top-right" }); // Success notification
-      handleClose(); // Close the modal after adding
+      onProductAdded(newProduct);
+      toast.success(response.data.message, { position: "top-right" });
+      handleClose();
 
-      // Reset the form fields after submission
       setProduct({
         name: "",
         description: "",
         price: "",
         stock: "",
+        category: "",
+        brand: "",
       });
-      setImageFiles([]); // Clear the image files
+      setImageFiles([]);
     } catch (error) {
       const errorMessage = error.response?.data?.error || 'An error occurred';
-      toast.error(errorMessage, { position: "top-right" }); // Error notification
+      toast.error(errorMessage, { position: "top-right" });
       console.error("Error adding product:", errorMessage);
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
@@ -140,6 +163,41 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
             onChange={handleInputChange}
             required
           />
+
+          <TextField
+            select
+            fullWidth
+            margin="normal"
+            label="Category"
+            name="category"
+            value={product.category}
+            onChange={handleInputChange}
+            required
+          >
+            {categories.map((cat) => (
+              <MenuItem key={cat._id} value={cat._id}>
+                {cat.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            select
+            fullWidth
+            margin="normal"
+            label="Brand"
+            name="brand"
+            value={product.brand}
+            onChange={handleInputChange}
+            required
+          >
+            {brands.map((br) => (
+              <MenuItem key={br._id} value={br._id}>
+                {br.name}
+              </MenuItem>
+            ))}
+          </TextField>
+
           <input
             type="file"
             multiple
@@ -148,12 +206,11 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
             required
             style={{ marginTop: 8 }}
           />
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2 }}>
-            {/* Loader to the left of the Add Product button */}
             {loading && (
               <Loader 
-                style={{ width: '24px', height: '24px', marginRight: '8px' }} // Set size and margin for spacing
+                style={{ width: '24px', height: '24px', marginRight: '8px' }}
               />
             )}
             <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 1 }}>

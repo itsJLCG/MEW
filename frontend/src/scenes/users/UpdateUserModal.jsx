@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from '@agney/react-loading';
 
@@ -123,14 +124,22 @@ const UpdateUserModal = ({ open, handleClose, slug }) => { // Add slug here
           <div className="inputGroup">
             <label>Current Images:</label>
             {user.image && user.image.length > 0 ? (
-              user.image.map((image, index) => (
-                <img
-                  key={index}
-                  src={image} 
-                  alt="user"
-                  style={{ width: '100px', margin: '5px' }}
-                />
-              ))
+              <Carousel 
+                sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+                autoPlay={false}
+                navButtonsAlwaysVisible={true}
+                animation="slide"
+                indicators={false}
+              >
+                {user.image.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image} 
+                    alt={`user-${index}`}
+                    style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
+                  />
+                ))}
+              </Carousel>
             ) : (
               <p>No images uploaded</p>
             )}

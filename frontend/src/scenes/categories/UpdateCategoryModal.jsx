@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import axios from "axios";
+import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from "@agney/react-loading";
 
@@ -109,19 +110,27 @@ const UpdateCategoryModal = ({ open, handleClose, slug }) => { // Change slug to
           />
 
           <div className="inputGroup">
-            <label>Current Images:</label>
-            {category.image && category.image.length > 0 ? (
-              category.image.map((image, index) => (
+          <label>Current Images:</label>
+          {category.image && category.image.length > 0 ? (
+            <Carousel 
+              sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+              autoPlay={false}
+              navButtonsAlwaysVisible={true}
+              animation="slide"
+              indicators={false}
+            >
+              {category.image.map((image, index) => (
                 <img
                   key={index}
                   src={image} 
-                  alt="category"
-                  style={{ width: "100px", margin: "5px" }}
+                  alt={`category-${index}`}
+                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
                 />
-              ))
-            ) : (
-              <p>No images uploaded</p>
-            )}
+              ))}
+            </Carousel>
+          ) : (
+            <p>No images uploaded</p>
+          )}
           </div>
 
           <div className="inputGroup">
