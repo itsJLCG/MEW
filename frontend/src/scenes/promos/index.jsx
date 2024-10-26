@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Button, Box, IconButton } from "@mui/material";
+import { Button, Box, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import MUIDataTable from "mui-datatables";
 import AddPromoModal from "./AddPromoModal";
 import UpdatePromoModal from "./UpdatePromoModal";
+import { confirm } from "material-ui-confirm"; // Import the Confirm component
 
 const Promos = () => {
   const [data, setData] = useState([]);
   const [openAddModal, setOpenAddModal] = useState(false);
   const [openUpdateModal, setOpenUpdateModal] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
+  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,15 +72,23 @@ const Promos = () => {
     try {
       await axios.delete(`http://localhost:4000/api/promos/${promoSlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== promoSlug));
-      alert("Promo deleted successfully");
+      setDialogMessage("Promo deleted successfully");
     } catch (error) {
-      console.log(error);
+      setDialogMessage(error.response?.data?.error || "Error deleting promo");
+    } finally {
+      setDialogOpen(true); // Open dialog to show message
     }
+  };
+
+  const confirmDeletePromo = (promoSlug) => {
+    confirm({ description: "Are you sure you want to delete this promo?" })
+      .then(() => deletePromo(promoSlug))
+      .catch(() => console.log("Delete action canceled"));
   };
 
   const renderActions = (slug) => (
     <Box display="flex" gap={1}>
-      <IconButton onClick={() => deletePromo(slug)}>
+      <IconButton onClick={() => confirmDeletePromo(slug)}>
         <Delete style={{ color: "red" }} />
       </IconButton>
       <IconButton onClick={() => handleOpenUpdateModal(slug)}>
@@ -149,6 +160,19 @@ const Promos = () => {
         <MUIDataTable title={"Promo List"} data={data} columns={columns} options={options} />
         <AddPromoModal open={openAddModal} handleClose={() => setOpenAddModal(false)} onPromoAdded={handlePromoAdded} />
         <UpdatePromoModal open={openUpdateModal} handleClose={() => setOpenUpdateModal(false)} slug={selectedSlug} onPromoUpdated={handlePromoUpdated} />
+
+        {/* Dialog for showing delete confirmation messages */}
+        <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+          <DialogTitle>Promo Deletion</DialogTitle>
+          <DialogContent>
+            <DialogContentText>{dialogMessage}</DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDialogOpen(false)} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

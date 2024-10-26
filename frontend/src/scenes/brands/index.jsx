@@ -2,17 +2,20 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button } from "@mui/material";
+import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
 import AddBrandModal from "./AddBrandModal"; // Import your new modal component
 import UpdateBrandModal from "./UpdateBrandModal";
+import { confirm } from "material-ui-confirm"; // Import the Confirm component
 
 const Brands = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null); // State to hold the slug of the brand to update
+  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
+  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,7 +25,6 @@ const Brands = () => {
 
         // Map the brands into rows
         const rows = brands.map((brand, index) => ({
-          
           id: index + 1,
           _id: brand._id,
           name: brand.name,
@@ -37,15 +39,11 @@ const Brands = () => {
         setData(rows);
       } catch (error) {
         console.error("Error fetching data", error);
-        
       }
-      
     };
-   
+
     fetchData();
   }, []);
-
- 
 
   // Function to handle rendering brand images
   const handleBrandImages = (imageData) => {
@@ -74,23 +72,29 @@ const Brands = () => {
     return <img src="/default-brand.png" alt="Default Brand" style={{ width: 50, height: 50 }} />;
   };
 
-
   const deleteBrand = async (brandSlug) => {
     try {
       const response = await axios.delete(`http://localhost:4000/api/brands/${brandSlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== brandSlug));
-      alert(response.data.message);
+      setDialogMessage(response.data.message || "Brand deleted successfully");
     } catch (error) {
-      console.error(error);
+      setDialogMessage(error.response?.data?.error || "Error deleting brand");
+    } finally {
+      setDialogOpen(true); // Open dialog to show message
     }
+  };
+
+  const confirmDeleteBrand = (brandSlug) => {
+    confirm({ description: "Are you sure you want to delete this brand?" })
+      .then(() => deleteBrand(brandSlug))
+      .catch(() => console.log("Delete action canceled"));
   };
 
   const renderActions = (slug) => (
     <Box display="flex" gap={1}>
-      <IconButton onClick={() => deleteBrand(slug)}>
+      <IconButton onClick={() => confirmDeleteBrand(slug)}>
         <Delete style={{ color: "red" }} />
       </IconButton>
-
       <IconButton onClick={() => { 
         setSelectedSlug(slug); // Set selected slug
         setUpdateModalOpen(true); // Open update modal
@@ -197,9 +201,7 @@ const Brands = () => {
         ...newBrand,
       },
     ]);
-  };  
-
-  
+  };
 
   return (
     <div style={{ margin: "20px" }}>
@@ -211,6 +213,19 @@ const Brands = () => {
       <MUIDataTable title={"Brand List"} data={data} columns={columns} options={options} />
       <AddBrandModal open={modalOpen} handleClose={() => setModalOpen(false)} onBrandAdded={handleBrandAdded} />
       <UpdateBrandModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
+
+      {/* Dialog for showing delete confirmation messages */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Brand Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialogMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

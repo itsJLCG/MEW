@@ -10,15 +10,11 @@ import axios from "axios";
 import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from "@agney/react-loading";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
-const UpdateCategoryModal = ({ open, handleClose, slug }) => { // Change slug to id for categories
-  const initialCategoryState = {
-    name: "",
-    description: "",
-    image: [], // Use array for images
-  };
-
-  const [category, setCategory] = useState(initialCategoryState);
+const UpdateCategoryModal = ({ open, handleClose, slug }) => {
+  const [category, setCategory] = useState(null);
   const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +22,7 @@ const UpdateCategoryModal = ({ open, handleClose, slug }) => { // Change slug to
   useEffect(() => {
     if (slug) {
       axios
-        .get(`http://localhost:4000/api/categories/${slug}`) // Ensure URL is correct
+        .get(`http://localhost:4000/api/categories/${slug}`)
         .then((response) => {
           setCategory(response.data.category);
         })
@@ -36,33 +32,47 @@ const UpdateCategoryModal = ({ open, handleClose, slug }) => { // Change slug to
     }
   }, [slug]);
 
-  // Handle form submission
-  const submitForm = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  // Initialize Formik only when category data is loaded
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: {
+      name: category?.name || "",
+      description: category?.description || "",
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required("Category name is required"),
+      description: Yup.string().required("Description is required"),
+    }),
+    onSubmit: async (values) => {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("description", values.description);
 
-    const formData = new FormData();
-    formData.append("name", category.name);
-    formData.append("description", category.description);
-
-    newImages.forEach((file) => {
-      formData.append("image", file);
-    });
-
-    try {
-      await axios.put(`http://localhost:4000/api/categories/${slug}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      // Append new images
+      newImages.forEach((file) => {
+        formData.append("image", file);
       });
-      toast.success("Category updated successfully", { position: "top-right" });
-      handleClose(); // Close the modal after updating
-    } catch (error) {
-      console.error("Error updating category:", error);
-      toast.error("Failed to update category", { position: "top-right" });
-    } finally {
-      setLoading(false);
-    }
+
+      try {
+        await axios.put(`http://localhost:4000/api/categories/${slug}`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        toast.success("Category updated successfully", { position: "top-right" });
+        handleClose();
+      } catch (error) {
+        console.error("Error updating category:", error);
+        toast.error("Failed to update category", { position: "top-right" });
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
+
+  const imageHandler = (e) => {
+    setNewImages([...e.target.files]);
   };
 
   return (
@@ -88,49 +98,56 @@ const UpdateCategoryModal = ({ open, handleClose, slug }) => { // Change slug to
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
           Update Category
         </Typography>
-        
-        <form onSubmit={submitForm} style={{ width: "100%" }}>
+
+        <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
           <TextField
             fullWidth
             margin="normal"
             label="Category Name"
             name="name"
-            value={category.name}
-            onChange={(e) => setCategory({ ...category, name: e.target.value })}
-            required
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Description"
             name="description"
-            value={category.description}
-            onChange={(e) => setCategory({ ...category, description: e.target.value })}
-            required
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            helperText={formik.touched.description && formik.errors.description}
           />
 
           <div className="inputGroup">
-          <label>Current Images:</label>
-          {category.image && category.image.length > 0 ? (
-            <Carousel 
-              sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
-              autoPlay={false}
-              navButtonsAlwaysVisible={true}
-              animation="slide"
-              indicators={false}
-            >
-              {category.image.map((image, index) => (
-                <img
-                  key={index}
-                  src={image} 
-                  alt={`category-${index}`}
-                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
-                />
-              ))}
-            </Carousel>
-          ) : (
-            <p>No images uploaded</p>
-          )}
+            <label>Current Images:</label>
+            {category?.image && category.image.length > 0 ? (
+              <Carousel
+                sx={{ width: "50%", maxWidth: "150px", margin: "auto" }}
+                autoPlay={false}
+                navButtonsAlwaysVisible={true}
+                animation="slide"
+                indicators={false}
+              >
+                {category.image.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`category-${index}`}
+                    style={{
+                      width: "100%",
+                      height: "150px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                ))}
+              </Carousel>
+            ) : (
+              <p>No images uploaded</p>
+            )}
           </div>
 
           <div className="inputGroup">
@@ -139,21 +156,31 @@ const UpdateCategoryModal = ({ open, handleClose, slug }) => { // Change slug to
               type="file"
               id="images"
               name="images"
-              onChange={(e) => setNewImages([...e.target.files])}
-              multiple 
+              onChange={imageHandler}
+              multiple
               accept="image/*"
               style={{ marginTop: 8 }}
             />
           </div>
 
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-            <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 2 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              disabled={loading}
+              sx={{ mr: 2 }}
+            >
               {loading ? "Updating..." : "Update Category"}
             </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleClose} 
-              sx={{ backgroundColor: "#4ccdac", color: "white", "&:hover": { backgroundColor: "#3cb8a9" } }}
+            <Button
+              variant="contained"
+              onClick={handleClose}
+              sx={{
+                backgroundColor: "#4ccdac",
+                color: "white",
+                "&:hover": { backgroundColor: "#3cb8a9" },
+              }}
             >
               Back
             </Button>

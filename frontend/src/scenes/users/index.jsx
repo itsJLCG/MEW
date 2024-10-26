@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button } from "@mui/material";
+import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
 import AddUserModal from "./AddUserModal"; // Import your new modal component
 import UpdateUserModal from "./UpdateUserModal";
+import { confirm } from "material-ui-confirm"; // Import the Confirm component
 
 const Users = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null); // State to hold the slug of the user to update
+  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
+  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("http://localhost:4000/api/users/all");
-        const users = response.data.users;
-
-        // Map the users into rows
-        const rows = users.map((user, index) => ({
-          
+        const users = response.data.users.map((user, index) => ({
           id: index + 1,
           _id: user._id,
           name: user.name,
@@ -31,19 +30,14 @@ const Users = () => {
           images: handleUserImages(user.image), // Process images
           actions: user.slug // Return slug for actions
         }));
-
-        setData(rows);
+        setData(users);
       } catch (error) {
         console.error("Error fetching data", error);
-        
       }
-      
     };
-   
+
     fetchData();
   }, []);
-
- 
 
   // Function to handle rendering user images
   const handleUserImages = (imageData) => {
@@ -72,24 +66,30 @@ const Users = () => {
     return <img src="/default-user.png" alt="Default User" style={{ width: 50, height: 50 }} />;
   };
 
-
   const deleteUser = async (userSlug) => {
     try {
       const response = await axios.delete(`http://localhost:4000/api/users/${userSlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== userSlug));
-      alert(response.data.message);
+      setDialogMessage(response.data.message || "User deleted successfully");
     } catch (error) {
-      console.error(error);
+      setDialogMessage(error.response?.data?.error || "Error deleting user");
+    } finally {
+      setDialogOpen(true); // Open dialog to show message
     }
+  };
+
+  const confirmDeleteUser = (userSlug) => {
+    confirm({ description: "Are you sure you want to delete this user?" })
+      .then(() => deleteUser(userSlug))
+      .catch(() => console.log("Delete action canceled"));
   };
 
   const renderActions = (slug) => (
     <Box display="flex" gap={1}>
-      <IconButton onClick={() => deleteUser(slug)}>
+      <IconButton onClick={() => confirmDeleteUser(slug)}>
         <Delete style={{ color: "red" }} />
       </IconButton>
-
-      <IconButton onClick={() => { 
+      <IconButton onClick={() => {
         setSelectedSlug(slug); // Set selected slug
         setUpdateModalOpen(true); // Open update modal
       }}>
@@ -187,9 +187,7 @@ const Users = () => {
         ...newUser,
       },
     ]);
-  };  
-
-  
+  };
 
   return (
     <div style={{ margin: "20px" }}>
@@ -201,6 +199,19 @@ const Users = () => {
       <MUIDataTable title={"User List"} data={data} columns={columns} options={options} />
       <AddUserModal open={modalOpen} handleClose={() => setModalOpen(false)} onUserAdded={handleUserAdded} />
       <UpdateUserModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
+
+      {/* Dialog for showing delete confirmation messages */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>User Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialogMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

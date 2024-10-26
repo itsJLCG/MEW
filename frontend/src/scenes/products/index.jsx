@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button } from "@mui/material";
+import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
 import AddProductModal from "./AddProductModal";
 import UpdateProductModal from "./UpdateProductModal";
+import { confirm } from "material-ui-confirm"; // Import the Confirm component
 
 const Products = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState(null); 
+  const [selectedSlug, setSelectedSlug] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
+  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,8 +42,8 @@ const Products = () => {
           price: product.price,
           stock: product.stock,
           slug: product.slug,
-          categoryName: categoryMap[product.category] || 'Unknown', // Use category name directly
-          brandName: brandMap[product.brand] || 'Unknown', // Use brand name directly
+          categoryName: categoryMap[product.category] || 'Unknown',
+          brandName: brandMap[product.brand] || 'Unknown',
           images: handleProductImages(product.image),
           actions: product.slug,
         }));
@@ -85,15 +88,23 @@ const Products = () => {
     try {
       const response = await axios.delete(`http://localhost:4000/api/products/${productSlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== productSlug));
-      alert(response.data.message);
+      setDialogMessage(response.data.message || "Product deleted successfully");
     } catch (error) {
-      console.error(error);
+      setDialogMessage(error.response?.data?.error || "Error deleting product");
+    } finally {
+      setDialogOpen(true); // Open dialog to show message
     }
+  };
+
+  const confirmDeleteProduct = (productSlug) => {
+    confirm({ description: "Are you sure you want to delete this product?" })
+      .then(() => deleteProduct(productSlug))
+      .catch(() => console.log("Delete action canceled"));
   };
 
   const renderActions = (slug) => (
     <Box display="flex" gap={1}>
-      <IconButton onClick={() => deleteProduct(slug)}>
+      <IconButton onClick={() => confirmDeleteProduct(slug)}>
         <Delete style={{ color: "red" }} />
       </IconButton>
 
@@ -156,7 +167,7 @@ const Products = () => {
       },
     },
     {
-      name: "categoryName", // Changed to categoryName
+      name: "categoryName",
       label: "Category Name",
       options: {
         filter: true,
@@ -164,7 +175,7 @@ const Products = () => {
       },
     },
     {
-      name: "brandName", // Changed to brandName
+      name: "brandName",
       label: "Brand Name",
       options: {
         filter: true,
@@ -214,7 +225,7 @@ const Products = () => {
     setData((prevData) => [
       ...prevData,
       {
-        id: prevData.length + 1, 
+        id: prevData.length + 1,
         ...newProduct,
       },
     ]);
@@ -230,6 +241,19 @@ const Products = () => {
       <MUIDataTable title={"Product List"} data={data} columns={columns} options={options} />
       <AddProductModal open={modalOpen} handleClose={() => setModalOpen(false)} onProductAdded={handleProductAdded} />
       <UpdateProductModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
+
+      {/* Dialog for showing delete confirmation messages */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Product Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialogMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

@@ -9,59 +9,59 @@ import {
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import Loader from '../../components/Loader.jsx'; // Adjust the path if necessary
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const AddCategoryModal = ({ open, handleClose, onCategoryAdded }) => {
-  const [category, setCategory] = useState({
-    name: "",
-    description: "",
-  });
   const [imageFiles, setImageFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCategory((prevCategory) => ({
-      ...prevCategory,
-      [name]: value,
-    }));
-  };
+  // Formik and Yup setup
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      description: "",
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required("Category name is required"),
+      description: Yup.string().required("Description is required"),
+    }),
+    onSubmit: async (values) => {
+      setLoading(true); // Start loader
 
-  const imageHandler = (e) => {
-    setImageFiles([...e.target.files]);
-  };
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("description", values.description);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); // Start loader
-
-    const formData = new FormData();
-    formData.append("name", category.name);
-    formData.append("description", category.description);
-
-    // Append image files
-    imageFiles.forEach((file) => {
-      formData.append("image", file);
-    });
-
-    try {
-      const response = await axios.post("http://localhost:4000/api/categories", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Append image files
+      imageFiles.forEach((file) => {
+        formData.append("image", file);
       });
 
-      onCategoryAdded(response.data.category); // Update the category list
-      toast.success(response.data.message, { position: "top-right" });
+      try {
+        const response = await axios.post("http://localhost:4000/api/categories", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
 
-      // Reset form and image inputs
-      setCategory({ name: "", description: "" });
-      setImageFiles([]);
+        onCategoryAdded(response.data.category); // Update the category list
+        toast.success(response.data.message, { position: "top-right" });
 
-      handleClose(); // Close the modal
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || "An error occurred";
-      toast.error(errorMessage, { position: "top-right" });
-    } finally {
-      setLoading(false); // Stop loader
-    }
+        // Reset form and image inputs
+        formik.resetForm();
+        setImageFiles([]);
+        handleClose(); // Close the modal
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || "An error occurred";
+        toast.error(errorMessage, { position: "top-right" });
+      } finally {
+        setLoading(false); // Stop loader
+      }
+    },
+  });
+
+  // Image input handler
+  const imageHandler = (e) => {
+    setImageFiles([...e.target.files]);
   };
 
   return (
@@ -87,25 +87,30 @@ const AddCategoryModal = ({ open, handleClose, onCategoryAdded }) => {
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
           Add New Category
         </Typography>
-        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+        
+        <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
           <TextField
             fullWidth
             margin="normal"
             label="Category Name"
             name="name"
-            value={category.name}
-            onChange={handleInputChange}
-            required
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
           />
+          
           <TextField
             fullWidth
             margin="normal"
             label="Description"
             name="description"
-            value={category.description}
-            onChange={handleInputChange}
-            required
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            helperText={formik.touched.description && formik.errors.description}
           />
+
           <input
             type="file"
             multiple

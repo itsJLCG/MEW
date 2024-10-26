@@ -10,13 +10,15 @@ import axios from "axios";
 import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from '@agney/react-loading';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
 
-const UpdateUserModal = ({ open, handleClose, slug }) => { // Add slug here
+const UpdateUserModal = ({ open, handleClose, slug }) => {
   const initialUserState = {
     name: "",
     email: "",
     address: "",
-    image: [], // Use array for images
+    image: [],
   };
 
   const [user, setUser] = useState(initialUserState);
@@ -27,7 +29,7 @@ const UpdateUserModal = ({ open, handleClose, slug }) => { // Add slug here
   useEffect(() => {
     if (slug) {
       axios
-        .get(`http://localhost:4000/api/users/${slug}`) // Ensure URL is correct
+        .get(`http://localhost:4000/api/users/${slug}`)
         .then((response) => {
           setUser(response.data.user);
         })
@@ -37,15 +39,25 @@ const UpdateUserModal = ({ open, handleClose, slug }) => { // Add slug here
     }
   }, [slug]);
 
+  // Form validation schema using Yup
+  const validationSchema = Yup.object({
+    name: Yup.string()
+      .required('User name is required'),
+    email: Yup.string()
+      .email('Invalid email format')
+      .required('Email is required'),
+    address: Yup.string()
+      .required('Address is required'),
+  });
+
   // Handle form submission
-  const submitForm = async (e) => {
-    e.preventDefault();
+  const submitForm = async (values) => {
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("name", user.name);
-    formData.append("email", user.email);
-    formData.append("address", user.address);
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("address", values.address);
 
     newImages.forEach((file) => {
       formData.append("image", file);
@@ -58,7 +70,6 @@ const UpdateUserModal = ({ open, handleClose, slug }) => { // Add slug here
         },
       });
       toast.success("User updated successfully", { position: "top-right" });
-      
       handleClose(); // Close the modal after updating
     } catch (error) {
       console.error("Error updating user:", error);
@@ -92,91 +103,114 @@ const UpdateUserModal = ({ open, handleClose, slug }) => { // Add slug here
           Update User
         </Typography>
         
-        <form onSubmit={submitForm} style={{ width: '100%' }}>
-          <TextField
-            fullWidth
-            margin="normal"
-            label="User Name"
-            name="name"
-            value={user.name}
-            onChange={(e) => setUser({ ...user, name: e.target.value })}
-            required
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Email"
-            name="email"
-            value={user.email}
-            onChange={(e) => setUser({ ...user, email: e.target.value })}
-            required
-          />
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Address"
-            name="address"
-            value={user.address}
-            onChange={(e) => setUser({ ...user, address: e.target.value })}
-            required
-          />
-
-          <div className="inputGroup">
-            <label>Current Images:</label>
-            {user.image && user.image.length > 0 ? (
-              <Carousel 
-                sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
-                autoPlay={false}
-                navButtonsAlwaysVisible={true}
-                animation="slide"
-                indicators={false}
-              >
-                {user.image.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image} 
-                    alt={`user-${index}`}
-                    style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
+        <Formik
+          initialValues={user}
+          validationSchema={validationSchema}
+          onSubmit={submitForm}
+          enableReinitialize
+        >
+          {({ setFieldValue, isSubmitting }) => (
+            <Form style={{ width: '100%' }}>
+              <Field name="name">
+                {({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    margin="normal"
+                    label="User Name"
+                    error={!!(field.touched && field.error)}
+                    helperText={<ErrorMessage name="name" />}
                   />
-                ))}
-              </Carousel>
-            ) : (
-              <p>No images uploaded</p>
-            )}
-          </div>
+                )}
+              </Field>
 
-          <div className="inputGroup">
-            <label htmlFor="images">Upload New Images:</label>
-            <input
-              type="file"
-              id="images"
-              name="images"
-              onChange={(e) => setNewImages([...e.target.files])}
-              multiple 
-              accept="image/*"
-              style={{ marginTop: 8 }}
-            />
-          </div>
+              <Field name="email">
+                {({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    margin="normal"
+                    label="Email"
+                    error={!!(field.touched && field.error)}
+                    helperText={<ErrorMessage name="email" />}
+                  />
+                )}
+              </Field>
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 2 }}>
-              {loading ? "Updating..." : "Update User"}
-            </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleClose} 
-              sx={{ backgroundColor: '#4ccdac', color: 'white', '&:hover': { backgroundColor: '#3cb8a9' } }}
-            >
-              Back
-            </Button>
-          </Box>
+              <Field name="address">
+                {({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    margin="normal"
+                    label="Address"
+                    error={!!(field.touched && field.error)}
+                    helperText={<ErrorMessage name="address" />}
+                  />
+                )}
+              </Field>
 
-          {loading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Hearts color="#4ccdac" height="100" width="100" />
-            </Box>
+              <div className="inputGroup">
+                <label>Current Images:</label>
+                {user.image && user.image.length > 0 ? (
+                  <Carousel 
+                    sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+                    autoPlay={false}
+                    navButtonsAlwaysVisible={true}
+                    animation="slide"
+                    indicators={false}
+                  >
+                    {user.image.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image} 
+                        alt={`user-${index}`}
+                        style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
+                      />
+                    ))}
+                  </Carousel>
+                ) : (
+                  <p>No images uploaded</p>
+                )}
+              </div>
+
+              <div className="inputGroup">
+                <label htmlFor="images">Upload New Images:</label>
+                <input
+                  type="file"
+                  id="images"
+                  name="images"
+                  onChange={(e) => {
+                    setNewImages([...e.target.files]);
+                    setFieldValue("images", e.target.files);
+                  }}
+                  multiple 
+                  accept="image/*"
+                  style={{ marginTop: 8 }}
+                />
+              </div>
+
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                <Button type="submit" variant="contained" color="primary" disabled={isSubmitting || loading} sx={{ mr: 2 }}>
+                  {loading ? "Updating..." : "Update User"}
+                </Button>
+                <Button 
+                  variant="contained" 
+                  onClick={handleClose} 
+                  sx={{ backgroundColor: '#4ccdac', color: 'white', '&:hover': { backgroundColor: '#3cb8a9' } }}
+                >
+                  Back
+                </Button>
+              </Box>
+
+              {loading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                  <Hearts color="#4ccdac" height="100" width="100" />
+                </Box>
+              )}
+            </Form>
           )}
-        </form>
+        </Formik>
       </Box>
     </Modal>
   );
