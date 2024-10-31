@@ -25,6 +25,10 @@ const Products = () => {
         const products = productsResponse.data.products;
         const categories = categoriesResponse.data.categories; 
         const brands = brandsResponse.data.brands; 
+        
+        console.log("Products:", products);
+        console.log("Categories:", categories);
+        console.log("Brands:", brands);
 
         // Create a mapping for categories and brands by ID
         const categoryMap = Object.fromEntries(categories.map((category) => [category._id, category.name]));

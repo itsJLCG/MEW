@@ -159,31 +159,31 @@ const SideBar = () => {
         >
           <Item
             title="Users"
-            path="/users"
+            path="/admin/users"
             colors={colors}
             icon={<PeopleAltOutlined />}
           />
           <Item
             title="Brands"
-            path="/brands"
+            path="/admin/brands"
             colors={colors}
             icon={<BrandingWatermark />}
           />
           <Item
             title="Categories"
-            path="/categories"
+            path="/admin/categories"
             colors={colors}
             icon={<Category />}
           />
           <Item
             title="Promos"
-            path="/promos"
+            path="/admin/promos"
             colors={colors}
             icon={<Discount />}
           />
           <Item
             title="Products"
-            path="/products"
+            path="/admin/products"
             colors={colors}
             icon={<ProductionQuantityLimits />}
           />

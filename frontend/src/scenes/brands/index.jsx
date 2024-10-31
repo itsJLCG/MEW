@@ -8,6 +8,8 @@ import { Box } from "@mui/system";
 import AddBrandModal from "./AddBrandModal"; // Import your new modal component
 import UpdateBrandModal from "./UpdateBrandModal";
 
+
+
 const Brands = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
