@@ -1,4 +1,6 @@
 const Product = require('../models/Products');
+const Category = require('../models/Categories');
+const Brand = require('../models/Brands');
 const slugify = require('slugify');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
@@ -19,10 +21,22 @@ exports.getAllProducts = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { name, description, price, stock } = req.body;
+    const { name, description, price, stock, category, brand } = req.body;
 
-    if (!name || !description || !price || !stock) {
+    if (!name || !description || !price || !stock || !category || !brand) {
       return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Validate the category and brand existence
+    const foundCategory = await Category.findById(category);
+    const foundBrand = await Brand.findById(brand);
+
+    if (!foundCategory) {
+      return res.status(400).json({ error: "Invalid category" });
+    }
+
+    if (!foundBrand) {
+      return res.status(400).json({ error: "Invalid brand" });
     }
 
     let imageUrls = [];
@@ -45,6 +59,8 @@ exports.create = async (req, res) => {
       stock,
       image: imageUrls,
       slug: slugify(name, { lower: true }),
+      category: foundCategory._id,  // Store category ID
+      brand: foundBrand._id,        // Store brand ID
     });
 
     await newProduct.save();
@@ -58,6 +74,7 @@ exports.create = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 exports.getProductById = async (req, res) => {
   try {
@@ -99,7 +116,7 @@ exports.getProductBySlug = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { slug } = req.params;
-  const { name, description, price, stock } = req.body;
+  const { name, description, price, stock, category, brand } = req.body;
   const newSlug = slugify(name, { lower: true });
 
   try {
@@ -136,6 +153,8 @@ exports.update = async (req, res) => {
     product.description = description;
     product.price = price;
     product.stock = stock;
+    product.category = category;  // Update category
+    product.brand = brand;        // Update brand
     product.image = updatedImageUrls;
     product.slug = newSlug;
 
@@ -150,6 +169,7 @@ exports.update = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 exports.remove = async (req, res) => {
   const { slug } = req.params;

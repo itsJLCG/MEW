@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button } from "@mui/material";
+import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import { Box } from "@mui/system";
 import AddCategoryModal from "./AddCategoryModal"; // Modal for adding category
 import UpdateCategoryModal from "./UpdateCategoryModal"; // Modal for updating category
+import { confirm } from "material-ui-confirm"; // Import the Confirm component
 
 const Categories = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null); // Unique identifier (slug) for update
+  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
+  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,15 +70,23 @@ const Categories = () => {
     try {
       const response = await axios.delete(`http://localhost:4000/api/categories/${categorySlug}`);
       setData((prevData) => prevData.filter((row) => row.slug !== categorySlug));
-      alert(response.data.message);
+      setDialogMessage(response.data.message || "Category deleted successfully");
     } catch (error) {
-      console.error(error);
+      setDialogMessage(error.response?.data?.error || "Error deleting category");
+    } finally {
+      setDialogOpen(true); // Open dialog to show message
     }
+  };
+
+  const confirmDeleteCategory = (categorySlug) => {
+    confirm({ description: "Are you sure you want to delete this category?" })
+      .then(() => deleteCategory(categorySlug))
+      .catch(() => console.log("Delete action canceled"));
   };
 
   const renderActions = (slug) => (
     <Box display="flex" gap={1}>
-      <IconButton onClick={() => deleteCategory(slug)}>
+      <IconButton onClick={() => confirmDeleteCategory(slug)}>
         <Delete style={{ color: "red" }} />
       </IconButton>
 
@@ -180,6 +191,19 @@ const Categories = () => {
       <MUIDataTable title={"Category List"} data={data} columns={columns} options={options} />
       <AddCategoryModal open={modalOpen} handleClose={() => setModalOpen(false)} onCategoryAdded={handleCategoryAdded} />
       <UpdateCategoryModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
+
+      {/* Dialog for showing delete confirmation messages */}
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DialogTitle>Category Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{dialogMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

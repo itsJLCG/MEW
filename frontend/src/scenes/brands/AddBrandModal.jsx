@@ -9,73 +9,69 @@ import {
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import Loader from '../../components/Loader.jsx'; // Adjust the path if necessary
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const AddBrandModal = ({ open, handleClose, onBrandAdded }) => {
-  const [brand, setBrand] = useState({
-    name: "",
-    company: "",
-    website: "",
-    description: "",
-  });
   const [imageFiles, setImageFiles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setBrand((prevBrand) => ({
-      ...prevBrand,
-      [name]: value,
-    }));
-  };
+  // Validation schema with Yup
+  const validationSchema = Yup.object({
+    name: Yup.string().required("Brand Name is required"),
+    company: Yup.string().required("Company is required"),
+    website: Yup.string().url("Enter a valid URL").required("Website is required"),
+    description: Yup.string().required("Description is required"),
+  });
+
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      company: "",
+      website: "",
+      description: "",
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      setLoading(true);
+      const formData = new FormData();
+      formData.append('name', values.name);
+      formData.append('company', values.company);
+      formData.append('website', values.website);
+      formData.append('description', values.description);
+
+      imageFiles.forEach((file) => {
+        formData.append('image', file);
+      });
+
+      try {
+        const response = await axios.post("http://localhost:4000/api/brands", formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        const newBrand = {
+          ...response.data.brand,
+          images: response.data.brand.images || [],
+        };
+
+        onBrandAdded(newBrand);
+        toast.success(response.data.message, { position: "top-right" });
+        handleClose();
+        formik.resetForm();
+        setImageFiles([]);
+      } catch (error) {
+        const errorMessage = error.response?.data?.error || 'An error occurred';
+        toast.error(errorMessage, { position: "top-right" });
+        console.error("Error adding brand:", errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
   const imageHandler = (e) => {
     setImageFiles([...e.target.files]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); // Start loading state immediately upon submission
-    const formData = new FormData();
-    formData.append('name', brand.name);
-    formData.append('company', brand.company);
-    formData.append('website', brand.website);
-    formData.append('description', brand.description);
-
-    // Append image files to FormData
-    imageFiles.forEach((file) => {
-      formData.append('image', file);
-    });
-
-    try {
-      const response = await axios.post("http://localhost:4000/api/brands", formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      // Ensure the response contains image URLs
-      const newBrand = {
-        ...response.data.brand,
-        images: response.data.brand.images || [], // Assuming this is the correct path to images in response
-      };
-
-      onBrandAdded(newBrand); // Callback to update the parent component
-      toast.success(response.data.message, { position: "top-right" }); // Success notification
-      handleClose(); // Close the modal after adding
-
-      // Reset the form fields after submission
-      setBrand({
-        name: "",
-        company: "",
-        website: "",
-        description: "",
-      });
-      setImageFiles([]); // Clear the image files
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || 'An error occurred';
-      toast.error(errorMessage, { position: "top-right" }); // Error notification
-      console.error("Error adding brand:", errorMessage);
-    } finally {
-      setLoading(false); // Reset loading state
-    }
   };
 
   return (
@@ -101,42 +97,46 @@ const AddBrandModal = ({ open, handleClose, onBrandAdded }) => {
         <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
           Add New Brand
         </Typography>
-        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+        <form onSubmit={formik.handleSubmit} style={{ width: '100%' }}>
           <TextField
             fullWidth
             margin="normal"
             label="Brand Name"
             name="name"
-            value={brand.name}
-            onChange={handleInputChange}
-            required
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Company"
             name="company"
-            value={brand.company}
-            onChange={handleInputChange}
-            required
+            value={formik.values.company}
+            onChange={formik.handleChange}
+            error={formik.touched.company && Boolean(formik.errors.company)}
+            helperText={formik.touched.company && formik.errors.company}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Website"
             name="website"
-            value={brand.website}
-            onChange={handleInputChange}
-            required
+            value={formik.values.website}
+            onChange={formik.handleChange}
+            error={formik.touched.website && Boolean(formik.errors.website)}
+            helperText={formik.touched.website && formik.errors.website}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Description"
             name="description"
-            value={brand.description}
-            onChange={handleInputChange}
-            required
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            helperText={formik.touched.description && formik.errors.description}
           />
           <input
             type="file"
@@ -148,10 +148,9 @@ const AddBrandModal = ({ open, handleClose, onBrandAdded }) => {
           />
           
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mt: 2 }}>
-            {/* Loader to the left of the Add Brand button */}
             {loading && (
               <Loader 
-                style={{ width: '24px', height: '24px', marginRight: '8px' }} // Set size and margin for spacing
+                style={{ width: '24px', height: '24px', marginRight: '8px' }}
               />
             )}
             <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 1 }}>

@@ -4,18 +4,11 @@ import axios from "axios";
 import Carousel from "react-material-ui-carousel";
 import { toast } from "react-hot-toast";
 import { Hearts } from '@agney/react-loading'; 
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
-  const initialPromoState = {
-    name: "",
-    description: "",
-    discount: "",
-    startDate: "",
-    endDate: "",
-    image: [],
-  };
-
-  const [promo, setPromo] = useState(initialPromoState);
+  const [promo, setPromo] = useState(null);
   const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -26,46 +19,69 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
         .then((response) => {
           const fetchedPromo = response.data.promo;
           setPromo({
-            ...fetchedPromo,
-            startDate: new Date(fetchedPromo.startDate).toISOString().split('T')[0], 
-            endDate: new Date(fetchedPromo.endDate).toISOString().split('T')[0],     
+            name: fetchedPromo.name,
+            description: fetchedPromo.description,
+            discount: fetchedPromo.discount,
+            startDate: new Date(fetchedPromo.startDate).toISOString().split('T')[0],
+            endDate: new Date(fetchedPromo.endDate).toISOString().split('T')[0],
+            image: fetchedPromo.image,
           });
         })
         .catch((error) => console.log(error));
     }
   }, [slug]);
 
+  const formik = useFormik({
+    enableReinitialize: true,
+    initialValues: promo || {
+      name: "",
+      description: "",
+      discount: "",
+      startDate: "",
+      endDate: "",
+    },
+    validationSchema: Yup.object({
+      name: Yup.string().required("Promo name is required"),
+      description: Yup.string().required("Description is required"),
+      discount: Yup.number()
+        .min(0, "Discount must be a positive number")
+        .max(100, "Discount cannot exceed 100")
+        .required("Discount is required"),
+      startDate: Yup.date().required("Start date is required"),
+      endDate: Yup.date()
+        .min(Yup.ref("startDate"), "End date cannot be before start date")
+        .required("End date is required"),
+    }),
+    onSubmit: async (values) => {
+      setLoading(true);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("description", values.description);
+      formData.append("discount", values.discount);
+      formData.append("startDate", values.startDate);
+      formData.append("endDate", values.endDate);
 
-    const formData = new FormData();
-    formData.append("name", promo.name);
-    formData.append("description", promo.description);
-    formData.append("discount", promo.discount);
-    formData.append("startDate", promo.startDate);
-    formData.append("endDate", promo.endDate);
-
-    newImages.forEach((file) => {
-      formData.append("image", file);
-    });
-
-    try {
-      await axios.put(`http://localhost:4000/api/promos/${slug}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      newImages.forEach((file) => {
+        formData.append("image", file);
       });
 
-      toast.success("Promo updated successfully", { position: "top-right" });
-      onPromoUpdated(); // Callback to update table data
-      handleClose();
-    } catch (error) {
-      console.error("Error updating promo:", error);
-      toast.error("Failed to update promo", { position: "top-right" });
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        await axios.put(`http://localhost:4000/api/promos/${slug}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        toast.success("Promo updated successfully", { position: "top-right" });
+        onPromoUpdated(); // Callback to update table data
+        handleClose();
+      } catch (error) {
+        console.error("Error updating promo:", error);
+        toast.error("Failed to update promo", { position: "top-right" });
+      } finally {
+        setLoading(false);
+      }
+    },
+  });
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -88,56 +104,72 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
         <Typography variant="h6" gutterBottom>
           Update Promo
         </Typography>
-        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+        <form onSubmit={formik.handleSubmit} style={{ width: "100%" }}>
           <TextField
             fullWidth
             margin="normal"
             label="Promo Name"
-            value={promo.name}
-            onChange={(e) => setPromo({ ...promo, name: e.target.value })}
-            required
+            name="name"
+            value={formik.values.name}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.name && Boolean(formik.errors.name)}
+            helperText={formik.touched.name && formik.errors.name}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Description"
-            value={promo.description}
-            onChange={(e) => setPromo({ ...promo, description: e.target.value })}
-            required
+            name="description"
+            value={formik.values.description}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            helperText={formik.touched.description && formik.errors.description}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Discount"
-            value={promo.discount}
-            onChange={(e) => setPromo({ ...promo, discount: e.target.value })}
-            required
+            name="discount"
+            type="number"
+            value={formik.values.discount}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            error={formik.touched.discount && Boolean(formik.errors.discount)}
+            helperText={formik.touched.discount && formik.errors.discount}
           />
           <TextField
             fullWidth
             margin="normal"
             label="Start Date"
+            name="startDate"
             type="date"
-            value={promo.startDate}
-            onChange={(e) => setPromo({ ...promo, startDate: e.target.value })}
+            value={formik.values.startDate}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             InputLabelProps={{ shrink: true }}
-            required
+            error={formik.touched.startDate && Boolean(formik.errors.startDate)}
+            helperText={formik.touched.startDate && formik.errors.startDate}
           />
           <TextField
             fullWidth
             margin="normal"
             label="End Date"
+            name="endDate"
             type="date"
-            value={promo.endDate}
-            onChange={(e) => setPromo({ ...promo, endDate: e.target.value })}
+            value={formik.values.endDate}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
             InputLabelProps={{ shrink: true }}
-            required
+            error={formik.touched.endDate && Boolean(formik.errors.endDate)}
+            helperText={formik.touched.endDate && formik.errors.endDate}
           />
           <div className="inputGroup">
             <label>Current Images:</label>
-            {promo.image && promo.image.length > 0 ? (
-              <Carousel 
-                sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }} 
+            {promo?.image && promo.image.length > 0 ? (
+              <Carousel
+                sx={{ width: '50%', maxWidth: '150px', margin: 'auto' }}
                 autoPlay={false}
                 navButtonsAlwaysVisible={true}
                 animation="slide"
@@ -146,9 +178,9 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
                 {promo.image.map((image, index) => (
                   <img
                     key={index}
-                    src={image} 
+                    src={image}
                     alt={`promo-${index}`}
-                    style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} 
+                    style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }}
                   />
                 ))}
               </Carousel>
@@ -164,12 +196,12 @@ const UpdatePromoModal = ({ open, handleClose, slug, onPromoUpdated }) => {
               id="images"
               name="images"
               onChange={(e) => setNewImages([...e.target.files])}
-              multiple 
+              multiple
               accept="image/*"
               style={{ marginTop: 8 }}
             />
           </div>
-          
+
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
             <Button type="submit" variant="contained" color="primary" disabled={loading} sx={{ mr: 2 }}>
               {loading ? "Updating..." : "Update Promo"}

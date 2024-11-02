@@ -56,6 +56,7 @@ import {
 } from "./scenes";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
+import { ConfirmProvider } from "material-ui-confirm";
 
 export const ToggledContext = createContext(null);
 
@@ -65,6 +66,7 @@ function App() {
   const values = { toggled, setToggled };
 
   return (
+  <ConfirmProvider>
     <Provider store={store}> {/* Wrap the entire app with Provider */}
       <ToggledContext.Provider value={values}>
         <ColorModeContext.Provider value={colorMode}>
@@ -78,7 +80,7 @@ function App() {
                 <Route path="/home" element={<BaseLayout />}>
                   <Route index element={<Home />} />
                   <Route path="/home/product" element={<ProductList />} />
-                  <Route path="/home/product/details" element={<ProductDetails />} />
+                  <Route path="product/details" element={<ProductDetails />} />
                   <Route path="cart" element={<Cart />} />
                   <Route path="empty_cart" element={<CartEmpty />} />
                   <Route path="checkout" element={<Checkout />} />
@@ -151,6 +153,7 @@ function App() {
         </ColorModeContext.Provider>
       </ToggledContext.Provider>
     </Provider>
+    </ConfirmProvider>
   );
 }
 
