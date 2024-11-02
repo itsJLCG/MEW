@@ -143,7 +143,6 @@ const AddBrandModal = ({ open, handleClose, onBrandAdded }) => {
             multiple
             accept="image/*"
             onChange={imageHandler}
-            required
             style={{ marginTop: 8 }}
           />
           
