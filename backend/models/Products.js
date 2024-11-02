@@ -12,21 +12,31 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   price: {
-    type: Number,  
+    type: Number,
     required: true,
-    min: 0,       
+    min: 0,
   },
   stock: {
-    type: Number,  
+    type: Number,
     required: true,
-    min: 0,        
+    min: 0,
   },
   slug: {
-      type: String,
-      unique: true,
-      lowercase: true,
+    type: String,
+    unique: true,
+    lowercase: true,
   },
   image: [String],
+  category: {
+    type: ObjectId,
+    ref: 'Category',  // Refers to the Category model
+    required: true,
+  },
+  brand: {
+    type: ObjectId,
+    ref: 'Brand',  // Refers to the Brand model
+    required: true,
+  }
 });
 
 productSchema.pre('save', function (next) {

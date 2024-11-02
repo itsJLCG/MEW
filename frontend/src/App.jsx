@@ -56,8 +56,6 @@ import {
 } from "./scenes";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
-import { Outlet } from "react-router-dom";
-import { Toaster } from "react-hot-toast"; 
 import { ConfirmProvider } from "material-ui-confirm";
 
 export const ToggledContext = createContext(null);
