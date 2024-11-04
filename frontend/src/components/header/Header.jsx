@@ -205,18 +205,18 @@ const Header = () => {
 
           <IconLinksWrapper className="flex items-center">
             <Link
-              to="/wishlist"
+              to="/home/wishlist"
               className={`icon-link ${
-                location.pathname === "/wishlist" ? "active" : ""
+                location.pathname === "/home/wishlist" ? "active" : ""
               } inline-flex items-center justify-center`}
             >
               <img src={staticImages.heart} alt="" />
             </Link>
             <Link
-              to="/account"
+              to="/home/account"
               className={`icon-link ${
-                location.pathname === "/account" ||
-                location.pathname === "/account/add"
+                location.pathname === "/home/account" ||
+                location.pathname === "/home/account/add"
                   ? "active"
                   : ""
               } inline-flex items-center justify-center`}
@@ -224,9 +224,9 @@ const Header = () => {
               <img src={staticImages.user} alt="" />
             </Link>
             <Link
-              to="/cart"
+              to="/home/cart"
               className={`icon-link ${
-                location.pathname === "/cart" ? "active" : ""
+                location.pathname === "/home/cart" ? "active" : ""
               } inline-flex items-center justify-center`}
             >
               <img src={staticImages.cart} alt="" />

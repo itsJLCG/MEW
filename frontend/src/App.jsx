@@ -79,7 +79,7 @@ function App() {
                 {/* Store main screens */}
                 <Route path="/home" element={<BaseLayout />}>
                   <Route index element={<Home />} />
-                  <Route path="/home/product" element={<ProductList />} />
+                  <Route path="product" element={<ProductList />} />
                   <Route path="product/details" element={<ProductDetails />} />
                   <Route path="cart" element={<Cart />} />
                   <Route path="empty_cart" element={<CartEmpty />} />
@@ -128,11 +128,11 @@ function App() {
                 >
                   <Route index element={<Dashboard />} />
                   <Route path="team" element={<Team />} />
-                  <Route path="/admin/products" element={<Products />} />
-                  <Route path="/admin/promos" element={<Promos />} />
-                  <Route path="/admin/categories" element={<Categories />} />
+                  <Route path="products" element={<Products />} />
+                  <Route path="promos" element={<Promos />} />
+                  <Route path="categories" element={<Categories />} />
                   <Route path="users" element={<Users />} />
-                  <Route path="/admin/brands" element={<Brands />} />
+                  <Route path="brands" element={<Brands />} />
                   <Route path="contacts" element={<Contacts />} />
                   <Route path="invoices" element={<Invoices />} />
                   <Route path="form" element={<Form />} />

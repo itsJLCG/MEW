@@ -16,6 +16,7 @@ const brandRoutes = require('./routes/brands');
 const categoryRoutes = require('./routes/categories');
 const promoRoutes = require('./routes/promos');
 const authRoutes = require("./routes/auth");
+const cartRoutes = require('./routes/carts');    
 
 // Mongoose
 mongoose
@@ -55,5 +56,7 @@ app.use('/api', promoRoutes);
 // Use the user routes
 app.use("/api/auth", authRoutes);
 
+//Cart routes
+app.use("/api/cart", cartRoutes);
 
 

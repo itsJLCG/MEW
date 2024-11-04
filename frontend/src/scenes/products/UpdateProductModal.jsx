@@ -63,11 +63,18 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Product name is required"),
     description: Yup.string().required("Description is required"),
-    price: Yup.number().required("Price is required").positive("Price must be positive"),
-    stock: Yup.number().required("Stock is required").min(1, "Stock must be at least 1"),
+    price: Yup.number()
+      .typeError("Price must be a number")
+      .required("Price is required")
+      .positive("Price must be positive"),
+    stock: Yup.number()
+      .typeError("Stock must be an integer")
+      .required("Stock is required")
+      .min(1, "Stock must be at least 1"),
     category: Yup.string().required("Please select a category"),
     brand: Yup.string().required("Please select a brand"),
   });
+  
 
   const submitForm = async (values, { resetForm }) => {
     setLoading(true);
@@ -81,7 +88,7 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
     formData.append("brand", values.brand);
 
     newImages.forEach((file) => {
-      formData.append("images", file);
+      formData.append("image", file);
     });
 
     try {
@@ -159,7 +166,6 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                 margin="normal"
                 label="Price"
                 name="price"
-                type="number"
                 required
               />
               <ErrorMessage name="price" component="div" style={{ color: "red" }} />
@@ -170,7 +176,6 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                 margin="normal"
                 label="Stock"
                 name="stock"
-                type="number"
                 required
               />
               <ErrorMessage name="stock" component="div" style={{ color: "red" }} />
