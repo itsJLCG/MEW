@@ -31,31 +31,31 @@ const navMenuData = [
 const sideMenuData = [
   {
     id: "side-menu-1",
-    menuLink: "/",
+    menuLink: "/home",
     menuText: "Home",
     iconName: "house",
   },
   {
     id: "side-menu-2",
-    menuLink: "/product",
+    menuLink: "/home/product",
     menuText: "Products",
     iconName: "grid-fill",
   },
   {
     id: "side-menu-3",
-    menuLink: "/wishlist",
+    menuLink: "/home/wishlist",
     menuText: "Wishlist",
     iconName: "heart",
   },
   {
     id: "side-menu-4",
-    menuLink: "/account",
+    menuLink: "/home/account",
     menuText: "My Account",
     iconName: "person-fill",
   },
   {
     id: "side-menu-5",
-    menuLink: "/cart",
+    menuLink: "/home/cart",
     menuText: "Cart",
     iconName: "bag-check-fill",
   },

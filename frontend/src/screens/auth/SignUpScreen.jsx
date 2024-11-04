@@ -18,6 +18,11 @@ import {EyeInvisibleOutlined, EyeTwoTone, CheckCircleOutlined, CloseCircleOutlin
 import { toast } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 
+
+//firebase
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../components/firebase/firebase"; // Import Firebase auth
+
 const SignUpScreenWrapper = styled.section`
   form {
     margin-top: 40px;
@@ -80,8 +85,6 @@ const SignUpScreen = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-
-  // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
@@ -122,6 +125,11 @@ const SignUpScreen = () => {
     validationSchema,
     onSubmit: async (values) => {
       try {
+        // Firebase authentication - create a user
+        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+        const firebaseUser = userCredential.user;
+
+        // Proceed with Axios call to save additional user details on the server
         const formData = new FormData();
         formData.append("username", values.username);
         formData.append("email", values.email);
@@ -146,7 +154,7 @@ const SignUpScreen = () => {
         navigate("/auth/sign_in");
 
       } catch (error) {
-        toast.error(error.response?.data?.message || "Registration failed");
+        toast.error(error.message || "Registration failed");
       }
     },
   });

@@ -57,6 +57,6 @@ app.use('/api', promoRoutes);
 app.use("/api/auth", authRoutes);
 
 //Cart routes
-app.use("/api/cart", cartRoutes);
+app.use("/api", cartRoutes);
 
 

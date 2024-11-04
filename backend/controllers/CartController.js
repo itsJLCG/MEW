@@ -42,3 +42,19 @@ exports.deleteFromCart = async (req, res) => {
     res.status(500).json({ success: false, message: "Error deleting item from cart", error });
   }
 };
+
+// Fetch all items in the cart collection
+exports.getAllCartItems = async (req, res) => {
+  try {
+    // Find all items in the cart collection
+    const cartItems = await Cart.find();
+
+    if (cartItems.length === 0) {
+      return res.status(404).json({ success: false, message: "No items found in cart" });
+    }
+
+    res.status(200).json({ success: true, cartItems });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching cart items", error });
+  }
+};

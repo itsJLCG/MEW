@@ -15,6 +15,10 @@ import { useNavigate } from "react-router-dom";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
+//firebase
+import { signInWithEmailAndPassword  } from "firebase/auth";
+import { auth } from "../../components/firebase/firebase"; // Import Firebase auth
+
 const SignInScreenWrapper = styled.section`
   .form-separator {
     margin: 32px 0;
@@ -165,6 +169,9 @@ const SignInScreen = () => {
     onSubmit: async (values) => {
       setLoading(true);
       try {
+        const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+        const firebaseUser = userCredential.user;
+
         const url = 'http://localhost:4000/api/auth/login';
         const { data } = await axios.post(url, {
           email: values.email,
