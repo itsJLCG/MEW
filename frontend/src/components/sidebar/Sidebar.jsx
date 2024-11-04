@@ -132,11 +132,11 @@ const Sidebar = () => {
         <span className="line line2"></span>
       </CloseButton>
       <div className="sidenav-head">
-        <SiteBrandWrapper to="/" className="inline-flex">
+        <SiteBrandWrapper to="/home" className="inline-flex">
           <div className="brand-img-wrap flex items-center justify-center">
             <img className="site-brand-img" src={staticImages.logo} />
           </div>
-          <span className="site-brand-text text-outerspace">achats.</span>
+          <span className="site-brand-text text-outerspace">MEW</span>
         </SiteBrandWrapper>
         <form className="sidenav-search-form">
           <InputGroupWrapper className="input-group">

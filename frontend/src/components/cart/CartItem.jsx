@@ -15,12 +15,21 @@ const CartTableRowWrapper = styled.tr`
     }
 
     &-qty {
-      .qty-inc-btn,
-      .qty-dec-btn {
-        width: 24px;
-        height: 24px;
+      display: flex;
+      align-items: center;
+
+      .qty-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
         border: 1px solid ${defaultTheme.color_platinum};
-        border-radius: 2px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px; /* Larger font for visibility */
+        font-weight: bold;
+        transition: all 0.3s ease;
 
         &:hover {
           border-color: ${defaultTheme.color_sea_green};
@@ -31,7 +40,10 @@ const CartTableRowWrapper = styled.tr`
 
       .qty-value {
         width: 40px;
-        height: 24px;
+        height: 32px;
+        text-align: center;
+        font-weight: 500;
+        margin: 0 8px;
       }
     }
   }
@@ -84,16 +96,10 @@ const CartItem = ({ cartItem }) => {
         </span>
       </td>
       <td>
-        <div className="cart-tbl-qty flex items-center">
-          <button className="qty-dec-btn">
-            <i className="bi bi-dash-lg"></i>
-          </button>
-          <span className="qty-value inline-flex items-center justify-center font-medium text-outerspace">
-            2
-          </span>
-          <button className="qty-inc-btn">
-            <i className="bi bi-plus-lg"></i>
-          </button>
+        <div className="cart-tbl-qty">
+          <button className="qty-btn">−</button> {/* Using Unicode minus */}
+          <span className="qty-value">{cartItem.quantity}</span>
+          <button className="qty-btn">+</button> {/* Using Unicode plus */}
         </div>
       </td>
       <td>
@@ -109,7 +115,7 @@ const CartItem = ({ cartItem }) => {
       <td>
         <div className="cart-tbl-actions flex justify-center">
           <Link to="/" className="tbl-del-action text-red">
-            <i className="bi bi-trash3"></i>
+            🗑 {/* Using Unicode trash icon as a placeholder */}
           </Link>
         </div>
       </td>

@@ -60,10 +60,16 @@ import { ConfirmProvider } from "material-ui-confirm";
 
 export const ToggledContext = createContext(null);
 
+
+//Protected Route
+import ProtectedRoute from "./ProtectedRoute";
+
 function App() {
   const [theme, colorMode] = useMode();
   const [toggled, setToggled] = useState(false);
   const values = { toggled, setToggled };
+
+  const userRole = "customer";
 
   return (
   <ConfirmProvider>
@@ -76,22 +82,24 @@ function App() {
             <Toaster position="top-right" />
             <Router>
               <Routes>
+              <Route element = {<ProtectedRoute role={userRole} expectedRole="customer" />} >
                 {/* Store main screens */}
                 <Route path="/home" element={<BaseLayout />}>
-                  <Route index element={<Home />} />
-                  <Route path="/home/product" element={<ProductList />} />
-                  <Route path="product/details" element={<ProductDetails />} />
-                  <Route path="cart" element={<Cart />} />
-                  <Route path="empty_cart" element={<CartEmpty />} />
-                  <Route path="checkout" element={<Checkout />} />
-                  <Route path="order" element={<Order />} />
-                  <Route path="order_detail" element={<OrderDetail />} />
-                  <Route path="wishlist" element={<WishList />} />
-                  <Route path="empty_wishlist" element={<WishListEmpty />} />
-                  <Route path="confirm" element={<Confirm />} />
-                  <Route path="account" element={<Account />} />
-                  <Route path="account/add" element={<Address />} />
-                </Route>
+                    <Route index element={<Home />} />
+                    <Route path="product" element={<ProductList />} />
+                    <Route path="product/details" element={<ProductDetails />} />
+                    <Route path="cart" element={<Cart />} />
+                    <Route path="empty_cart" element={<CartEmpty />} />
+                    <Route path="checkout" element={<Checkout />} />
+                    <Route path="order" element={<Order />} />
+                    <Route path="order_detail" element={<OrderDetail />} />
+                    <Route path="wishlist" element={<WishList />} />
+                    <Route path="empty_wishlist" element={<WishListEmpty />} />
+                    <Route path="confirm" element={<Confirm />} />
+                    <Route path="account" element={<Account />} />
+                    <Route path="account/add" element={<Address />} />
+                  </Route>
+              </Route>
 
                 {/* Auth screens */}
                 <Route path="/auth" element={<AuthLayout />}>
@@ -105,45 +113,49 @@ function App() {
 
                 {/* Admin screens */}
                 <Route
-                  path="/admin"
-                  element={
-                    <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
-                      <SideBar />
-                      <Box
-                        sx={{
-                          flexGrow: 1,
-                          display: "flex",
-                          flexDirection: "column",
-                          height: "100%",
-                          maxWidth: "100%",
-                        }}
-                      >
-                        <Navbar />
-                        <Box sx={{ overflowY: "auto", flex: 1, maxWidth: "100%" }}>
-                          <Outlet />
+                    element={<ProtectedRoute role={userRole} expectedRole="admin" />}
+                  >
+                <Route
+                      path="/admin"
+                      element={
+                        <Box sx={{ display: "flex", height: "100vh", maxWidth: "100%" }}>
+                          <SideBar />
+                          <Box
+                            sx={{
+                              flexGrow: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                              height: "100%",
+                              maxWidth: "100%",
+                            }}
+                          >
+                            <Navbar />
+                            <Box sx={{ overflowY: "auto", flex: 1, maxWidth: "100%" }}>
+                              <Outlet />
+                            </Box>
+                          </Box>
                         </Box>
-                      </Box>
-                    </Box>
-                  }
-                >
-                  <Route index element={<Dashboard />} />
-                  <Route path="team" element={<Team />} />
-                  <Route path="/admin/products" element={<Products />} />
-                  <Route path="/admin/promos" element={<Promos />} />
-                  <Route path="/admin/categories" element={<Categories />} />
-                  <Route path="users" element={<Users />} />
-                  <Route path="/admin/brands" element={<Brands />} />
-                  <Route path="contacts" element={<Contacts />} />
-                  <Route path="invoices" element={<Invoices />} />
-                  <Route path="form" element={<Form />} />
-                  <Route path="calendar" element={<Calendar />} />
-                  <Route path="bar" element={<Bar />} />
-                  <Route path="pie" element={<Pie />} />
-                  <Route path="stream" element={<Stream />} />
-                  <Route path="line" element={<Line />} />
-                  <Route path="faq" element={<FAQ />} />
-                  <Route path="geography" element={<Geography />} />
-                </Route>
+                      }
+                    >
+                      <Route index element={<Dashboard />} />
+                      <Route path="team" element={<Team />} />
+                      <Route path="products" element={<Products />} />
+                      <Route path="promos" element={<Promos />} />
+                      <Route path="categories" element={<Categories />} />
+                      <Route path="users" element={<Users />} />
+                      <Route path="brands" element={<Brands />} />
+                      <Route path="contacts" element={<Contacts />} />
+                      <Route path="invoices" element={<Invoices />} />
+                      <Route path="form" element={<Form />} />
+                      <Route path="calendar" element={<Calendar />} />
+                      <Route path="bar" element={<Bar />} />
+                      <Route path="pie" element={<Pie />} />
+                      <Route path="stream" element={<Stream />} />
+                      <Route path="line" element={<Line />} />
+                      <Route path="faq" element={<FAQ />} />
+                      <Route path="geography" element={<Geography />} />
+                    </Route>
+               </Route>
 
                 {/* Fallback route */}
                 <Route path="*" element={<NotFound />} />

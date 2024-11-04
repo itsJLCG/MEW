@@ -50,7 +50,7 @@ const CartContent = styled.div`
 
 const CartScreen = () => {
   const breadcrumbItems = [
-    { label: "Home", link: "/cart" },
+    { label: "Home", link: "/home/cart" },
     { label: "Add To Cart", link: "" },
   ];
   return (

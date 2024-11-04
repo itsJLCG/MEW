@@ -1,12 +1,14 @@
+// ProductListScreen.jsx
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import styled from "styled-components";
 import { Container, ContentStylings, Section } from "../../styles/styles";
 import Breadcrumb from "../../components/common/Breadcrumb";
 import { Link } from "react-router-dom";
 import ProductList from "../../components/product/ProductList";
-import { products } from "../../data/data";
 import Title from "../../components/common/Title";
-import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import ProductFilter from "../../components/product/ProductFilter";
+import { breakpoints, defaultTheme } from "../../styles/themes/default";
 
 const ProductsContent = styled.div`
   grid-template-columns: 320px auto;
@@ -85,12 +87,52 @@ const DescriptionContent = styled.div`
     }
   }
 `;
-
 const ProductListScreen = () => {
+  const [products, setProducts] = useState([]);
+
   const breadcrumbItems = [
-    { label: "Home", link: "/" },
+    { label: "Home", link: "/home" },
     { label: "Products", link: "" },
   ];
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // Fetch all products, categories, and brands concurrently
+        const [productRes, categoryRes, brandRes] = await Promise.all([
+          axios.get("http://localhost:4000/api/products/all"),
+          axios.get("http://localhost:4000/api/categories/all"),
+          axios.get("http://localhost:4000/api/brands/all"),
+        ]);
+
+        const products = productRes.data.products;
+        const categories = categoryRes.data.categories;
+        const brands = brandRes.data.brands;
+
+        // Create mapping for categories and brands by their IDs
+        const categoryMap = Object.fromEntries(
+          categories.map((category) => [category._id, category.name])
+        );
+        const brandMap = Object.fromEntries(
+          brands.map((brand) => [brand._id, brand.name])
+        );
+
+        // Map products to include brandName and categoryName
+        const productsWithNames = products.map((product) => ({
+          ...product,
+          brandName: brandMap[product.brand] || "Unknown Brand",
+          categoryName: categoryMap[product.category] || "Unknown Category",
+        }));
+
+        setProducts(productsWithNames);
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   return (
     <main className="page-py-spacing">
       <Container>
@@ -101,21 +143,17 @@ const ProductListScreen = () => {
           </ProductsContentLeft>
           <ProductsContentRight>
             <div className="products-right-top flex items-center justify-between">
-              <h4 className="text-xxl">Women&apos;s Clothing</h4>
+              <h4 className="text-xxl">Women's Clothing</h4>
               <ul className="products-right-nav flex items-center justify-end flex-wrap">
                 <li>
-                  <Link to="/" className="active text-lg font-semibold">
-                    New
-                  </Link>
+                  <Link to="/" className="active text-lg font-semibold">New</Link>
                 </li>
                 <li>
-                  <Link to="/" className="text-lg font-semibold">
-                    Recommended
-                  </Link>
+                  <Link to="/" className="text-lg font-semibold">Recommended</Link>
                 </li>
               </ul>
             </div>
-            <ProductList products={products.slice(0, 12)} />
+            <ProductList products={products} />
           </ProductsContentRight>
         </ProductsContent>
       </Container>
@@ -124,7 +162,7 @@ const ProductListScreen = () => {
           <DescriptionContent>
             <Title titleText={"Clothing for Everyone Online"} />
             <ContentStylings className="text-base content-stylings">
-              <h4>Reexplore Clothing Collection Online at Achats.</h4>
+            <h4>Reexplore Clothing Collection Online at Achats.</h4>
               <p>
                 Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sed,
                 molestiae ex atque similique consequuntur ipsum sapiente
@@ -138,7 +176,7 @@ const ProductListScreen = () => {
               </p>
               <h4>
                 One-stop Destination to Shop Every Clothing for Everyone:
-                Achats.
+                MEW.
               </h4>
               <p>
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo
@@ -151,7 +189,7 @@ const ProductListScreen = () => {
                 Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quasi
                 laborum dolorem deserunt aperiam voluptate mollitia.
               </p>
-              <Link to="/">See More</Link>
+              <Link to="/home">See More</Link>
             </ContentStylings>
           </DescriptionContent>
         </Container>

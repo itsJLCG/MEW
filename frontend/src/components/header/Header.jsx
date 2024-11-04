@@ -9,6 +9,21 @@ import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import { useDispatch } from "react-redux";
 import { toggleSidebar } from "../../redux/slices/sidebarSlice";
 
+import LogoutIcon from '@mui/icons-material/Logout'; // Import Logout Icon
+import { useNavigate } from 'react-router-dom'; 
+import { toast } from 'react-hot-toast';
+
+const LogoutButton = styled(LogoutIcon)`
+  cursor: pointer;
+  margin-left: 20px;
+  transition: color 0.3s, transform 0.3s; // Smooth transition for hover effects
+
+  &:hover {
+    color: ${defaultTheme.color_sea_green}; // Change color on hover
+    transform: scale(1.1); // Slightly increase size on hover
+  }
+`;
+
 const BurgerIcon = styled.button`
   display: flex;
   flex-direction: column;
@@ -33,7 +48,6 @@ const BurgerIcon = styled.button`
     background-color: ${defaultTheme.color_sea_green}; // Change color on hover
   }
 `;
-
 
 const NavigationAndSearchWrapper = styled.div`
   column-gap: 20px;
@@ -140,20 +154,25 @@ const IconLinksWrapper = styled.div`
   @media (max-width: ${breakpoints.xl}) {
     column-gap: 6px;
   }
-    
 `;
 
 const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Hook to programmatically navigate
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken'); // Remove the authToken
+    toast.success("Logout successfully!");
+    navigate('/auth/sign_in'); // Redirect to login page
+  };
 
   return (
     <HeaderMainWrapper className="header flex items-center">
       <Container className="container">
         <div className="header-wrap flex items-center justify-between">
           <div className="flex items-center">
-          <BurgerIcon
+            <BurgerIcon
               type="button"
               onClick={() => dispatch(toggleSidebar())}
             >
@@ -205,18 +224,18 @@ const Header = () => {
 
           <IconLinksWrapper className="flex items-center">
             <Link
-              to="/wishlist"
+              to="/home/wishlist"
               className={`icon-link ${
-                location.pathname === "/wishlist" ? "active" : ""
+                location.pathname === "/home/wishlist" ? "active" : ""
               } inline-flex items-center justify-center`}
             >
               <img src={staticImages.heart} alt="" />
             </Link>
             <Link
-              to="/account"
+              to="/home/account"
               className={`icon-link ${
-                location.pathname === "/account" ||
-                location.pathname === "/account/add"
+                location.pathname === "/home/account" ||
+                location.pathname === "/home/account/add"
                   ? "active"
                   : ""
               } inline-flex items-center justify-center`}
@@ -224,13 +243,19 @@ const Header = () => {
               <img src={staticImages.user} alt="" />
             </Link>
             <Link
-              to="/cart"
+              to="/home/cart"
               className={`icon-link ${
-                location.pathname === "/cart" ? "active" : ""
+                location.pathname === "/home/cart" ? "active" : ""
               } inline-flex items-center justify-center`}
             >
               <img src={staticImages.cart} alt="" />
             </Link>
+
+            {localStorage.getItem('authToken') && ( // Check if authToken exists
+              <LogoutButton 
+                onClick={handleLogout} // Handle logout on click
+              />
+            )}
           </IconLinksWrapper>
         </div>
       </Container>
