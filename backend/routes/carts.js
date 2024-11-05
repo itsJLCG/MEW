@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { addToCart, deleteFromCart, getAllCartItems} = require('../controllers/CartController');
+const { addToCart, deleteFromCart, getAllCartItems, getCartByCustomerId} = require('../controllers/CartController');
+// const { isAuthenticatedUser} = require('../middlewares/auth');
 
 // Route to add an item to the cart
 router.post("/cart/add", addToCart);
@@ -9,5 +10,7 @@ router.post("/cart/add", addToCart);
 router.delete("/cart/delete", deleteFromCart); // Using DELETE with request body for customerId and productId
 
 router.get("/cart/all", getAllCartItems); // fetch all carts
+router.get('/cart/:customerId',getCartByCustomerId);
+
 
 module.exports = router;

@@ -188,10 +188,27 @@ const SignInScreen = () => {
           setLoading(false);
           return;
         }
+        const { customerId } = data; // Corrected from `response.data` to `data`
 
         localStorage.setItem('authToken', data.token);
+        console.log(customerId)
+         // After setting authToken and customerId in localStorage
+         if (customerId) {
+          try {
+            const cartResponse = await axios.get(`http://localhost:4000/api/cart/${customerId}`);
+            const hasCart = cartResponse.data && cartResponse.data.cartItems.length > 0;
+            
+            // Store cart status in localStorage for access in Header
+            localStorage.setItem('hasCart', hasCart);
+          } catch (error) {
+            console.error("Error fetching cart data:", error);
+          }
+        }
+
         toast.success('Login successful!');
         navigate('/home');
+
+       
       } catch (err) {
         // Log error details to help with debugging
         console.error("Login error:", err);
@@ -219,6 +236,8 @@ const SignInScreen = () => {
       }
     },
   });
+
+  
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
