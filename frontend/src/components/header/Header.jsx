@@ -191,6 +191,8 @@ const Header = () => {
     navigate('/auth/sign_in'); // Redirect to login page
   };
 
+ 
+
 
   return (
     <HeaderMainWrapper className="header flex items-center">
@@ -268,14 +270,11 @@ const Header = () => {
               <img src={staticImages.user} alt="" />
             </Link>
             <Link
-              to="/home/cart"
-              className={`icon-link ${
-                location.pathname === "/home/cart" ? "active" : ""
-              } inline-flex items-center justify-center`}
+              to={hasCart ? "/home/cart" : "/home/empty_cart"}
+              className={`icon-link ${location.pathname === "/home/cart" ? "active" : ""} inline-flex items-center justify-center`}
             >
               <img src={staticImages.cart} alt="" />
             </Link>
-
             {localStorage.getItem('authToken') && ( // Check if authToken exists
               <LogoutButton 
                 onClick={handleLogout} // Handle logout on click
