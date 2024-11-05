@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-router-dom";
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import { GlobalStyles } from "./styles/global/GlobalStyles";
 import { Toaster } from "react-hot-toast"; 
@@ -84,6 +84,8 @@ function App() {
               <Routes>
               <Route element = {<ProtectedRoute role={userRole} expectedRole="customer" />} >
                 {/* Store main screens */}
+                <Route path="/" element={<Navigate to="/home" replace />} />
+
                 <Route path="/home" element={<BaseLayout />}>
                     <Route index element={<Home />} />
                     <Route path="product" element={<ProductList />} />

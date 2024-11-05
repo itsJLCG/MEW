@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, Collapse } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
-import { Box } from "@mui/system";
 import AddProductModal from "./AddProductModal";
 import UpdateProductModal from "./UpdateProductModal";
 import { confirm } from "material-ui-confirm"; // Import the Confirm component
@@ -15,6 +14,8 @@ const Products = () => {
   const [selectedSlug, setSelectedSlug] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
   const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
+  const [selectedRows, setSelectedRows] = useState([]); // State for selected rows
+  const [expandedRow, setExpandedRow] = useState(null); // Track expanded row
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,10 +101,28 @@ const Products = () => {
     }
   };
 
+  const deleteSelectedProducts = async () => {
+    try {
+      await Promise.all(selectedRows.map(slug => axios.delete(`http://localhost:4000/api/products/${slug}`)));
+      setData((prevData) => prevData.filter(row => !selectedRows.includes(row.slug)));
+      setDialogMessage("Selected products deleted successfully");
+    } catch (error) {
+      setDialogMessage(error.response?.data?.error || "Error deleting selected products");
+    } finally {
+      setDialogOpen(true); // Open dialog to show message
+    }
+  };
+
   const confirmDeleteProduct = (productSlug) => {
     confirm({ description: "Are you sure you want to delete this product?" })
       .then(() => deleteProduct(productSlug))
       .catch(() => console.log("Delete action canceled"));
+  };
+
+  const confirmDeleteSelected = () => {
+    confirm({ description: "Are you sure you want to delete the selected products?" })
+      .then(() => deleteSelectedProducts())
+      .catch(() => console.log("Bulk delete action canceled"));
   };
 
   const renderActions = (slug) => (
@@ -121,7 +140,43 @@ const Products = () => {
     </Box>
   );
 
+  const toggleExpandRow = (rowIndex) => {
+    setExpandedRow(expandedRow === rowIndex ? null : rowIndex);
+  };
+
   const columns = [
+    {
+      name: "select",
+      label: "Select",
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRender: (value, tableMeta) => (
+          <input
+            type="checkbox"
+            checked={selectedRows.includes(data[tableMeta.rowIndex]?.slug)}
+            onChange={() => {
+              const selectedIndex = selectedRows.indexOf(data[tableMeta.rowIndex]?.slug);
+              let newSelectedRows = [];
+
+              if (selectedIndex === -1) {
+                newSelectedRows = newSelectedRows.concat(selectedRows, data[tableMeta.rowIndex]?.slug);
+              } else if (selectedIndex === 0) {
+                newSelectedRows = newSelectedRows.concat(selectedRows.slice(1));
+              } else if (selectedIndex === selectedRows.length - 1) {
+                newSelectedRows = newSelectedRows.concat(selectedRows.slice(0, -1));
+              } else {
+                newSelectedRows = newSelectedRows.concat(
+                  selectedRows.slice(0, selectedIndex),
+                  selectedRows.slice(selectedIndex + 1),
+                );
+              }
+              setSelectedRows(newSelectedRows);
+            }}
+          />
+        ),
+      },
+    },
     {
       name: "id",
       label: "S.No.",
@@ -131,24 +186,8 @@ const Products = () => {
       },
     },
     {
-      name: "_id",
-      label: "Product ID",
-      options: {
-        filter: false,
-        sort: true,
-      },
-    },
-    {
       name: "name",
       label: "Name",
-      options: {
-        filter: true,
-        sort: true,
-      },
-    },
-    {
-      name: "description",
-      label: "Description",
       options: {
         filter: true,
         sort: true,
@@ -165,30 +204,6 @@ const Products = () => {
     {
       name: "stock",
       label: "Stock",
-      options: {
-        filter: true,
-        sort: true,
-      },
-    },
-    {
-      name: "categoryName",
-      label: "Category Name",
-      options: {
-        filter: true,
-        sort: true,
-      },
-    },
-    {
-      name: "brandName",
-      label: "Brand Name",
-      options: {
-        filter: true,
-        sort: true,
-      },
-    },
-    {
-      name: "slug",
-      label: "Slug",
       options: {
         filter: true,
         sort: true,
@@ -220,9 +235,56 @@ const Products = () => {
     responsive: "standard",
     download: true,
     print: true,
+    expandableRows: true,
+    expandableRowsOnClick: true,
+    renderExpandableRow: (rowData, rowMeta) => {
+      const rowIndex = rowMeta.rowIndex;
+      const row = data[rowIndex];
+      return (
+        <tr>
+          <td colSpan={rowData.length} style={{ padding: "16px 24px", backgroundColor: "#fff" }}>
+            <Box style={{ padding: "16px", borderRadius: "8px", backgroundColor: "#fff" }}>
+              <div style={{ marginBottom: "8px", display: "flex", alignItems: "center" }}>
+                <strong style={{ color: "#4cceac", width: "150px" }}>Product ID:</strong>
+                <span>{row._id}</span>
+              </div>
+              <div style={{ marginBottom: "8px", display: "flex", alignItems: "center" }}>
+                <strong style={{ color: "#4cceac", width: "150px" }}>Description:</strong>
+                <span>{row.description}</span>
+              </div>
+              <div style={{ marginBottom: "8px", display: "flex", alignItems: "center" }}>
+                <strong style={{ color: "#4cceac", width: "150px" }}>Brand:</strong>
+                <span>{row.brandName}</span>
+              </div>
+              <div style={{ marginBottom: "8px", display: "flex", alignItems: "center" }}>
+                <strong style={{ color: "#4cceac", width: "150px" }}>Category:</strong>
+                <span>{row.categoryName}</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <strong style={{ color: "#4cceac", width: "150px" }}>Slug:</strong>
+                <span>{row.slug}</span>
+              </div>
+            </Box>
+          </td>
+        </tr>
+      );      
+    },
+    onRowClick: (rowData, rowMeta) => {
+      const rowIndex = rowMeta.rowIndex;
+      toggleExpandRow(rowIndex); // Toggle expand on row click
+    },
+    selectableRows: "none",
+    responsive: "standard",
     rowsPerPage: 10,
     rowsPerPageOptions: [5, 10, 20],
     jumpToPage: true,
+    onRowSelect: (curRow, isSelected) => {
+      if (isSelected) {
+        setSelectedRows((prev) => [...prev, curRow.data[0].slug]);
+      } else {
+        setSelectedRows((prev) => prev.filter((slug) => slug !== curRow.data[0].slug));
+      }
+    },
   };
 
   const handleProductAdded = (newProduct) => {
@@ -241,6 +303,14 @@ const Products = () => {
         <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
           Add Product
         </Button>
+        <Button 
+        variant="contained" 
+        color="secondary" 
+        onClick={confirmDeleteSelected} 
+        disabled={selectedRows.length === 0} // Disable if no rows are selected
+        style={{ marginLeft: '10px' }}>
+        Delete Selected
+      </Button>
       </Box>
       <MUIDataTable title={"Product List"} data={data} columns={columns} options={options} />
       <AddProductModal open={modalOpen} handleClose={() => setModalOpen(false)} onProductAdded={handleProductAdded} />
