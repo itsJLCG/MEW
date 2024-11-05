@@ -116,7 +116,7 @@ const DescriptionTabsWrapper = styled.div`
   }
 `;
 
-const ProductDescriptionTab = () => {
+const ProductDescriptionTab = ({ product }) => {  // Accept product prop
   const [activeDesTab, setActiveDesTab] = useState(
     productDescriptionTabHeads[0].tabHead
   );
@@ -124,10 +124,11 @@ const ProductDescriptionTab = () => {
   const handleTabChange = (tabHead) => {
     setActiveDesTab(tabHead);
   };
+
   return (
     <DetailsContent>
       <Title titleText={"Product Description"} />
-      <div className="details-content-wrapper grid">
+      <div className="details-content-wrapper">
         <DescriptionTabsWrapper>
           <div className="tabs-heads flex items-center flex-wrap">
             {productDescriptionTabHeads.map((tab) => {
@@ -163,42 +164,7 @@ const ProductDescriptionTab = () => {
               }`}
             >
               <ContentStylings>
-                <p>
-                  100% Bio-washed Cotton makes the fabric extra soft & silky.
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Consectetur, odio. Infinite range of matte-finish HD prints.
-                </p>
-                <h4>Specifications:</h4>
-                <ul>
-                  <li>Fabric: Bio-washed Cotton</li>
-                  <li>Pattern: Printed</li>
-                  <li>Fit: Regular-fit</li>
-                  <li>Nect: Round Neck</li>
-                  <li>Sleeve: Half-sleeves</li>
-                  <li>Style: Casual Wear</li>
-                </ul>
-                <p>
-                  *Important: Please make sure that the mobile number is filled
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Provident, blanditiis.
-                </p>
-                <h4>Why should you shop at Outfit store?</h4>
-                <ul>
-                  <li>Guranteed Good material quality</li>
-                  <li>Rate convection stitsching.</li>
-                </ul>
-                <p>
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Beatae ipsam nostrum praesentium nulla deleniti, facere
-                  mollitia dolore laboriosam, non iure deserunt alias repellat
-                  perspiciatis asperiores ab quia nam tenetur voluptate sint
-                  animi! Vitae aliquam cupiditate iste fuga expedita? Odio,
-                  impedit?
-                </p>
-                <p>
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Pariatur, fugiat.
-                </p>
+                <p>{product.description}</p> {/* Use product.description */}
               </ContentStylings>
             </div>
             <div
@@ -222,5 +188,6 @@ const ProductDescriptionTab = () => {
     </DetailsContent>
   );
 };
+
 
 export default ProductDescriptionTab;

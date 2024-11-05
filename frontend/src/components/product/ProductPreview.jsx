@@ -120,5 +120,10 @@ const ProductPreview = ({ previewImages }) => {
 export default ProductPreview;
 
 ProductPreview.propTypes = {
-  previewImages: PropTypes.array,
+  previewImages: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      imgSource: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };

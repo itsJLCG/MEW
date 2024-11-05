@@ -143,7 +143,7 @@ const ProductListScreen = () => {
           </ProductsContentLeft>
           <ProductsContentRight>
             <div className="products-right-top flex items-center justify-between">
-              <h4 className="text-xxl">Women's Clothing</h4>
+              <h4 className="text-xxl">MEW Clothing</h4>
               <ul className="products-right-nav flex items-center justify-end flex-wrap">
                 <li>
                   <Link to="/" className="active text-lg font-semibold">New</Link>

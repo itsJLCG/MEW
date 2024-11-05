@@ -37,7 +37,7 @@ const CartEmptyScreen = () => {
               Your cart is empty and sad :(
             </p>
             <p className="text-gray italic">Add something to fill it!</p>
-            <BaseLinkGreen to="/home">Continue Shopping</BaseLinkGreen>
+            <BaseLinkGreen to="/home/product">Continue Shopping</BaseLinkGreen>
           </div>
         </div>
       </Container>

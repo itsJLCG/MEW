@@ -13,7 +13,7 @@ import AuthLayout from "./components/layout/AuthLayout";
 // Store Screens
 import Home from "./screens/home/HomeScreen";
 import ProductList from "./screens/product/ProductListScreen";
-// import ProductDetails from "./screens/product/ProductDetailsScreen";
+import ProductDetails from "./screens/product/ProductDetailsScreen";
 import Cart from "./screens/cart/CartScreen";
 import CartEmpty from "./screens/cart/CartEmptyScreen";
 import Checkout from "./screens/checkout/CheckoutScreen";
@@ -89,7 +89,7 @@ function App() {
                 <Route path="/home" element={<BaseLayout />}>
                     <Route index element={<Home />} />
                     <Route path="product" element={<ProductList />} />
-                    {/* <Route path="product/details" element={<ProductDetails />} /> */}
+                    <Route path="product/details/:slug" element={<ProductDetails />} />
                     <Route path="cart" element={<Cart />} />
                     <Route path="empty_cart" element={<CartEmpty />} />
                     <Route path="checkout" element={<Checkout />} />
