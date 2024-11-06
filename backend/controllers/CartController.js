@@ -1,13 +1,13 @@
 const Cart = require("../models/Carts");
-
 // Add an item to the cart
 exports.addToCart = async (req, res) => {
-  const { productId, quantity } = req.body;
-  const customerId = req.user.customerId;  // Fetch customerId linked to user ID
+  const { productId } = req.body;
+  const quantity = req.body.quantity || 1; // Use 1 as default if quantity is not provided
+  const customerId = req.user.customerId; // Fetch customerId linked to user ID
 
   // Validate required fields
-  if (!productId || !quantity) {
-    return res.status(400).json({ success: false, message: "Product ID and quantity are required" });
+  if (!productId) {
+    return res.status(400).json({ success: false, message: "Product ID is required" });
   }
 
   try {
@@ -21,14 +21,19 @@ exports.addToCart = async (req, res) => {
       return res.status(200).json({ success: true, message: "Item quantity updated in cart", cartItem });
     }
 
-    // Create a new cart item
+    // Create a new cart item if product doesn't exist in cart
     cartItem = new Cart({ customerId, productId, quantity });
     await cartItem.save();
-    res.status(201).json({ success: true, message: "Item added to cart", cartItem });
+    return res.status(201).json({ success: true, message: "Item added to cart", cartItem });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error adding item to cart", error: error.message });
+    // Return an error if there's an issue with saving
+    if (error.code === 11000) {  // Duplicate key error
+      return res.status(400).json({ success: false, message: "This product is already in the cart" });
+    }
+    return res.status(500).json({ success: false, message: "Error adding item to cart", error: error.message });
   }
 };
+
 
 // Delete an item from the cart
 exports.deleteFromCart = async (req, res) => {

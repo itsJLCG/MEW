@@ -144,7 +144,7 @@ const CartItem = ({ cartItem, onUpdate }) => {
           </td>
           <td>
             <span className="text-lg font-bold text-outerspace">
-              ${cartItem.productId.price}
+            ₱{cartItem.productId.price}
             </span>
           </td>
           <td>
@@ -161,7 +161,7 @@ const CartItem = ({ cartItem, onUpdate }) => {
           </td>
           <td>
             <span className="text-lg font-bold text-outerspace">
-              ${cartItem.productId.price *  quantity}
+            ₱{cartItem.productId.price *  quantity}
             </span>
           </td>
           <td>

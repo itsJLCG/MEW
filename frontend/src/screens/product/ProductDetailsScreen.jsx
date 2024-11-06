@@ -14,6 +14,7 @@ import ProductServices from "../../components/product/ProductServices";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { toast } from "react-hot-toast"; // Import toast from hot-toast
 
 
 import { BsStarFill, BsStarHalf, BsStar } from "react-icons/bs"; // Import star icons from react-icons
@@ -197,6 +198,7 @@ const ProductDetailsScreen = () => {
   const [categoryMap, setCategoryMap] = useState({});
   const [brandMap, setBrandMap] = useState({});
 
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -256,6 +258,40 @@ const ProductDetailsScreen = () => {
       return <BsStar key={index} className="text-yellow" />;
     }
   });
+  const handleAddToCart = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/cart/add", // Replace with your actual API endpoint
+        {
+          productId: product._id,
+          quantity: 1, // Default quantity set to 1
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assuming token-based auth
+          },
+        }
+      );
+  
+      // Check for a successful response
+      if (response.data.success) {
+        toast.success("Product added to cart!");
+      } else {
+        // Show the error toast if the product is already in the cart
+        if (response.data.message === "This product is already in the cart") {
+          toast.error("This product is already in the cart");
+        } else {
+          // Show general error toast in other cases
+          toast.error(response.data.message || "Something went wrong.");
+        }
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error.response ? error.response.data : error.message);
+      toast.error("Failed to add item to cart.");
+    }
+  };
+  
+
 
   const breadcrumbItems = [
     { label: "Shop", link: "" },
@@ -309,8 +345,8 @@ const ProductDetailsScreen = () => {
             </ProductColorWrapper>
             <div className="btn-and-price flex items-center flex-wrap">
               <BaseLinkGreen
-                to="/cart"
-                as={BaseLinkGreen}
+                onClick={handleAddToCart}
+                as="button"
                 className="prod-add-btn"
               >
                 <span className="prod-add-btn-icon">
