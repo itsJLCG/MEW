@@ -3,6 +3,10 @@ import styled from "styled-components";
 import { PropTypes } from "prop-types";
 import { Link } from "react-router-dom";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
+import { Delete } from "@mui/icons-material";
+
+import { useState } from "react";
+import axios from "axios";
 
 const CartTableRowWrapper = styled.tr`
   .cart-tbl {
@@ -76,7 +80,47 @@ const CartTableRowWrapper = styled.tr`
   }
 `;
 
-const CartItem = ({cartItem}) => {
+// CartItem component
+const CartItem = ({ cartItem, onUpdate }) => {
+  const [quantity, setQuantity] = useState(cartItem.quantity);
+
+  // Retrieve authToken from localStorage
+  const authToken = localStorage.getItem("authToken");
+
+  // Function to handle quantity update
+  const handleQuantityChange = async (newQuantity) => {
+    try {
+      const response = await axios.put(
+        "http://localhost:4000/api/cart/update-quantity",
+        {
+          productId: cartItem.productId._id,
+          quantity: newQuantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Include auth token
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setQuantity(newQuantity); // Update quantity in local state
+        if (onUpdate) onUpdate(); // Trigger any additional parent updates if needed
+      } else {
+        console.error("Failed to update quantity:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  };
+
+  // Increment and decrement handlers
+  const incrementQuantity = () => handleQuantityChange(quantity + 1);
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      handleQuantityChange(quantity - 1);
+    }
+  };
 
   return (
     <>
@@ -105,9 +149,9 @@ const CartItem = ({cartItem}) => {
           </td>
           <td>
             <div className="cart-tbl-qty">
-              <button className="qty-btn">−</button>
-              <span className="qty-value">{cartItem.quantity}</span>
-              <button className="qty-btn">+</button>
+              <button className="qty-btn" onClick={decrementQuantity}>−</button>
+              <span className="qty-value">{quantity}</span>
+              <button className="qty-btn" onClick={incrementQuantity}>+</button>
             </div>
           </td>
           <td>
@@ -117,13 +161,13 @@ const CartItem = ({cartItem}) => {
           </td>
           <td>
             <span className="text-lg font-bold text-outerspace">
-              ${cartItem.productId.price * cartItem.quantity}
+              ${cartItem.productId.price *  quantity}
             </span>
           </td>
           <td>
             <div className="cart-tbl-actions flex justify-center">
               <Link to="/" className="tbl-del-action text-red">
-                🗑 {/* Unicode trash icon */}
+                <Delete />
               </Link>
             </div>
           </td>

@@ -74,23 +74,50 @@ exports.getAllCartItems = async (req, res) => {
 };
 
 
+// Update an item's quantity in the cart
+exports.updateCartItemQuantity = async (req, res) => {
+  const { productId, quantity } = req.body;
+  const customerId = req.user.customerId;
+
+  // Validate required fields
+  if (!productId || quantity === undefined) {
+    return res.status(400).json({ success: false, message: "Product ID and quantity are required" });
+  }
+
+  try {
+    // Find the cart item for the given customer and product
+    const cartItem = await Cart.findOne({ customerId, productId });
+
+    if (!cartItem) {
+      return res.status(404).json({ success: false, message: "Item not found in cart" });
+    }
+
+    // Update the item's quantity
+    cartItem.quantity = quantity;
+    await cartItem.save();
+
+    res.status(200).json({ success: true, message: "Item quantity updated", cartItem });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating item quantity", error: error.message });
+  }
+};
 
 
 
-// // Get all cart items for a specific customer
-// exports.getCartByCustomerId = async (req, res) => {
-//   const { customerId } = req.params;
+// Get all cart items for a specific customer
+exports.getCartByCustomerId = async (req, res) => {
+  const { customerId } = req.params;
 
-//   try {
-//     // Find all items in the cart for the given customer ID
-//     const cartItems = await Cart.find({ customerId }).populate('productId');  // Populate product details if needed
+  try {
+    // Find all items in the cart for the given customer ID
+    const cartItems = await Cart.find({ customerId }).populate('productId');  // Populate product details if needed
 
-//     if (cartItems.length === 0) {
-//       return res.status(404).json({ success: false, message: "No items found in cart for this customer" });
-//     }
+    if (cartItems.length === 0) {
+      return res.status(404).json({ success: false, message: "No items found in cart for this customer" });
+    }
 
-//     res.status(200).json({ success: true, cartItems });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "Error fetching cart items for customer", error });
-//   }
-// };
+    res.status(200).json({ success: true, cartItems });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error fetching cart items for customer", error });
+  }
+};
