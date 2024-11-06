@@ -258,7 +258,7 @@ const ProductDetailsScreen = () => {
       return <BsStar key={index} className="text-yellow" />;
     }
   });
-  const handleAddToCart = async () => {
+  const handleAddToCart = async () => { 
     try {
       const response = await axios.post(
         "http://localhost:4000/api/cart/add", // Replace with your actual API endpoint
@@ -286,10 +286,23 @@ const ProductDetailsScreen = () => {
         }
       }
     } catch (error) {
-      console.error("Error adding to cart:", error.response ? error.response.data : error.message);
-      toast.error("Failed to add item to cart.");
+      // Check if it's a specific error from the backend
+      if (error.response && error.response.data) {
+        // Handle specific backend errors
+        const errorMessage = error.response.data.message || error.message;
+        if (errorMessage.includes("already in the cart")) {
+          toast.error("This product is already in the cart");
+        } else {
+          toast.error(errorMessage);
+        }
+      } else {
+        // Handle general errors or no response
+        console.error("Error adding to cart:", error.message);
+        toast.error("Failed to add item to cart.");
+      }
     }
   };
+  
   
 
 

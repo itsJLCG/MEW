@@ -7,8 +7,11 @@ import { Delete } from "@mui/icons-material";
 
 import { useState } from "react";
 import axios from "axios";
+import toast from "react-hot-toast"; 
 
 const CartTableRowWrapper = styled.tr`
+  transition: opacity 0.5s ease-out;
+  opacity: ${(props) => (props.isDeleted ? 0 : 1)};
   .cart-tbl {
     &-prod {
       grid-template-columns: 80px auto;
@@ -83,10 +86,42 @@ const CartTableRowWrapper = styled.tr`
 // CartItem component
 const CartItem = ({ cartItem, onUpdate }) => {
   const [quantity, setQuantity] = useState(cartItem.quantity);
+  const [isDeleted, setIsDeleted] = useState(false); 
 
   // Retrieve authToken from localStorage
   const authToken = localStorage.getItem("authToken");
+  // Function to handle item deletion
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:4000/api/cart/delete",
+        {
+          data: { productId: cartItem.productId._id }, // Send productId in the body for deletion
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Include auth token
+          },
+        }
+      );
 
+      if (response.data.success) {
+        // Trigger the fade-out animation
+        setIsDeleted(true);
+        
+        // Show success toast message
+        toast.success("Item successfully deleted from cart!");
+
+        // Wait for the animation to finish before calling the parent callback
+        setTimeout(() => {
+          if (onDelete) onDelete(cartItem._id);
+        }, 500); // Duration of the fade-out animation (500ms)
+      } else {
+        console.error("Failed to delete item:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Error deleting item from cart."); // Show error toast
+    }
+  };
   // Function to handle quantity update
   const handleQuantityChange = async (newQuantity) => {
     try {
@@ -124,7 +159,9 @@ const CartItem = ({ cartItem, onUpdate }) => {
 
   return (
     <>
-        <CartTableRowWrapper key={cartItem._id}>
+        <CartTableRowWrapper 
+         isDeleted={isDeleted}
+         key={cartItem._id}>
           <td>
             <div className="cart-tbl-prod grid">
               <div className="cart-prod-img">
@@ -166,9 +203,9 @@ const CartItem = ({ cartItem, onUpdate }) => {
           </td>
           <td>
             <div className="cart-tbl-actions flex justify-center">
-              <Link to="/" className="tbl-del-action text-red">
-                <Delete />
-              </Link>
+              <button onClick={handleDelete} className="tbl-del-action text-red">
+                 <Delete />
+              </button>
             </div>
           </td>
         </CartTableRowWrapper>
@@ -178,3 +215,4 @@ const CartItem = ({ cartItem, onUpdate }) => {
 };
 
 export default CartItem;
+

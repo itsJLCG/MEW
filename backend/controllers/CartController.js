@@ -15,10 +15,8 @@ exports.addToCart = async (req, res) => {
     let cartItem = await Cart.findOne({ customerId, productId });
 
     if (cartItem) {
-      // If item exists, update the quantity
-      cartItem.quantity += quantity;
-      await cartItem.save();
-      return res.status(200).json({ success: true, message: "Item quantity updated in cart", cartItem });
+      // If item exists, return a specific message
+      return res.status(400).json({ success: false, message: "This product is already in the cart" });
     }
 
     // Create a new cart item if product doesn't exist in cart
@@ -26,13 +24,11 @@ exports.addToCart = async (req, res) => {
     await cartItem.save();
     return res.status(201).json({ success: true, message: "Item added to cart", cartItem });
   } catch (error) {
-    // Return an error if there's an issue with saving
-    if (error.code === 11000) {  // Duplicate key error
-      return res.status(400).json({ success: false, message: "This product is already in the cart" });
-    }
-    return res.status(500).json({ success: false, message: "Error adding item to cart", error: error.message });
+    console.error("Error adding to cart:", error);
+    return res.status(500).json({ success: false, message: "Failed to add item to cart." });
   }
 };
+
 
 
 // Delete an item from the cart
