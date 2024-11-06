@@ -58,16 +58,10 @@ const CartScreen = () => {
       <Container>
         <Breadcrumb items={breadcrumbItems} />
         <div className="cart-head">
-          <p className="text-base text-gray">
-            Please fill in the fields below and click place order to complete
-            your purchase!
-          </p>
-          <p className="text-gray text-base">
-            Already registered?
-            <Link to="/sign_in" className="text-sea-green font-medium">
-              &nbsp;Please login here.
-            </Link>
-          </p>
+          <h1 className="text-4xl font-semibold text-outerspace">Shopping Cart</h1>
+          <Link to="/home/product" className="text-sea-green">
+            Continue Shopping
+          </Link>
         </div>
         <CartContent className="grid items-start">
           <div className="cart-content-left">

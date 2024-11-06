@@ -11,6 +11,15 @@ import ProductDescriptionTab from "../../components/product/ProductDescriptionTa
 import ProductSimilar from "../../components/product/ProductSimilar";
 import ProductServices from "../../components/product/ProductServices";
 
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { toast } from "react-hot-toast"; // Import toast from hot-toast
+
+
+import { BsStarFill, BsStarHalf, BsStar } from "react-icons/bs"; // Import star icons from react-icons
+
+
 const DetailsScreenWrapper = styled.main`
   margin: 40px 0;
 `;
@@ -182,18 +191,120 @@ const ProductColorWrapper = styled.div`
 `;
 
 const ProductDetailsScreen = () => {
-  const stars = Array.from({ length: 5 }, (_, index) => (
-    <span
-      key={index}
-      className={`text-yellow ${
-        index < Math.floor(product_one.rating)
-          ? "bi bi-star-fill"
-          : index + 0.5 === product_one.rating
-          ? "bi bi-star-half"
-          : "bi bi-star"
-      }`}
-    ></span>
-  ));
+  const staticRating = 4.5; // Replace with a static rating value
+  const staticCommentsCount = 12; // Replace with a static comments count value
+  const { slug } = useParams();
+  const [product, setProduct] = useState(null);
+  const [categoryMap, setCategoryMap] = useState({});
+  const [brandMap, setBrandMap] = useState({});
+
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`http://localhost:4000/api/products/${slug}`);
+        setProduct(response.data.product);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      }
+    };
+
+    fetchProduct();
+  }, [slug]);
+
+  useEffect(() => {
+    // Fetch categories and brands to create mappings
+    const fetchCategoriesAndBrands = async () => {
+      try {
+        const [categoriesResponse, brandsResponse] = await Promise.all([
+          axios.get("http://localhost:4000/api/categories/all"),
+          axios.get("http://localhost:4000/api/brands/all"),
+        ]);
+
+        // Map categories and brands by ID for quick lookup
+        const categories = categoriesResponse.data.categories;
+        const brands = brandsResponse.data.brands;
+
+        const categoryMapping = Object.fromEntries(categories.map((category) => [category._id, category.name]));
+        const brandMapping = Object.fromEntries(brands.map((brand) => [brand._id, brand.name]));
+
+        setCategoryMap(categoryMapping);
+        setBrandMap(brandMapping);
+      } catch (error) {
+        console.error("Error fetching categories and brands:", error);
+      }
+    };
+
+    fetchCategoriesAndBrands();
+  }, []);
+
+  
+
+  if (!product) {
+    return <p>Loading...</p>;
+  }
+
+  const formattedImages = product.image.map((imgSrc, index) => ({
+    id: `img-${index}`, // Create a unique ID for each image
+    imgSource: imgSrc, // Assign the image source
+  }));
+  
+  const stars = Array.from({ length: 5 }, (_, index) => {
+    if (index < Math.floor(staticRating)) {
+      return <BsStarFill key={index} className="text-yellow" />;
+    } else if (index < staticRating) {
+      return <BsStarHalf key={index} className="text-yellow" />;
+    } else {
+      return <BsStar key={index} className="text-yellow" />;
+    }
+  });
+  const handleAddToCart = async () => { 
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/cart/add", // Replace with your actual API endpoint
+        {
+          productId: product._id,
+          quantity: 1, // Default quantity set to 1
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`, // Assuming token-based auth
+          },
+        }
+      );
+  
+      // Check for a successful response
+      if (response.data.success) {
+        toast.success("Product added to cart!");
+      } else {
+        // Show the error toast if the product is already in the cart
+        if (response.data.message === "This product is already in the cart") {
+          toast.error("This product is already in the cart");
+        } else {
+          // Show general error toast in other cases
+          toast.error(response.data.message || "Something went wrong.");
+        }
+      }
+    } catch (error) {
+      // Check if it's a specific error from the backend
+      if (error.response && error.response.data) {
+        // Handle specific backend errors
+        const errorMessage = error.response.data.message || error.message;
+        if (errorMessage.includes("already in the cart")) {
+          toast.error("This product is already in the cart");
+        } else {
+          toast.error(errorMessage);
+        }
+      } else {
+        // Handle general errors or no response
+        console.error("Error adding to cart:", error.message);
+        toast.error("Failed to add item to cart.");
+      }
+    }
+  };
+  
+  
+
 
   const breadcrumbItems = [
     { label: "Shop", link: "" },
@@ -206,66 +317,49 @@ const ProductDetailsScreen = () => {
       <Container>
         <Breadcrumb items={breadcrumbItems} />
         <DetailsContent className="grid">
-          <ProductPreview previewImages={product_one.previewImages} />
+          <ProductPreview previewImages={formattedImages}/>
           <ProductDetailsWrapper>
-            <h2 className="prod-title">{product_one.title}</h2>
+            <h2 className="prod-title">{product.name}</h2>
             <div className="flex items-center rating-and-comments flex-wrap">
               <div className="prod-rating flex items-center">
                 {stars}
-                <span className="text-gray text-xs">{product_one.rating}</span>
+                <span className="text-gray text-xs">{staticRating}</span>
               </div>
               <div className="prod-comments flex items-start">
                 <span className="prod-comment-icon text-gray">
                   <i className="bi bi-chat-left-text"></i>
                 </span>
                 <span className="prod-comment-text text-sm text-gray">
-                  {product_one.comments_count} comment(s)
+                {staticCommentsCount} comment(s)
                 </span>
               </div>
             </div>
 
             <ProductSizeWrapper>
               <div className="prod-size-top flex items-center flex-wrap">
-                <p className="text-lg font-semibold text-outerspace">
-                  Select size
+                <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: defaultTheme.color_outerspace, marginRight: '16px' }}>
+                  Brand:  
+                  <span style={{ fontWeight: 'normal' }}>
+                    {brandMap[product.brand] || "Unknown Brand"}
+                  </span>
                 </p>
-                <Link to="/" className="text-lg text-gray font-medium">
-                  Size Guide &nbsp; <i className="bi bi-arrow-right"></i>
-                </Link>
-              </div>
-              <div className="prod-size-list flex items-center">
-                {product_one.sizes.map((size, index) => (
-                  <div className="prod-size-item" key={index}>
-                    <input type="radio" name="size" />
-                    <span className="flex items-center justify-center font-medium text-outerspace text-sm">
-                      {size}
-                    </span>
-                  </div>
-                ))}
               </div>
             </ProductSizeWrapper>
+
             <ProductColorWrapper>
-              <div className="prod-colors-top flex items-center flex-wrap">
-                <p className="text-lg font-semibold text-outerspace">
-                  Colours Available
+              <div className="prod-colors-top flex items-center flex-wrap" style={{ marginTop: '16px' }}>
+                <p style={{ fontSize: '1.125rem', fontWeight: 'bold', color: defaultTheme.color_outerspace }}>
+                  Category:  
+                    <span style={{ fontWeight: 'normal' }}>
+                         {categoryMap[product.category] || "Unknown Category"}
+                  </span>
                 </p>
-              </div>
-              <div className="prod-colors-list flex items-center">
-                {product_one?.colors?.map((color, index) => (
-                  <div className="prod-colors-item" key={index}>
-                    <input type="radio" name="colors" />
-                    <span
-                      className="prod-colorbox"
-                      style={{ background: `${color}` }}
-                    ></span>
-                  </div>
-                ))}
               </div>
             </ProductColorWrapper>
             <div className="btn-and-price flex items-center flex-wrap">
               <BaseLinkGreen
-                to="/cart"
-                as={BaseLinkGreen}
+                onClick={handleAddToCart}
+                as="button"
                 className="prod-add-btn"
               >
                 <span className="prod-add-btn-icon">
@@ -274,13 +368,13 @@ const ProductDetailsScreen = () => {
                 <span className="prod-add-btn-text">Add to cart</span>
               </BaseLinkGreen>
               <span className="prod-price text-xl font-bold text-outerspace">
-                {currencyFormat(product_one.price)}
+                {currencyFormat(product.price)}
               </span>
             </div>
             <ProductServices />
           </ProductDetailsWrapper>
         </DetailsContent>
-        <ProductDescriptionTab />
+        <ProductDescriptionTab  product={product}/>
         <ProductSimilar />
       </Container>
     </DetailsScreenWrapper>

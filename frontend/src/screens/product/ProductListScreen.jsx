@@ -151,6 +151,10 @@ const ProductListScreen = () => {
             <ProductFilter />
           </ProductsContentLeft>
           <ProductsContentRight>
+            <div className="products-right-top flex items-center justify-between">
+              <h4 className="text-xxl">MEW Clothing</h4>
+              <ul className="products-right-nav flex items-center justify-end flex-wrap">
+                <li>
             <div className="products-right-top">
               <h4 className="text-xxl">Women's Clothing</h4>
               <div className="products-right-nav flex items-center">

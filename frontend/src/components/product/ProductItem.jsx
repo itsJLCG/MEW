@@ -58,7 +58,7 @@ const ProductCardWrapper = styled.div`
 `;
 
 const ProductItem = ({ product }) => {
-  const { _id, name, price, brandName, categoryName, image } = product;
+  const { _id, name, price, brandName, categoryName, image, slug } = product;
 
   return (
     <ProductCardWrapper>
@@ -91,15 +91,18 @@ const ProductItem = ({ product }) => {
         )}
       </div>
       <div className="product-info">
-        <Link to={`/product/${_id}`}>
+        {/* <Link to={`/product/${_id}`}>
           <p className="font-bold">{name}</p>
-        </Link>
+        </Link> */}
         <div className="flex items-center justify-between text-sm font-medium">
         <span style={{ color: 'green' }}>{brandName}</span>
         <span style={{ color: 'purple' }}>{categoryName}</span> 
           <span className="text-outerspace font-bold">₱ {price.toFixed(2)}</span>
         </div>
       </div>
+       <Link to={`/home/product/details/${slug}`}>
+        <button>VIEW DETAILS</button>
+      </Link>
     </ProductCardWrapper>
   );
 };
@@ -112,6 +115,7 @@ ProductItem.propTypes = {
     brandName: PropTypes.string,
     categoryName: PropTypes.string,
     image: PropTypes.arrayOf(PropTypes.string),
+    slug: PropTypes.string.isRequired,
   }).isRequired,
 };
 

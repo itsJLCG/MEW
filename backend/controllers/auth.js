@@ -143,20 +143,28 @@ exports.Login = async function (req, res) {
             return res.status(401).json({ message: 'Invalid Email or Password' });
         }
 
+        // Retrieve the associated customer
+        const customer = await Customer.findOne({ user: user._id });
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer details not found' });
+        }
+
         // Generate JWT token
         const token = user.getJwtToken();
 
-        // Return the token and user information
+        // Return the token, user information, and customer ID
         return res.status(201).json({
             success: true,
             user,
-            token
+            token,
+            customerId: customer._id
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
     }
-}
+};
+
 
 // // Uncommented example: Get user profile function
 // exports.getUserProfile = async function (req, res, next) {
@@ -267,3 +275,4 @@ exports.Login = async function (req, res) {
 //         res.status(500).json({ message: "Error updating profile", error: error.message });
 //     }
 // }
+

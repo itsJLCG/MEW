@@ -1,9 +1,17 @@
+
 import styled from "styled-components";
 import { PropTypes } from "prop-types";
 import { Link } from "react-router-dom";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
+import { Delete } from "@mui/icons-material";
+
+import { useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast"; 
 
 const CartTableRowWrapper = styled.tr`
+  transition: opacity 0.5s ease-out;
+  opacity: ${(props) => (props.isDeleted ? 0 : 1)};
   .cart-tbl {
     &-prod {
       grid-template-columns: 80px auto;
@@ -27,7 +35,7 @@ const CartTableRowWrapper = styled.tr`
         border: 1px solid ${defaultTheme.color_platinum};
         border-radius: 50%;
         cursor: pointer;
-        font-size: 18px; /* Larger font for visibility */
+        font-size: 18px;
         font-weight: bold;
         transition: all 0.3s ease;
 
@@ -55,6 +63,11 @@ const CartTableRowWrapper = styled.tr`
         margin-right: 4px;
       }
     }
+
+    .category-text {
+      color: ${defaultTheme.color_sea_green}; /* Custom color for category */
+      font-weight: bold;
+    }
   }
 
   .cart-prod-img {
@@ -70,61 +83,136 @@ const CartTableRowWrapper = styled.tr`
   }
 `;
 
-const CartItem = ({ cartItem }) => {
+// CartItem component
+const CartItem = ({ cartItem, onUpdate }) => {
+  const [quantity, setQuantity] = useState(cartItem.quantity);
+  const [isDeleted, setIsDeleted] = useState(false); 
+
+  // Retrieve authToken from localStorage
+  const authToken = localStorage.getItem("authToken");
+  // Function to handle item deletion
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:4000/api/cart/delete",
+        {
+          data: { productId: cartItem.productId._id }, // Send productId in the body for deletion
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Include auth token
+          },
+        }
+      );
+
+      if (response.data.success) {
+        // Trigger the fade-out animation
+        setIsDeleted(true);
+        
+        // Show success toast message
+        toast.success("Item successfully deleted from cart!");
+
+        // Wait for the animation to finish before calling the parent callback
+        setTimeout(() => {
+          if (onDelete) onDelete(cartItem._id);
+        }, 500); // Duration of the fade-out animation (500ms)
+      } else {
+        console.error("Failed to delete item:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      toast.error("Error deleting item from cart."); // Show error toast
+    }
+  };
+  // Function to handle quantity update
+  const handleQuantityChange = async (newQuantity) => {
+    try {
+      const response = await axios.put(
+        "http://localhost:4000/api/cart/update-quantity",
+        {
+          productId: cartItem.productId._id,
+          quantity: newQuantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`, // Include auth token
+          },
+        }
+      );
+
+      if (response.data.success) {
+        setQuantity(newQuantity); // Update quantity in local state
+        if (onUpdate) onUpdate(); // Trigger any additional parent updates if needed
+      } else {
+        console.error("Failed to update quantity:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  };
+
+  // Increment and decrement handlers
+  const incrementQuantity = () => handleQuantityChange(quantity + 1);
+  const decrementQuantity = () => {
+    if (quantity > 1) {
+      handleQuantityChange(quantity - 1);
+    }
+  };
+
   return (
-    <CartTableRowWrapper key={cartItem.id}>
-      <td>
-        <div className="cart-tbl-prod grid">
-          <div className="cart-prod-img">
-            <img src={cartItem.imgSource} className="object-fit-cover" alt="" />
-          </div>
-          <div className="cart-prod-info">
-            <h4 className="text-base">{cartItem.title}</h4>
-            <p className="text-sm text-gray inline-flex">
-              <span className="font-semibold">Color: </span> {cartItem.color}
-            </p>
-            <p className="text-sm text-gray inline-flex">
-              <span className="font-semibold">Size:</span>
-              {cartItem.size}
-            </p>
-          </div>
-        </div>
-      </td>
-      <td>
-        <span className="text-lg font-bold text-outerspace">
-          ${cartItem.price}
-        </span>
-      </td>
-      <td>
-        <div className="cart-tbl-qty">
-          <button className="qty-btn">−</button> {/* Using Unicode minus */}
-          <span className="qty-value">{cartItem.quantity}</span>
-          <button className="qty-btn">+</button> {/* Using Unicode plus */}
-        </div>
-      </td>
-      <td>
-        <span className="cart-tbl-shipping uppercase text-silver font-bold">
-          {cartItem.shipping === 0 ? "Free" : cartItem.shipping}
-        </span>
-      </td>
-      <td>
-        <span className="text-lg font-bold text-outerspace">
-          ${cartItem.price * cartItem.quantity}
-        </span>
-      </td>
-      <td>
-        <div className="cart-tbl-actions flex justify-center">
-          <Link to="/" className="tbl-del-action text-red">
-            🗑 {/* Using Unicode trash icon as a placeholder */}
-          </Link>
-        </div>
-      </td>
-    </CartTableRowWrapper>
+    <>
+        <CartTableRowWrapper 
+         isDeleted={isDeleted}
+         key={cartItem._id}>
+          <td>
+            <div className="cart-tbl-prod grid">
+              <div className="cart-prod-img">
+                <img src={cartItem.productId.image[0]} className="object-fit-cover" alt="" />
+              </div>
+              <div className="cart-prod-info">
+                <h4 className="text-base">{cartItem.productId.name}</h4>
+                <p className="text-sm text-gray inline-flex">
+                  <span className="font-semibold">Category: </span> 
+                  <span className="category-text">{cartItem.productId.category}</span>
+                </p>
+                <p className="text-sm text-gray inline-flex">
+                  <span className="font-semibold">Brand:</span> {cartItem.productId.brand}
+                </p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span className="text-lg font-bold text-outerspace">
+            ₱{cartItem.productId.price}
+            </span>
+          </td>
+          <td>
+            <div className="cart-tbl-qty">
+              <button className="qty-btn" onClick={decrementQuantity}>−</button>
+              <span className="qty-value">{quantity}</span>
+              <button className="qty-btn" onClick={incrementQuantity}>+</button>
+            </div>
+          </td>
+          <td>
+            <span className="cart-tbl-shipping uppercase text-silver font-bold">
+              {cartItem.shipping === 0 ? "Free" : `$${cartItem.shipping}`}
+            </span>
+          </td>
+          <td>
+            <span className="text-lg font-bold text-outerspace">
+            ₱{cartItem.productId.price *  quantity}
+            </span>
+          </td>
+          <td>
+            <div className="cart-tbl-actions flex justify-center">
+              <button onClick={handleDelete} className="tbl-del-action text-red">
+                 <Delete />
+              </button>
+            </div>
+          </td>
+        </CartTableRowWrapper>
+  
+    </>
   );
 };
 
 export default CartItem;
 
-CartItem.propTypes = {
-  cartItem: PropTypes.object,
-};

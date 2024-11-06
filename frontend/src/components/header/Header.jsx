@@ -13,6 +13,8 @@ import LogoutIcon from '@mui/icons-material/Logout'; // Import Logout Icon
 import { useNavigate } from 'react-router-dom'; 
 import { toast } from 'react-hot-toast';
 
+import { useEffect, useState } from 'react';
+
 const LogoutButton = styled(LogoutIcon)`
   cursor: pointer;
   margin-left: 20px;
@@ -160,12 +162,36 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Hook to programmatically navigate
+  const [hasCart, setHasCart] = useState(localStorage.getItem('hasCart') === 'true');
 
+  useEffect(() => {
+    const updateHasCart = () => {
+      const cartStatus = localStorage.getItem('hasCart') === 'true';
+      console.log("Updating hasCart to:", cartStatus);
+      setHasCart(cartStatus);
+    };
+
+    // Listen for local storage changes within the same tab
+    window.addEventListener('storage', updateHasCart);
+
+    // Update `hasCart` on component load to capture any initial state
+    updateHasCart();
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener('storage', updateHasCart);
+    };
+  }, []);
+  
   const handleLogout = () => {
     localStorage.removeItem('authToken'); // Remove the authToken
+    localStorage.removeItem('hasCart'); 
+    setHasCart(false);
     toast.success("Logout successfully!");
     navigate('/auth/sign_in'); // Redirect to login page
   };
+
+ 
 
   return (
     <HeaderMainWrapper className="header flex items-center">
@@ -243,14 +269,11 @@ const Header = () => {
               <img src={staticImages.user} alt="" />
             </Link>
             <Link
-              to="/home/cart"
-              className={`icon-link ${
-                location.pathname === "/home/cart" ? "active" : ""
-              } inline-flex items-center justify-center`}
+              to={hasCart ? "/home/cart" : "/home/empty_cart"}
+              className={`icon-link ${location.pathname === "/home/cart" ? "active" : ""} inline-flex items-center justify-center`}
             >
               <img src={staticImages.cart} alt="" />
             </Link>
-
             {localStorage.getItem('authToken') && ( // Check if authToken exists
               <LogoutButton 
                 onClick={handleLogout} // Handle logout on click
