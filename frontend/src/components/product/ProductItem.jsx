@@ -100,7 +100,7 @@ const ProductItem = ({ product }) => {
           <span className="text-outerspace font-bold">₱ {price.toFixed(2)}</span>
         </div>
       </div>
-      <Link to={`/home/product/details/${slug}`}>
+       <Link to={`/home/product/details/${slug}`}>
         <button>VIEW DETAILS</button>
       </Link>
     </ProductCardWrapper>

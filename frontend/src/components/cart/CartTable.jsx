@@ -2,6 +2,9 @@ import styled from "styled-components";
 import CartItem from "./CartItem";
 import { PropTypes } from "prop-types";
 import { breakpoints } from "../../styles/themes/default";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 
 const ScrollbarXWrapper = styled.div`
   overflow-x: scroll;
@@ -57,7 +60,30 @@ const CartTableWrapper = styled.table`
   }
 `;
 
-const CartTable = ({ cartItems }) => {
+const CartTable = () => {
+  const [cartItems, setCartItems] = useState([]);
+
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      const token = localStorage.getItem("authToken");
+
+      try {
+        const response = await axios.get("http://localhost:4000/api/cart/all", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.success) {
+          setCartItems(response.data.cartItems);
+        } else {
+          console.error("Failed to fetch cart items:", response.data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching cart items:", error.message);
+      }
+    };
+
+    fetchCartItems();
+  }, []);
+
   const CART_TABLE_HEADS = [
     "Product details",
     "Price",
@@ -85,9 +111,9 @@ const CartTable = ({ cartItems }) => {
           </tr>
         </thead>
         <tbody>
-          {cartItems.map((cartItem) => {
-            return <CartItem key={cartItem.id} cartItem={cartItem} />;
-          })}
+          {cartItems.map((cartItem) => (
+             <CartItem key={cartItem._id} cartItem={cartItem} />
+          ))}
         </tbody>
       </CartTableWrapper>
     </ScrollbarXWrapper>
@@ -96,6 +122,4 @@ const CartTable = ({ cartItems }) => {
 
 export default CartTable;
 
-CartTable.propTypes = {
-  cartItems: PropTypes.array,
-};
+

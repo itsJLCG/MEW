@@ -1,3 +1,4 @@
+
 import styled from "styled-components";
 import { PropTypes } from "prop-types";
 import { Link } from "react-router-dom";
@@ -27,7 +28,7 @@ const CartTableRowWrapper = styled.tr`
         border: 1px solid ${defaultTheme.color_platinum};
         border-radius: 50%;
         cursor: pointer;
-        font-size: 18px; /* Larger font for visibility */
+        font-size: 18px;
         font-weight: bold;
         transition: all 0.3s ease;
 
@@ -55,6 +56,11 @@ const CartTableRowWrapper = styled.tr`
         margin-right: 4px;
       }
     }
+
+    .category-text {
+      color: ${defaultTheme.color_sea_green}; /* Custom color for category */
+      font-weight: bold;
+    }
   }
 
   .cart-prod-img {
@@ -70,61 +76,61 @@ const CartTableRowWrapper = styled.tr`
   }
 `;
 
-const CartItem = ({ cartItem }) => {
+const CartItem = ({cartItem}) => {
+
   return (
-    <CartTableRowWrapper key={cartItem.id}>
-      <td>
-        <div className="cart-tbl-prod grid">
-          <div className="cart-prod-img">
-            <img src={cartItem.imgSource} className="object-fit-cover" alt="" />
-          </div>
-          <div className="cart-prod-info">
-            <h4 className="text-base">{cartItem.title}</h4>
-            <p className="text-sm text-gray inline-flex">
-              <span className="font-semibold">Color: </span> {cartItem.color}
-            </p>
-            <p className="text-sm text-gray inline-flex">
-              <span className="font-semibold">Size:</span>
-              {cartItem.size}
-            </p>
-          </div>
-        </div>
-      </td>
-      <td>
-        <span className="text-lg font-bold text-outerspace">
-          ${cartItem.price}
-        </span>
-      </td>
-      <td>
-        <div className="cart-tbl-qty">
-          <button className="qty-btn">−</button> {/* Using Unicode minus */}
-          <span className="qty-value">{cartItem.quantity}</span>
-          <button className="qty-btn">+</button> {/* Using Unicode plus */}
-        </div>
-      </td>
-      <td>
-        <span className="cart-tbl-shipping uppercase text-silver font-bold">
-          {cartItem.shipping === 0 ? "Free" : cartItem.shipping}
-        </span>
-      </td>
-      <td>
-        <span className="text-lg font-bold text-outerspace">
-          ${cartItem.price * cartItem.quantity}
-        </span>
-      </td>
-      <td>
-        <div className="cart-tbl-actions flex justify-center">
-          <Link to="/" className="tbl-del-action text-red">
-            🗑 {/* Using Unicode trash icon as a placeholder */}
-          </Link>
-        </div>
-      </td>
-    </CartTableRowWrapper>
+    <>
+        <CartTableRowWrapper key={cartItem._id}>
+          <td>
+            <div className="cart-tbl-prod grid">
+              <div className="cart-prod-img">
+                <img src={cartItem.productId.image[0]} className="object-fit-cover" alt="" />
+              </div>
+              <div className="cart-prod-info">
+                <h4 className="text-base">{cartItem.productId.name}</h4>
+                <p className="text-sm text-gray inline-flex">
+                  <span className="font-semibold">Category: </span> 
+                  <span className="category-text">{cartItem.productId.category}</span>
+                </p>
+                <p className="text-sm text-gray inline-flex">
+                  <span className="font-semibold">Brand:</span> {cartItem.productId.brand}
+                </p>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span className="text-lg font-bold text-outerspace">
+              ${cartItem.productId.price}
+            </span>
+          </td>
+          <td>
+            <div className="cart-tbl-qty">
+              <button className="qty-btn">−</button>
+              <span className="qty-value">{cartItem.quantity}</span>
+              <button className="qty-btn">+</button>
+            </div>
+          </td>
+          <td>
+            <span className="cart-tbl-shipping uppercase text-silver font-bold">
+              {cartItem.shipping === 0 ? "Free" : `$${cartItem.shipping}`}
+            </span>
+          </td>
+          <td>
+            <span className="text-lg font-bold text-outerspace">
+              ${cartItem.productId.price * cartItem.quantity}
+            </span>
+          </td>
+          <td>
+            <div className="cart-tbl-actions flex justify-center">
+              <Link to="/" className="tbl-del-action text-red">
+                🗑 {/* Unicode trash icon */}
+              </Link>
+            </div>
+          </td>
+        </CartTableRowWrapper>
+  
+    </>
   );
 };
 
 export default CartItem;
-
-CartItem.propTypes = {
-  cartItem: PropTypes.object,
-};
