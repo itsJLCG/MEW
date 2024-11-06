@@ -273,8 +273,6 @@ const Products = () => {
       const rowIndex = rowMeta.rowIndex;
       toggleExpandRow(rowIndex); // Toggle expand on row click
     },
-    selectableRows: "none",
-    responsive: "standard",
     rowsPerPage: 10,
     rowsPerPageOptions: [5, 10, 20],
     jumpToPage: true,

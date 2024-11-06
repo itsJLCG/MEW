@@ -40,8 +40,8 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
   const validationSchema = Yup.object().shape({
     name: Yup.string().required("Product name is required"),
     description: Yup.string().required("Description is required"),
-    price: Yup.number().required("Price is required").positive("Price must be positive"),
-    stock: Yup.number().required("Stock is required").min(1, "Stock must be at least 1"),
+    price: Yup.number().required("Price is required").positive("Price must be positive").typeError("Price must be a number"),
+    stock: Yup.number().required("Stock is required").min(1, "Stock must be at least 1").typeError("Stock must be an integer"),
     category: Yup.string().required("Please select a category"),
     brand: Yup.string().required("Please select a brand"),
   });
@@ -136,7 +136,6 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 margin="normal"
                 label="Price"
                 name="price"
-                type="number"
                 value={values.price}
                 onChange={handleChange}
                 helperText={<ErrorMessage name="price" />}
@@ -148,7 +147,6 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 margin="normal"
                 label="Stock"
                 name="stock"
-                type="number"
                 value={values.stock}
                 onChange={handleChange}
                 helperText={<ErrorMessage name="stock" />}
