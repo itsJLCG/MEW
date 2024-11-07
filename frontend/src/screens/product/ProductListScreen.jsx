@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { Container, ContentStylings, Section } from "../../styles/styles";
@@ -89,16 +89,25 @@ const DescriptionContent = styled.div`
   }
 `;
 
+const ScrollableProductList = styled.div`
+  height: 80vh; // Adjust height as necessary
+  overflow-y: auto;
+`;
+
+
 const ProductListScreen = () => {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 9;
+  const [displayedProducts, setDisplayedProducts] = useState([]);
+  const bottomRef = useRef(null);
 
   const breadcrumbItems = [
     { label: "Home", link: "/home" },
     { label: "Products", link: "" },
   ];
 
+  // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -126,6 +135,7 @@ const ProductListScreen = () => {
         }));
 
         setProducts(productsWithNames);
+        setDisplayedProducts(productsWithNames.slice(0, productsPerPage));
       } catch (error) {
         console.error("Failed to fetch data", error);
       }
@@ -134,13 +144,38 @@ const ProductListScreen = () => {
     fetchProducts();
   }, []);
 
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
-
+  // Handle pagination change
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
+    const startIdx = (value - 1) * productsPerPage;
+    setDisplayedProducts(products.slice(startIdx, startIdx + productsPerPage));
   };
+
+  // Infinite scroll observer
+  const infiniteScrollCallback = useCallback((entries) => {
+    const [entry] = entries;
+    if (entry.isIntersecting) {
+      const nextIndex = displayedProducts.length % products.length;
+      const nextBatch = products.slice(
+        nextIndex,
+        nextIndex + productsPerPage
+      );
+      setDisplayedProducts((prev) => [...prev, ...nextBatch]);
+    }
+  }, [products, displayedProducts]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(infiniteScrollCallback, {
+      root: null,
+      rootMargin: "0px",
+      threshold: 1.0,
+    });
+
+    if (bottomRef.current) observer.observe(bottomRef.current);
+    return () => {
+      if (bottomRef.current) observer.unobserve(bottomRef.current);
+    };
+  }, [infiniteScrollCallback]);
 
   return (
     <main className="page-py-spacing">
@@ -155,22 +190,25 @@ const ProductListScreen = () => {
               <h4 className="text-xxl">MEW Clothing</h4>
               <ul className="products-right-nav flex items-center justify-end flex-wrap">
                 <li>
-            <div className="products-right-top">
-              <h4 className="text-xxl">Women's Clothing</h4>
-              <div className="products-right-nav flex items-center">
                   <Link to="/" className="active text-lg font-semibold">New</Link>
+                </li>
+                <li>
                   <Link to="/" className="text-lg font-semibold">Recommended</Link>
-                <Pagination
-                  count={Math.ceil(products.length / productsPerPage)}
-                  page={currentPage}
-                  onChange={handlePageChange}
-                  color="primary"
-                  size="small"
-                  sx={{ marginLeft: "16px" }} // Adjust spacing if needed
-                />
-              </div>
+                </li>
+              </ul>
+              <Pagination
+                count={Math.ceil(products.length / productsPerPage)}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size="small"
+                sx={{ marginLeft: "16px" }}
+              />
             </div>
-            <ProductList products={currentProducts} />
+            <ScrollableProductList>
+              <ProductList products={displayedProducts} />
+            </ScrollableProductList>
+            <div ref={bottomRef} style={{ height: "1px" }} />
           </ProductsContentRight>
         </ProductsContent>
       </Container>
@@ -180,31 +218,7 @@ const ProductListScreen = () => {
             <Title titleText={"Clothing for Everyone Online"} />
             <ContentStylings className="text-base content-stylings">
               <h4>Reexplore Clothing Collection Online at Achats.</h4>
-              <p>
-                Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sed,
-                molestiae ex atque similique consequuntur ipsum sapiente
-                inventore magni ducimus sequi nemo id, numquam officiis fugit
-                pariatur esse, totam facere ullam?
-              </p>
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Consequatur nam magnam placeat nesciunt ipsa amet, vel illo
-                veritatis eligendi voluptatem!
-              </p>
-              <h4>
-                One-stop Destination to Shop Every Clothing for Everyone: MEW.
-              </h4>
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo
-                iure doloribus optio aliquid id. Quos quod delectus, dolor est
-                ab exercitationem odio quae quas qui doloremque. Esse natus
-                minima ratione reiciendis nostrum, quam, quisquam modi aut,
-                neque hic provident dolorem.
-              </p>
-              <p>
-                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quasi
-                laborum dolorem deserunt aperiam voluptate mollitia.
-              </p>
+              <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit...</p>
               <Link to="/home">See More</Link>
             </ContentStylings>
           </DescriptionContent>

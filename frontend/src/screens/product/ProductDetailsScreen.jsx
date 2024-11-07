@@ -10,6 +10,7 @@ import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import ProductDescriptionTab from "../../components/product/ProductDescriptionTab";
 import ProductSimilar from "../../components/product/ProductSimilar";
 import ProductServices from "../../components/product/ProductServices";
+import Swal from "sweetalert2"; 
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -201,10 +202,26 @@ const ProductDetailsScreen = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      Swal.fire({
+        title: 'Loading Product...',
+        text: 'Please wait while we fetch product details.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading(); // Show loading spinner
+        }
+      });
+
       try {
         const response = await axios.get(`http://localhost:4000/api/products/${slug}`);
         setProduct(response.data.product);
+        Swal.close(); // Close the loading alert once the product is fetched
       } catch (error) {
+        Swal.close(); // Close loading alert if an error occurs
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Failed to fetch product details. Please try again later.',
+        });
         console.error("Error fetching product:", error);
       }
     };
@@ -213,15 +230,21 @@ const ProductDetailsScreen = () => {
   }, [slug]);
 
   useEffect(() => {
-    // Fetch categories and brands to create mappings
     const fetchCategoriesAndBrands = async () => {
+      Swal.fire({
+        title: 'Loading Categories and Brands...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       try {
         const [categoriesResponse, brandsResponse] = await Promise.all([
           axios.get("http://localhost:4000/api/categories/all"),
           axios.get("http://localhost:4000/api/brands/all"),
         ]);
 
-        // Map categories and brands by ID for quick lookup
         const categories = categoriesResponse.data.categories;
         const brands = brandsResponse.data.brands;
 
@@ -230,7 +253,14 @@ const ProductDetailsScreen = () => {
 
         setCategoryMap(categoryMapping);
         setBrandMap(brandMapping);
+        Swal.close(); // Close the loading alert once data is fetched
       } catch (error) {
+        Swal.close();
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Failed to load categories or brands.',
+        });
         console.error("Error fetching categories and brands:", error);
       }
     };
@@ -238,10 +268,8 @@ const ProductDetailsScreen = () => {
     fetchCategoriesAndBrands();
   }, []);
 
-  
-
   if (!product) {
-    return <p>Loading...</p>;
+    return null; // You may add a fallback component here
   }
 
   const formattedImages = product.image.map((imgSrc, index) => ({
