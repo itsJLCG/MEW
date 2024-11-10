@@ -162,26 +162,31 @@ const Header = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Hook to programmatically navigate
-  const [hasCart, setHasCart] = useState(localStorage.getItem('hasCart') === 'true');
-
+  const [hasCart, setHasCart] = useState(false);
+  
   useEffect(() => {
-    const updateHasCart = () => {
+    const checkCartStatus = () => {
       const cartStatus = localStorage.getItem('hasCart') === 'true';
-      console.log("Updating hasCart to:", cartStatus);
       setHasCart(cartStatus);
     };
 
-    // Listen for local storage changes within the same tab
-    window.addEventListener('storage', updateHasCart);
+    // Sync state with localStorage on load and changes
+    checkCartStatus();
 
-    // Update `hasCart` on component load to capture any initial state
-    updateHasCart();
+    const storageListener = () => {
+      checkCartStatus();
+    };
 
-    // Cleanup listener on unmount
+    // Listen for localStorage changes to update state dynamically
+    window.addEventListener('storage', storageListener);
+
+    // Cleanup on unmount
     return () => {
-      window.removeEventListener('storage', updateHasCart);
+      window.removeEventListener('storage', storageListener);
     };
   }, []);
+
+
   
   const handleLogout = () => {
     localStorage.removeItem('authToken'); // Remove the authToken

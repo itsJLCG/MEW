@@ -198,6 +198,7 @@ const ProductDetailsScreen = () => {
   const [product, setProduct] = useState(null);
   const [categoryMap, setCategoryMap] = useState({});
   const [brandMap, setBrandMap] = useState({});
+  const [hasCart, setHasCart] = useState(false);
 
 
   useEffect(() => {
@@ -305,6 +306,10 @@ const ProductDetailsScreen = () => {
       // Check for a successful response
       if (response.data.success) {
         toast.success("Product added to cart!");
+        localStorage.setItem('hasCart', 'true'); // Indicate cart has items
+        setHasCart(true); // Update the state to show the cart icon
+        
+        
       } else {
         // Show the error toast if the product is already in the cart
         if (response.data.message === "This product is already in the cart") {

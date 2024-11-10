@@ -62,6 +62,7 @@
 
   const CartTable = () => {
     const [cartItems, setCartItems] = useState([]);
+    const [hasCart, setHasCart] = useState(false);
 
     useEffect(() => {
       const fetchCartItems = async () => {

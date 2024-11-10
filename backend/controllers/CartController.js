@@ -108,21 +108,23 @@ exports.updateCartItemQuantity = async (req, res) => {
 };
 
 
-
 // Get all cart items for a specific customer
 exports.getCartByCustomerId = async (req, res) => {
   const { customerId } = req.params;
 
   try {
-    // Find all items in the cart for the given customer ID
-    const cartItems = await Cart.find({ customerId }).populate('productId');  // Populate product details if needed
+    const cartItems = await Cart.find({ customerId }).populate('productId');
 
-    if (cartItems.length === 0) {
-      return res.status(404).json({ success: false, message: "No items found in cart for this customer" });
-    }
-
-    res.status(200).json({ success: true, cartItems });
+    // Return success with empty list if no items are found
+    return res.status(200).json({
+      success: true,
+      cartItems
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error fetching cart items for customer", error });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching cart items for customer",
+      error: error.message
+    });
   }
 };

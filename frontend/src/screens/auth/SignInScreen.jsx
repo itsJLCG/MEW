@@ -150,6 +150,7 @@ const SignInScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasCart, setHasCart] = useState(false);
 
   const navigate = useNavigate(); 
 
@@ -199,7 +200,10 @@ const SignInScreen = () => {
             const hasCart = cartResponse.data && cartResponse.data.cartItems.length > 0;
             
             // Store cart status in localStorage for access in Header
+            // Update localStorage with cart status
             localStorage.setItem('hasCart', hasCart);
+            setHasCart(hasCart); // Update local state if needed
+
           } catch (error) {
             console.error("Error fetching cart data:", error);
           }

@@ -87,6 +87,7 @@ const CartTableRowWrapper = styled.tr`
 const CartItem = ({ cartItem, onUpdate }) => {
   const [quantity, setQuantity] = useState(cartItem.quantity);
   const [isDeleted, setIsDeleted] = useState(false); 
+  const [hasCart, setHasCart] = useState(false);
 
   // Retrieve authToken from localStorage
   const authToken = localStorage.getItem("authToken");
@@ -114,6 +115,19 @@ const CartItem = ({ cartItem, onUpdate }) => {
         setTimeout(() => {
           if (onDelete) onDelete(cartItem._id);
         }, 500); // Duration of the fade-out animation (500ms)
+
+        const updatedCartResponse = await axios.get(
+          `http://localhost:4000/api/cart/${cartItem.customerId}`,
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        );
+
+        if (updatedCartResponse.data.cartItems.length === 0) {
+          localStorage.setItem("hasCart", "false"); // Set hasCart flag to false
+          setHasCart(false); // Update local state
+          window.location.reload();
+        }
       } else {
         console.error("Failed to delete item:", response.data.message);
       }
