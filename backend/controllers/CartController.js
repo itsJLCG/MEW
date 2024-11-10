@@ -1,8 +1,10 @@
 const Cart = require("../models/Carts");
+
 // Add an item to the cart
+
 exports.addToCart = async (req, res) => {
   const { productId } = req.body;
-  const quantity = req.body.quantity || 1; // Use 1 as default if quantity is not provided
+  const quantity = req.body.quantity || 1; // Default to 1 if quantity is not provided
   const customerId = req.user.customerId; // Fetch customerId linked to user ID
 
   // Validate required fields
@@ -15,8 +17,10 @@ exports.addToCart = async (req, res) => {
     let cartItem = await Cart.findOne({ customerId, productId });
 
     if (cartItem) {
-      // If item exists, return a specific message
-      return res.status(400).json({ success: false, message: "This product is already in the cart" });
+      // If item exists, increment the quantity
+      cartItem.quantity += quantity;
+      await cartItem.save();
+      return res.status(200).json({ success: true, message: "Item quantity updated in cart", cartItem });
     }
 
     // Create a new cart item if product doesn't exist in cart

@@ -286,6 +286,7 @@ const ProductDetailsScreen = () => {
       return <BsStar key={index} className="text-yellow" />;
     }
   });
+  
   const handleAddToCart = async () => { 
     try {
       const response = await axios.post(
