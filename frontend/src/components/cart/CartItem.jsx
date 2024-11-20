@@ -1,4 +1,3 @@
-
 import styled from "styled-components";
 import { PropTypes } from "prop-types";
 import { Link } from "react-router-dom";
@@ -84,7 +83,7 @@ const CartTableRowWrapper = styled.tr`
 `;
 
 // CartItem component
-const CartItem = ({ cartItem, onUpdate }) => {
+const CartItem = ({ cartItem, onUpdate, onDelete }) => {
   const [quantity, setQuantity] = useState(cartItem.quantity);
   const [isDeleted, setIsDeleted] = useState(false); 
   const [hasCart, setHasCart] = useState(false);
@@ -206,11 +205,6 @@ const CartItem = ({ cartItem, onUpdate }) => {
             </div>
           </td>
           <td>
-            <span className="cart-tbl-shipping uppercase text-silver font-bold">
-              {cartItem.shipping === 0 ? "Free" : `$${cartItem.shipping}`}
-            </span>
-          </td>
-          <td>
             <span className="text-lg font-bold text-outerspace">
             ₱{cartItem.productId.price *  quantity}
             </span>
@@ -229,4 +223,3 @@ const CartItem = ({ cartItem, onUpdate }) => {
 };
 
 export default CartItem;
-
