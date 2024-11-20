@@ -186,8 +186,6 @@ const Header = () => {
     };
   }, []);
 
-
-  
   const handleLogout = () => {
     localStorage.removeItem('authToken'); // Remove the authToken
     localStorage.removeItem('hasCart'); 
@@ -196,7 +194,14 @@ const Header = () => {
     navigate('/auth/sign_in'); // Redirect to login page
   };
 
- 
+  const handleCartClick = () => {
+    const cartStatus = localStorage.getItem('hasCart') === 'true';
+    if (cartStatus) {
+      navigate('/home/cart');
+    } else {
+      navigate('/home/empty_cart');
+    }
+  };
 
   return (
     <HeaderMainWrapper className="header flex items-center">
@@ -273,12 +278,12 @@ const Header = () => {
             >
               <img src={staticImages.user} alt="" />
             </Link>
-            <Link
-              to={hasCart ? "/home/cart" : "/home/empty_cart"}
+            <div
+              onClick={handleCartClick}
               className={`icon-link ${location.pathname === "/home/cart" ? "active" : ""} inline-flex items-center justify-center`}
             >
               <img src={staticImages.cart} alt="" />
-            </Link>
+            </div>
             {localStorage.getItem('authToken') && ( // Check if authToken exists
               <LogoutButton 
                 onClick={handleLogout} // Handle logout on click
