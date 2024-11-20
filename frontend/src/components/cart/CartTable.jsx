@@ -61,6 +61,9 @@ const CartTableWrapper = styled.table`
 const CartTable = ({ cartItems, setCartItems, onUpdate }) => {
   // Define the onDelete function
   const onDelete = (cartItemId) => {
+    if (cartItems.length === 1) {
+      localStorage.setItem('hasCart', 'false');
+    }
     setCartItems((prevItems) =>
       prevItems.filter((item) => item._id !== cartItemId)
     );
