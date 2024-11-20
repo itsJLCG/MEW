@@ -2,8 +2,7 @@ import styled from "styled-components";
 import CartItem from "./CartItem";
 import { PropTypes } from "prop-types";
 import { breakpoints } from "../../styles/themes/default";
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React from "react";
 
 const ScrollbarXWrapper = styled.div`
   overflow-x: scroll;
@@ -59,36 +58,13 @@ const CartTableWrapper = styled.table`
   }
 `;
 
-const CartTable = () => {
-  const [cartItems, setCartItems] = useState([]);
-  const [hasCart, setHasCart] = useState(false);
-
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      const token = localStorage.getItem("authToken");
-
-      try {
-        const response = await axios.get("http://localhost:4000/api/cart/all", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (response.data.success) {
-          setCartItems(response.data.cartItems);
-        } else {
-          console.error("Failed to fetch cart items:", response.data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching cart items:", error.message);
-      }
-    };
-
-    fetchCartItems();
-  }, []);
-
+const CartTable = ({ cartItems, setCartItems, onUpdate }) => {
   // Define the onDelete function
   const onDelete = (cartItemId) => {
     setCartItems((prevItems) =>
       prevItems.filter((item) => item._id !== cartItemId)
     );
+    onUpdate();
   };
 
   const CART_TABLE_HEADS = [
@@ -118,12 +94,18 @@ const CartTable = () => {
         </thead>
         <tbody>
           {cartItems.map((cartItem) => (
-            <CartItem onDelete={onDelete} key={cartItem._id} cartItem={cartItem} />
+            <CartItem onDelete={onDelete} onUpdate={onUpdate} key={cartItem._id} cartItem={cartItem} />
           ))}
         </tbody>
       </CartTableWrapper>
     </ScrollbarXWrapper>
   );
+};
+
+CartTable.propTypes = {
+  cartItems: PropTypes.array.isRequired,
+  setCartItems: PropTypes.func.isRequired,
+  onUpdate: PropTypes.func.isRequired,
 };
 
 export default CartTable;

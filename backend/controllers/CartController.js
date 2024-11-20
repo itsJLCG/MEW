@@ -64,8 +64,12 @@ exports.getAllCartItems = async (req, res) => {
     // Find all cart items associated with the customerId
     const cartItems = await Cart.find({ customerId })
       .populate({
-        path: 'productId',
-        select: 'name description price stock image category brand', // Select specific fields from Product
+        path: 'productId', // Select specific fields from Product
+        select: 'name description price stock image category brand', 
+        populate: [
+          {path : 'category', select: 'name'},
+          {path: 'brand', select: 'name'}
+        ]
       });
 
     if (cartItems.length === 0) {

@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { BaseButtonGreen } from "../../styles/button";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
+import PropTypes from "prop-types";
 
 const CartSummaryWrapper = styled.div`
   background-color: ${defaultTheme.color_flash_white};
@@ -31,22 +32,30 @@ const CartSummaryWrapper = styled.div`
   }
 `;
 
-const CartSummary = () => {
+const CartSummary = ({ cartItems }) => {
+  let subtotal = 0;
+  for (let i = 0; i < cartItems.length; i++) {
+    subtotal += cartItems[i].productId.price * cartItems[i].quantity;
+  }
+
+  const shippingCost = 5.00; // Example shipping cost
+  const grandTotal = subtotal + shippingCost;
+
   return (
     <CartSummaryWrapper>
       <ul className="summary-list">
         <li className="summary-item flex justify-between">
           <span className="font-medium text-outerspace">Sub Total</span>
-          <span className="font-medium text-outerspace">$513.00</span>
+          <span className="font-medium text-outerspace">₱{subtotal.toFixed(2)}</span>
         </li>
         <li className="summary-item flex justify-between">
           <span className="font-medium text-outerspace">Shipping</span>
-          <span className="font-medium text-outerspace">$5.00</span>
+          <span className="font-medium text-outerspace">₱{shippingCost.toFixed(2)}</span>
         </li>
         <li className="summary-item flex justify-between">
           <span className="font-medium text-outerspace">Grand Total</span>
           <span className="summary-item-value font-bold text-outerspace">
-            $518.00
+            ₱{grandTotal.toFixed(2)}
           </span>
         </li>
       </ul>
@@ -57,5 +66,8 @@ const CartSummary = () => {
   );
 };
 
-export default CartSummary;
+CartSummary.propTypes = {
+  cartItems: PropTypes.array.isRequired,
+};
 
+export default CartSummary;
