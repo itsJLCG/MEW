@@ -8,9 +8,10 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast"; 
 
+// Updated: Use $isDeleted to avoid passing it to the DOM element
 const CartTableRowWrapper = styled.tr`
   transition: opacity 0.5s ease-out;
-  opacity: ${(props) => (props.isDeleted ? 0 : 1)};
+  opacity: ${(props) => (props.$isDeleted ? 0 : 1)};
   .cart-tbl {
     &-prod {
       grid-template-columns: 80px auto;
@@ -172,9 +173,7 @@ const CartItem = ({ cartItem, onUpdate, onDelete }) => {
 
   return (
     <>
-        <CartTableRowWrapper 
-         isDeleted={isDeleted}
-         key={cartItem._id}>
+       <CartTableRowWrapper $isDeleted={isDeleted} key={cartItem._id}>
           <td>
             <div className="cart-tbl-prod grid">
               <div className="cart-prod-img">
@@ -220,6 +219,12 @@ const CartItem = ({ cartItem, onUpdate, onDelete }) => {
   
     </>
   );
+};
+
+CartItem.propTypes = {
+  cartItem: PropTypes.object.isRequired,
+  onUpdate: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default CartItem;
