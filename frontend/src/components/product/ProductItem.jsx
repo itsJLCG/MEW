@@ -4,16 +4,20 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import Carousel from "react-material-ui-carousel";
 import { commonCardStyles } from "../../styles/card";
-import { breakpoints, defaultTheme } from "../../styles/themes/default";
+import { defaultTheme } from "../../styles/themes/default";
 
 const ProductCardWrapper = styled.div`
   ${commonCardStyles}
+  text-decoration: none;
+  color: inherit;
+  display: block;
 
   .product-img {
     position: relative;
     overflow: hidden;
     width: 270px;
     height: 270px;
+    margin: auto;
   }
 
   .carousel-slide {
@@ -51,61 +55,113 @@ const ProductCardWrapper = styled.div`
       }
 
       i {
-        font-size: 1.2rem; /* Adjust icon size */
+        font-size: 1.2rem;
       }
+    }
+  }
+
+  .product-info {
+    padding: 16px;
+
+    .product-name {
+      font-size: 1.1rem;
+      color: ${defaultTheme.color_black};
+      margin-bottom: 8px;
+    }
+
+    .info-highlight {
+      display: inline-block;
+      margin: 0 5px;
+      padding: 5px 10px;
+      border-radius: 12px;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .brand-highlight {
+      background-color: #10b9b0;
+    }
+
+    .category-highlight {
+      background-color: #8fdf82;
+    }
+
+    .product-price {
+      display: block;
+      margin-top: 8px;
+      font-size: 1.2rem;
+      color: ${defaultTheme.color_black};
     }
   }
 `;
 
+const ProductCardLink = styled(Link)`
+  display: block;
+`;
+
 const ProductItem = ({ product }) => {
-  const { _id, name, price, brandName, categoryName, image, slug } = product;
+  const { name, price, brandName, categoryName, image, slug } = product;
+
+  // Prevent link navigation when wishlist icon or carousel button is clicked
+  const handleClick = (e) => {
+    e.stopPropagation(); // Stops the click event from bubbling up to the ProductCardLink
+  };
 
   return (
     <ProductCardWrapper>
-      <div className="product-img">
-        {Array.isArray(image) && image.length > 0 ? (
-          <Carousel autoPlay={false} indicators={false} navButtonsAlwaysVisible>
-            {image.map((imageUrl, index) => (
-              <div key={index} className="carousel-slide">
-                <img
-                  src={imageUrl || "/path/to/default-image.jpg"}
-                  alt={`Product Image ${index + 1}`}
-                />
-                <button type="button" className="product-wishlist-icon">
-                  <i className="bi bi-heart"></i>
-                </button>
-              </div>
-            ))}
-          </Carousel>
-        ) : (
-          <div className="carousel-slide">
-            <img
-              src={image?.[0] || "/path/to/default-image.jpg"}
-              alt={name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-            <button type="button" className="product-wishlist-icon">
-              <i className="bi bi-heart"></i>
-            </button>
-          </div>
-        )}
-      </div>
-      <div className="product-info">
-        {/* <Link to={`/product/${_id}`}>
-          <p className="font-bold">{name}</p>
-        </Link> */}
-        <div className="flex items-center justify-between text-sm font-medium">
-        <span style={{ color: 'green' }}>{brandName}</span>
-        <span style={{ color: 'purple' }}>{categoryName}</span> 
-          <span className="text-outerspace font-bold">₱ {price.toFixed(2)}</span>
+      <ProductCardLink to={`/home/product/details/${slug}`}>
+        <div className="product-img" onClick={handleClick}>
+          {/* Only render carousel if more than 1 image */}
+          {Array.isArray(image) && image.length > 1 ? (
+            <Carousel
+              autoPlay={false}
+              indicators={false}
+              navButtonsAlwaysVisible
+              onClick={handleClick}  // Prevent link navigation when clicking carousel itself
+            >
+              {image.map((imageUrl, index) => (
+                <div key={index} className="carousel-slide">
+                  <img
+                    src={imageUrl || "/path/to/default-image.jpg"}
+                    alt={`Product Image ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    className="product-wishlist-icon"
+                    onClick={handleClick}  // Prevents navigation when clicking wishlist button
+                  >
+                    <i className="bi bi-heart"></i>
+                  </button>
+                </div>
+              ))}
+            </Carousel>
+          ) : (
+            <div className="carousel-slide">
+              <img
+                src={image?.[0] || "/path/to/default-image.jpg"}
+                alt={name}
+              />
+              <button
+                type="button"
+                className="product-wishlist-icon"
+                onClick={handleClick}  // Prevents navigation when clicking wishlist button
+              >
+                <i className="bi bi-heart"></i>
+              </button>
+            </div>
+          )}
         </div>
+      </ProductCardLink>
+      <div className="product-info">
+        <div className="product-name">{name}</div>
+        <span className="info-highlight brand-highlight">{brandName}</span>
+        <span className="info-highlight category-highlight">{categoryName}</span>
+        <span className="product-price">₱ {price.toFixed(2)}</span>
       </div>
-       <Link to={`/home/product/details/${slug}`}>
-        <button>VIEW DETAILS</button>
-      </Link>
     </ProductCardWrapper>
   );
 };
+
 
 ProductItem.propTypes = {
   product: PropTypes.shape({

@@ -8,9 +8,8 @@ import ProductList from "../../components/product/ProductList";
 import Title from "../../components/common/Title";
 import ProductFilter from "../../components/product/ProductFilter";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
-import Pagination from "@mui/material/Pagination"; // Import Pagination
 
-const ProductsContent = styled.div` 
+const ProductsContent = styled.div`
   grid-template-columns: 320px auto;
   margin: 20px 0;
   @media (max-width: ${breakpoints.xl}) {
@@ -90,24 +89,27 @@ const DescriptionContent = styled.div`
 `;
 
 const ScrollableProductList = styled.div`
-  height: 80vh; // Adjust height as necessary
+  height: 170vh; // Adjust height as necessary
   overflow-y: auto;
 `;
 
-
 const ProductListScreen = () => {
   const [products, setProducts] = useState([]);
+  const [displayedProducts, setDisplayedProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedPriceRange, setSelectedPriceRange] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 9;
-  const [displayedProducts, setDisplayedProducts] = useState([]);
   const bottomRef = useRef(null);
+  const isFilterActive = selectedCategory || selectedBrand || selectedPriceRange;
 
   const breadcrumbItems = [
     { label: "Home", link: "/home" },
     { label: "Products", link: "" },
   ];
 
-  // Fetch products on component mount
+  // Fetch products, categories, and brands on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -144,27 +146,53 @@ const ProductListScreen = () => {
     fetchProducts();
   }, []);
 
-  // Handle pagination change
-  const handlePageChange = (event, value) => {
-    setCurrentPage(value);
-    const startIdx = (value - 1) * productsPerPage;
-    setDisplayedProducts(products.slice(startIdx, startIdx + productsPerPage));
-  };
+  // Filter products based on selected category, brand, or price range
+  useEffect(() => {
+    const filterProducts = () => {
+      let filtered = [...products];
+      if (selectedCategory) {
+        filtered = filtered.filter(
+          (product) => product.category === selectedCategory
+        );
+      }
+      if (selectedBrand) {
+        filtered = filtered.filter((product) => product.brand === selectedBrand);
+      }
+      if (selectedPriceRange) {
+        filtered = filtered.filter(
+          (product) =>
+            product.price >= selectedPriceRange[0] &&
+            product.price <= selectedPriceRange[1]
+        );
+      }
+      // Reset the displayed products when filters are applied
+      setDisplayedProducts(filtered.slice(0, productsPerPage)); // Start from first filtered page
+    };
+  
+    filterProducts();
+  }, [selectedCategory, selectedBrand, selectedPriceRange, products]);
 
-  // Infinite scroll observer
-  const infiniteScrollCallback = useCallback((entries) => {
-    const [entry] = entries;
-    if (entry.isIntersecting) {
-      const nextIndex = displayedProducts.length % products.length;
-      const nextBatch = products.slice(
-        nextIndex,
-        nextIndex + productsPerPage
-      );
-      setDisplayedProducts((prev) => [...prev, ...nextBatch]);
-    }
-  }, [products, displayedProducts]);
+  // Infinite scroll observer callback
+  const infiniteScrollCallback = useCallback(
+    (entries) => {
+      if (isFilterActive) return; // Disable infinite scroll if filters are active
+
+      const [entry] = entries;
+      if (entry.isIntersecting) {
+        const nextIndex = displayedProducts.length % displayedProducts.length;
+        const nextBatch = displayedProducts.slice(
+          nextIndex,
+          nextIndex + productsPerPage
+        );
+        setDisplayedProducts((prev) => [...prev, ...nextBatch]);
+      }
+    },
+    [displayedProducts, isFilterActive]
+  );
 
   useEffect(() => {
+    if (isFilterActive) return; // Skip setting up observer if filters are active
+
     const observer = new IntersectionObserver(infiniteScrollCallback, {
       root: null,
       rootMargin: "0px",
@@ -175,7 +203,7 @@ const ProductListScreen = () => {
     return () => {
       if (bottomRef.current) observer.unobserve(bottomRef.current);
     };
-  }, [infiniteScrollCallback]);
+  }, [infiniteScrollCallback, isFilterActive]);
 
   return (
     <main className="page-py-spacing">
@@ -183,7 +211,14 @@ const ProductListScreen = () => {
         <Breadcrumb items={breadcrumbItems} />
         <ProductsContent className="grid items-start">
           <ProductsContentLeft>
-            <ProductFilter />
+            <ProductFilter 
+              selectedCategory={selectedCategory}
+              selectedBrand={selectedBrand}
+              setSelectedCategory={setSelectedCategory}
+              setSelectedBrand={setSelectedBrand}
+              setSelectedPriceRange={setSelectedPriceRange}
+              selectedPriceRange={selectedPriceRange}
+            />
           </ProductsContentLeft>
           <ProductsContentRight>
             <div className="products-right-top flex items-center justify-between">
@@ -196,14 +231,6 @@ const ProductListScreen = () => {
                   <Link to="/" className="text-lg font-semibold">Recommended</Link>
                 </li>
               </ul>
-              <Pagination
-                count={Math.ceil(products.length / productsPerPage)}
-                page={currentPage}
-                onChange={handlePageChange}
-                color="primary"
-                size="small"
-                sx={{ marginLeft: "16px" }}
-              />
             </div>
             <ScrollableProductList>
               <ProductList products={displayedProducts} />
@@ -217,9 +244,10 @@ const ProductListScreen = () => {
           <DescriptionContent>
             <Title titleText={"Clothing for Everyone Online"} />
             <ContentStylings className="text-base content-stylings">
-              <h4>Reexplore Clothing Collection Online at Achats.</h4>
-              <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit...</p>
-              <Link to="/home">See More</Link>
+              <h4>Discover Fashion That Fits Your Lifestyle: Step into a world of style with our curated collection of clothing designed for every moment. From casual wear to make you feel at ease to elegant ensembles for life’s special occasions, we bring you timeless designs that cater to your individuality. Explore the latest trends and classic essentials, all crafted with quality and comfort in mind.</h4>
+              <p>
+                Our curated collection brings you clothing for all occasions, designed to help you look and feel your best. Choose from a wide range of dresses, tops, and bottoms, carefully selected to ensure both comfort and elegance. Whether you're heading to the office, attending a party, or relaxing on the weekend, we’ve got you covered. From cozy sweaters to trendy jackets, our versatile pieces are perfect for mixing and matching to create the ideal look. The best part? You can shop directly online, choose, and have your perfect outfit delivered straight to your doorstep. Whether you’re looking for a cozy sweater, an elegant dress, or a statement jacket, we’ve got something for every wardrobe.
+              </p>
             </ContentStylings>
           </DescriptionContent>
         </Container>
