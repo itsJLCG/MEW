@@ -1,3 +1,7 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import logo from '../../assets/images/logos.png';
+
 import {
   Box,
   Button,
@@ -9,311 +13,214 @@ import {
 import {
   Header,
   StatBox,
-  LineChart,
-  ProgressCircle,
-  BarChart,
-  GeographyChart,
 } from "../../components";
 import {
   DownloadOutlined,
   Email,
-  PersonAdd,
   PointOfSale,
+  PersonAdd,
   Traffic,
+  BarChartOutlined,
+  BrandingWatermark,
+  CalendarTodayOutlined,
+  Category,
+  ContactsOutlined,
+  DashboardOutlined,
+  Discount,
+  DonutLargeOutlined,
+  HelpOutlineOutlined,
+  MapOutlined,
+  MenuOutlined,
+  PeopleAltOutlined,
+  PersonOutlined,
+  ProductionQuantityLimits,
+  ReceiptOutlined,
+  TimelineOutlined,
+  WavesOutlined,
 } from "@mui/icons-material";
 import { tokens } from "../../theme";
-import { mockTransactions } from "../../data/mockData";
 
 function Dashboard() {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isXlDevices = useMediaQuery("(min-width: 1260px)");
   const isMdDevices = useMediaQuery("(min-width: 724px)");
-  const isXsDevices = useMediaQuery("(max-width: 436px)");
+
+  const [userCount, setUserCount] = useState(0);
+  const [brandCount, setBrandCount] = useState(0);
+  const [categoryCount, setCategoryCount] = useState(0);
+  const [productCount, setProductCount] = useState(0);
+
+  useEffect(() => {
+    // Fetch the number of users
+    axios.get("http://localhost:4000/api/users/all")
+      .then(response => {
+        console.log("Users response:", response.data); // Debugging step
+        setUserCount(response.data.users.length); // Adjusted to use response.data.users
+      })
+      .catch(error => {
+        console.error("Error fetching users:", error);
+        setUserCount(0); // Set to 0 if there's an error
+      });
+
+    // Fetch the number of brands
+    axios.get("http://localhost:4000/api/brands/all")
+      .then(response => {
+        console.log("Brands response:", response.data); // Debugging step
+        setBrandCount(response.data.brands.length); // Adjusted to use response.data.brands
+      })
+      .catch(error => {
+        console.error("Error fetching brands:", error);
+        setBrandCount(0); // Set to 0 if there's an error
+      });
+
+    // Fetch the number of categories
+    axios.get("http://localhost:4000/api/categories/all")
+      .then(response => {
+        console.log("Categories response:", response.data); // Debugging step
+        setCategoryCount(response.data.categories.length); // Adjusted to use response.data.categories
+      })
+      .catch(error => {
+        console.error("Error fetching categories:", error);
+        setCategoryCount(0); // Set to 0 if there's an error
+      });
+
+    // Fetch the number of products
+    axios.get("http://localhost:4000/api/products/all")
+      .then(response => {
+        console.log("Products response:", response.data); // Debugging step
+        setProductCount(response.data.products.length); // Adjusted to use response.data.products
+      })
+      .catch(error => {
+        console.error("Error fetching products:", error);
+        setProductCount(0); // Set to 0 if there's an error
+      });
+  }, []);
+
   return (
     <Box m="20px">
-      <Box display="flex" justifyContent="space-between">
-        <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
-        {!isXsDevices && (
-          <Box>
-            <Button
-              variant="contained"
-              sx={{
-                bgcolor: colors.blueAccent[700],
-                color: "#fcfcfc",
-                fontSize: isMdDevices ? "14px" : "10px",
-                fontWeight: "bold",
-                p: "10px 20px",
-                mt: "18px",
-                transition: ".3s ease",
-                ":hover": {
-                  bgcolor: colors.blueAccent[800],
-                },
-              }}
-              startIcon={<DownloadOutlined />}
-            >
-              DOWNLOAD REPORTS
-            </Button>
-          </Box>
-        )}
-      </Box>
+  <Box display="flex" justifyContent="space-between">
+    <Header title="MEWBOARD" subtitle="Welcome to MEW dashboard" />
+  </Box>
 
-      {/* GRID & CHARTS */}
-      <Box
-        display="grid"
-        gridTemplateColumns={
-          isXlDevices
-            ? "repeat(12, 1fr)"
-            : isMdDevices
-            ? "repeat(6, 1fr)"
-            : "repeat(3, 1fr)"
+  {/* GRID & CHARTS */}
+  <Box
+    display="grid"
+    gridTemplateColumns={
+      isXlDevices
+        ? "repeat(12, 1fr)"
+        : isMdDevices
+        ? "repeat(6, 1fr)"
+        : "repeat(3, 1fr)"
+    }
+    gridAutoRows="140px"
+    gap="20px"
+  >
+    {/* Statistic Items */}
+    <Box
+      gridColumn="span 3"
+      bgcolor={colors.primary[400]}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <StatBox
+        title={userCount} // Displaying user count
+        subtitle="Number of Users"
+        icon={
+          <PeopleAltOutlined
+            sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
+          />
         }
-        gridAutoRows="140px"
-        gap="20px"
-      >
-        {/* Statistic Items */}
-        <Box
-          gridColumn="span 3"
-          bgcolor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title="11,361"
-            subtitle="Email Sent"
-            progress="0.75"
-            increase="+14%"
-            icon={
-              <Email
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
+      />
+    </Box>
+    <Box
+      gridColumn="span 3"
+      backgroundColor={colors.primary[400]}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <StatBox
+        title={brandCount} // Displaying brand count
+        subtitle="Number of Brands"
+        icon={
+          <BrandingWatermark
+            sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
           />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title="431,225"
-            subtitle="Sales Obtained"
-            progress="0.50"
-            increase="+21%"
-            icon={
-              <PointOfSale
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
+        }
+      />
+    </Box>
+    <Box
+      gridColumn="span 3"
+      backgroundColor={colors.primary[400]}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <StatBox
+        title={categoryCount} // Displaying category count
+        subtitle="Number of Categories"
+        icon={
+          <Category
+            sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
           />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title="32,441"
-            subtitle="New Clients"
-            progress="0.30"
-            increase="+5%"
-            icon={
-              <PersonAdd
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
+        }
+      />
+    </Box>
+    <Box
+      gridColumn="span 3"
+      backgroundColor={colors.primary[400]}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
+      <StatBox
+        title={productCount} // Displaying product count
+        subtitle="Number of Products"
+        icon={
+          <ProductionQuantityLimits
+            sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
           />
-        </Box>
-        <Box
-          gridColumn="span 3"
-          backgroundColor={colors.primary[400]}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <StatBox
-            title="1,325,134"
-            subtitle="Traffic Received"
-            progress="0.80"
-            increase="+43%"
-            icon={
-              <Traffic
-                sx={{ color: colors.greenAccent[600], fontSize: "26px" }}
-              />
-            }
-          />
-        </Box>
+        }
+      />
+    </Box>
 
-        {/* ---------------- Row 2 ---------------- */}
+    {/* Logo/Image Section */}
+    <Box
+      gridColumn="span 6" // Half the width of the grid
+      backgroundColor={colors.primary[400]}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      flexDirection="column"
+      height="300px"
+      borderRadius="10px"
+    >
+      <img
+        src={logo}
+        alt="Logo"
+        style={{
+          width: "100%", // Image takes up most of the box width
+          height: "250px",
+          objectFit: "contain",
+          margin: "10px", // Minimal space between image and box
+        }}
+      />
+</Box>
 
-        {/* Line Chart */}
-        <Box
-          gridColumn={
-            isXlDevices ? "span 8" : isMdDevices ? "span 6" : "span 3"
-          }
-          gridRow="span 2"
-          bgcolor={colors.primary[400]}
-        >
-          <Box
-            mt="25px"
-            px="30px"
-            display="flex"
-            justifyContent="space-between"
-          >
-            <Box>
-              <Typography
-                variant="h5"
-                fontWeight="600"
-                color={colors.gray[100]}
-              >
-                Revenue Generated
-              </Typography>
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-                color={colors.greenAccent[500]}
-              >
-                $59,342.32
-              </Typography>
-            </Box>
-            <IconButton>
-              <DownloadOutlined
-                sx={{ fontSize: "26px", color: colors.greenAccent[500] }}
-              />
-            </IconButton>
-          </Box>
-          <Box height="250px" mt="-20px">
-            <LineChart isDashboard={true} />
-          </Box>
-        </Box>
-
-        {/* Transaction Data */}
-        <Box
-          gridColumn={isXlDevices ? "span 4" : "span 3"}
-          gridRow="span 2"
-          bgcolor={colors.primary[400]}
-          overflow="auto"
-        >
-          <Box borderBottom={`4px solid ${colors.primary[500]}`} p="15px">
-            <Typography color={colors.gray[100]} variant="h5" fontWeight="600">
-              Recent Transactions
-            </Typography>
-          </Box>
-
-          {mockTransactions.map((transaction, index) => (
-            <Box
-              key={`${transaction.txId}-${index}`}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              borderBottom={`4px solid ${colors.primary[500]}`}
-              p="15px"
-            >
-              <Box>
-                <Typography
-                  color={colors.greenAccent[500]}
-                  variant="h5"
-                  fontWeight="600"
-                >
-                  {transaction.txId}
-                </Typography>
-                <Typography color={colors.gray[100]}>
-                  {transaction.user}
-                </Typography>
-              </Box>
-              <Typography color={colors.gray[100]}>
-                {transaction.date}
-              </Typography>
-              <Box
-                bgcolor={colors.greenAccent[500]}
-                p="5px 10px"
-                borderRadius="4px"
-              >
-                ${transaction.cost}
-              </Box>
-            </Box>
-          ))}
-        </Box>
-
-        {/* Revenue Details */}
-        <Box
-          gridColumn={isXlDevices ? "span 4" : "span 3"}
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          p="30px"
-        >
-          <Typography variant="h5" fontWeight="600">
-            Campaign
-          </Typography>
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            mt="25px"
-          >
-            <ProgressCircle size="125" />
-            <Typography
-              textAlign="center"
-              variant="h5"
-              color={colors.greenAccent[500]}
-              sx={{ mt: "15px" }}
-            >
-              $48,352 revenue generated
-            </Typography>
-            <Typography textAlign="center">
-              Includes extra misc expenditures and costs
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Bar Chart */}
-        <Box
-          gridColumn={isXlDevices ? "span 4" : "span 3"}
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-        >
-          <Typography
-            variant="h5"
-            fontWeight="600"
-            sx={{ p: "30px 30px 0 30px" }}
-          >
-            Sales Quantity
-          </Typography>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            height="250px"
-            mt="-20px"
-          >
-            <BarChart isDashboard={true} />
-          </Box>
-        </Box>
-
-        {/* Geography Chart */}
-        <Box
-          gridColumn={isXlDevices ? "span 4" : "span 3"}
-          gridRow="span 2"
-          backgroundColor={colors.primary[400]}
-          padding="30px"
-        >
-          <Typography variant="h5" fontWeight="600" mb="15px">
-            Geography Based Traffic
-          </Typography>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            height="200px"
-          >
-            <GeographyChart isDashboard={true} />
-          </Box>
-        </Box>
+<Box
+      gridColumn="span 6" // Half the width of the grid
+      backgroundColor={colors.primary[400]}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      flexDirection="column"
+      height="300px"
+      borderRadius="10px"
+    >
+      <p>CHARTS HERE</p>
+</Box>
       </Box>
     </Box>
   );

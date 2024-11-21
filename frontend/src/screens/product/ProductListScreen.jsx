@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { Container, ContentStylings, Section } from "../../styles/styles";
@@ -33,6 +33,10 @@ const ProductsContentLeft = styled.div`
 
 const ProductsContentRight = styled.div`
   padding: 16px 40px;
+  height: 100%;
+  overflow-y: auto;
+  max-height: 950px;
+
   .products-right-top {
     display: flex;
     align-items: center;
@@ -88,21 +92,16 @@ const DescriptionContent = styled.div`
   }
 `;
 
-const ScrollableProductList = styled.div`
-  height: 170vh; // Adjust height as necessary
-  overflow-y: auto;
-`;
-
 const ProductListScreen = () => {
   const [products, setProducts] = useState([]);
   const [displayedProducts, setDisplayedProducts] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollContainerRef = useRef(null); // Reference to the scroll container
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 9;
-  const bottomRef = useRef(null);
-  const isFilterActive = selectedCategory || selectedBrand || selectedPriceRange;
+
+  const productsPerPage = 100; // Define products per page for pagination
 
   const breadcrumbItems = [
     { label: "Home", link: "/home" },
@@ -168,42 +167,39 @@ const ProductListScreen = () => {
       // Reset the displayed products when filters are applied
       setDisplayedProducts(filtered.slice(0, productsPerPage)); // Start from first filtered page
     };
-  
+
     filterProducts();
   }, [selectedCategory, selectedBrand, selectedPriceRange, products]);
 
-  // Infinite scroll observer callback
-  const infiniteScrollCallback = useCallback(
-    (entries) => {
-      if (isFilterActive) return; // Disable infinite scroll if filters are active
+  // Handle infinite scroll
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
 
-      const [entry] = entries;
-      if (entry.isIntersecting) {
-        const nextIndex = displayedProducts.length % displayedProducts.length;
-        const nextBatch = displayedProducts.slice(
-          nextIndex,
-          nextIndex + productsPerPage
-        );
-        setDisplayedProducts((prev) => [...prev, ...nextBatch]);
+    if (!container) return;
+
+    const { scrollTop, clientHeight, scrollHeight } = container;
+
+    // Check if user is near the bottom
+    if (scrollTop + clientHeight >= scrollHeight) {
+      // After reaching the last product, jump back to the first product
+      if (currentIndex + productsPerPage >= products.length) {
+        setCurrentIndex(0);
+        container.scrollTo(0, 0); // Scroll back to the top
+      } else {
+        setCurrentIndex((prev) => prev + productsPerPage); // Load the next set of products
       }
-    },
-    [displayedProducts, isFilterActive]
-  );
+    }
+  };
 
   useEffect(() => {
-    if (isFilterActive) return; // Skip setting up observer if filters are active
+    const container = scrollContainerRef.current;
 
-    const observer = new IntersectionObserver(infiniteScrollCallback, {
-      root: null,
-      rootMargin: "0px",
-      threshold: 1.0,
-    });
+    // Add scroll event listener
+    container?.addEventListener("scroll", handleScroll);
 
-    if (bottomRef.current) observer.observe(bottomRef.current);
-    return () => {
-      if (bottomRef.current) observer.unobserve(bottomRef.current);
-    };
-  }, [infiniteScrollCallback, isFilterActive]);
+    // Cleanup event listener
+    return () => container?.removeEventListener("scroll", handleScroll);
+  }, [currentIndex, products]);
 
   return (
     <main className="page-py-spacing">
@@ -220,22 +216,25 @@ const ProductListScreen = () => {
               selectedPriceRange={selectedPriceRange}
             />
           </ProductsContentLeft>
-          <ProductsContentRight>
+          <ProductsContentRight ref={scrollContainerRef}>
             <div className="products-right-top flex items-center justify-between">
               <h4 className="text-xxl">MEW Clothing</h4>
               <ul className="products-right-nav flex items-center justify-end flex-wrap">
                 <li>
-                  <Link to="/" className="active text-lg font-semibold">New</Link>
+                  <Link to="/home/product" className="active text-lg font-semibold">
+                    New
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/" className="text-lg font-semibold">Recommended</Link>
+                  <Link to="/home/product" className="text-lg font-semibold">
+                    Recommended
+                  </Link>
                 </li>
               </ul>
             </div>
-            <ScrollableProductList>
-              <ProductList products={displayedProducts} />
-            </ScrollableProductList>
-            <div ref={bottomRef} style={{ height: "1px" }} />
+
+            {/* Display Products starting from the current index */}
+            <ProductList products={displayedProducts} />
           </ProductsContentRight>
         </ProductsContent>
       </Container>
@@ -244,10 +243,15 @@ const ProductListScreen = () => {
           <DescriptionContent>
             <Title titleText={"Clothing for Everyone Online"} />
             <ContentStylings className="text-base content-stylings">
-              <h4>Discover Fashion That Fits Your Lifestyle: Step into a world of style with our curated collection of clothing designed for every moment. From casual wear to make you feel at ease to elegant ensembles for life’s special occasions, we bring you timeless designs that cater to your individuality. Explore the latest trends and classic essentials, all crafted with quality and comfort in mind.</h4>
-              <p>
-                Our curated collection brings you clothing for all occasions, designed to help you look and feel your best. Choose from a wide range of dresses, tops, and bottoms, carefully selected to ensure both comfort and elegance. Whether you're heading to the office, attending a party, or relaxing on the weekend, we’ve got you covered. From cozy sweaters to trendy jackets, our versatile pieces are perfect for mixing and matching to create the ideal look. The best part? You can shop directly online, choose, and have your perfect outfit delivered straight to your doorstep. Whether you’re looking for a cozy sweater, an elegant dress, or a statement jacket, we’ve got something for every wardrobe.
-              </p>
+              <h4>
+                Discover Fashion That Fits Your Lifestyle: Step into a world of
+                style with our curated collection of clothing designed for every
+                moment. From casual wear to make you feel at ease to elegant
+                ensembles for life’s special occasions, we bring you timeless
+                designs that cater to your individuality. Explore the latest
+                trends and classic essentials, all crafted with quality and
+                comfort in mind.
+              </h4>
             </ContentStylings>
           </DescriptionContent>
         </Container>

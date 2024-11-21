@@ -109,57 +109,64 @@ const ProductItem = ({ product }) => {
 
   return (
     <ProductCardWrapper>
-      <ProductCardLink to={`/home/product/details/${slug}`}>
-        <div className="product-img" onClick={handleClick}>
-          {/* Only render carousel if more than 1 image */}
-          {Array.isArray(image) && image.length > 1 ? (
-            <Carousel
-              autoPlay={false}
-              indicators={false}
-              navButtonsAlwaysVisible
-              onClick={handleClick}  // Prevent link navigation when clicking carousel itself
+      <div className="product-img" onClick={handleClick}>
+        {/* Only render carousel if more than 1 image */}
+        {Array.isArray(image) && image.length > 1 ? (
+          <Carousel
+            autoPlay={false}
+            indicators={false}
+            navButtonsAlwaysVisible
+            onClick={(e) => e.stopPropagation()} // Prevent link navigation when clicking the carousel itself
+          >
+            {image.map((imageUrl, index) => (
+              <div key={index} className="carousel-slide">
+                <img
+                  src={imageUrl || "/path/to/default-image.jpg"}
+                  alt={`Product Image ${index + 1}`}
+                />
+                <button
+                  type="button"
+                  className="product-wishlist-icon"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent navigation
+                    handleClick(e);
+                  }}
+                >
+                  <i className="bi bi-heart"></i>
+                </button>
+              </div>
+            ))}
+          </Carousel>
+        ) : (
+          <div className="carousel-slide">
+            <img
+              src={image?.[0] || "/path/to/default-image.jpg"}
+              alt={name}
+            />
+            <button
+              type="button"
+              className="product-wishlist-icon"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent navigation
+                handleClick(e);
+              }}
             >
-              {image.map((imageUrl, index) => (
-                <div key={index} className="carousel-slide">
-                  <img
-                    src={imageUrl || "/path/to/default-image.jpg"}
-                    alt={`Product Image ${index + 1}`}
-                  />
-                  <button
-                    type="button"
-                    className="product-wishlist-icon"
-                    onClick={handleClick}  // Prevents navigation when clicking wishlist button
-                  >
-                    <i className="bi bi-heart"></i>
-                  </button>
-                </div>
-              ))}
-            </Carousel>
-          ) : (
-            <div className="carousel-slide">
-              <img
-                src={image?.[0] || "/path/to/default-image.jpg"}
-                alt={name}
-              />
-              <button
-                type="button"
-                className="product-wishlist-icon"
-                onClick={handleClick}  // Prevents navigation when clicking wishlist button
-              >
-                <i className="bi bi-heart"></i>
-              </button>
-            </div>
-          )}
+              <i className="bi bi-heart"></i>
+            </button>
+          </div>
+        )}
+      </div>
+  
+      <ProductCardLink to={`/home/product/details/${slug}`}>
+        <div className="product-info">
+          <div className="product-name">{name}</div>
+          <span className="info-highlight brand-highlight">{brandName}</span>
+          <span className="info-highlight category-highlight">{categoryName}</span>
+          <span className="product-price">₱ {price.toFixed(2)}</span>
         </div>
       </ProductCardLink>
-      <div className="product-info">
-        <div className="product-name">{name}</div>
-        <span className="info-highlight brand-highlight">{brandName}</span>
-        <span className="info-highlight category-highlight">{categoryName}</span>
-        <span className="product-price">₱ {price.toFixed(2)}</span>
-      </div>
     </ProductCardWrapper>
-  );
+  );  
 };
 
 

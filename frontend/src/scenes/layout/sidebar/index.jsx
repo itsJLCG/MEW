@@ -244,34 +244,10 @@ const SideBar = () => {
           }}
         >
           <Item
-            title="Bar Chart"
-            path="/bar"
+            title="Monthly Sales Chart"
+            path="/monthlysaleschart"
             colors={colors}
             icon={<BarChartOutlined />}
-          />
-          <Item
-            title="Pie Chart"
-            path="/pie"
-            colors={colors}
-            icon={<DonutLargeOutlined />}
-          />
-          <Item
-            title="Line Chart"
-            path="/line"
-            colors={colors}
-            icon={<TimelineOutlined />}
-          />
-          <Item
-            title="Geography Chart"
-            path="/geography"
-            colors={colors}
-            icon={<MapOutlined />}
-          />
-          <Item
-            title="Stream Chart"
-            path="/stream"
-            colors={colors}
-            icon={<WavesOutlined />}
           />
         </Menu>
       </Box>
