@@ -1,3 +1,5 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import styled from "styled-components";
 import { Container } from "../../styles/styles";
 import Breadcrumb from "../../components/common/Breadcrumb";
@@ -5,7 +7,6 @@ import { UserContent, UserDashboardWrapper } from "../../styles/user";
 import UserMenu from "../../components/user/UserMenu";
 import Title from "../../components/common/Title";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
-import { orderData } from "../../data/data";
 import OrderItemList from "../../components/user/OrderItemList";
 
 const OrderListScreenWrapper = styled.div`
@@ -33,10 +34,30 @@ const OrderListScreenWrapper = styled.div`
 
 const breadcrumbItems = [
   { label: "Home", link: "/" },
-  { label: "Order", link: "/order" },
+  { label: "Order", link: "" },
 ];
 
 const OrderListScreen = () => {
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    const getOrders = async () => {
+      try {
+        const token = localStorage.getItem('authToken'); // Assuming the token is stored in localStorage
+        const response = await axios.get('http://localhost:4000/api/orders/all', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },// Ensure cookies are sent with the request
+        });
+        setOrders(response.data.orders);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+      }
+    };
+
+    getOrders();
+  }, []);
+
   return (
     <OrderListScreenWrapper className="page-py-spacing">
       <Container>
@@ -72,7 +93,7 @@ const OrderListScreen = () => {
 
               <div className="order-tabs-contents">
                 <div className="order-tabs-content" id="active">
-                    <OrderItemList orders = {orderData} />
+                    <OrderItemList orders={orders} />
                 </div>
                 <div className="order-tabs-content" id="cancelled">
                     Cancelled content

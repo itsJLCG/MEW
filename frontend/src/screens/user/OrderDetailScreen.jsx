@@ -1,11 +1,12 @@
+import React, { useEffect, useState } from 'react';
 import styled from "styled-components";
+import axios from 'axios';
 import { Container } from "../../styles/styles";
 import Breadcrumb from "../../components/common/Breadcrumb";
 import { UserContent, UserDashboardWrapper } from "../../styles/user";
 import UserMenu from "../../components/user/UserMenu";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Title from "../../components/common/Title";
-import { orderData } from "../../data/data";
 import { currencyFormat } from "../../utils/helper";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 
@@ -254,6 +255,32 @@ const breadcrumbItems = [
 ];
 
 const OrderDetailScreen = () => {
+  const { id } = useParams();
+  const [order, setOrder] = useState(null);
+
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get(`http://localhost:4000/api/order/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: true,
+        });
+        setOrder(response.data.order);
+      } catch (error) {
+        console.error('Error fetching order details:', error);
+      }
+    };
+
+    fetchOrderDetails();
+  }, [id]);
+
+  if (!order) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <OrderDetailScreenWrapper className="page-py-spacing">
       <Container>
@@ -275,14 +302,29 @@ const OrderDetailScreen = () => {
               <div className="order-d-top flex justify-between items-start">
                 <div className="order-d-top-l">
                   <h4 className="text-3xl order-d-no">
-                    Order no: #47770098867
+                    Order no: #{order._id}
                   </h4>
                   <p className="text-lg font-medium text-gray">
-                    Placed On 2 June 2023 2:40 PM
+                    Placed On {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString()}
+                  </p>
+                  <p className="text-lg font-medium text-gray">
+                    Address: {order.shippingInfo.address}
+                  </p>
+                  <p className="text-lg font-medium text-gray">
+                    City: {order.shippingInfo.city}
+                  </p>
+                  <p className="text-lg font-medium text-gray">
+                    Phone Number: {order.shippingInfo.phoneNumber}
+                  </p>
+                  <p className="text-lg font-medium text-gray">
+                    Zip Code: {order.shippingInfo.zipCode}
+                  </p>
+                  <p className="text-lg font-medium text-gray">
+                    Country: {order.shippingInfo.country}
                   </p>
                 </div>
                 <div className="order-d-top-r text-xxl text-gray font-semibold">
-                  Total: <span className="text-outerspace">$143.00</span>
+                  Total: <span className="text-outerspace">{currencyFormat(order.totalPrice)}</span>
                 </div>
               </div>
 
@@ -312,7 +354,7 @@ const OrderDetailScreen = () => {
               </OrderDetailStatusWrapper>
               <OrderDetailMessageWrapper className="order-message flex items-center justify-start">
                 <p className="font-semibold text-gray">
-                  8 June 2023 3:40 PM &nbsp;
+                  {new Date(order.updatedAt).toLocaleDateString()} {new Date(order.updatedAt).toLocaleTimeString()} &nbsp;
                   <span className="text-outerspace">
                     Your order has been successfully verified.
                   </span>
@@ -320,24 +362,18 @@ const OrderDetailScreen = () => {
               </OrderDetailMessageWrapper>
 
               <OrderDetailListWrapper className="order-d-list">
-                {orderData[0].items?.map((item) => {
+                {order.orderItems?.map((item) => {
                   return (
-                    <div className="order-d-item grid" key={item.id}>
+                    <div className="order-d-item grid" key={item._id}>
                       <div className="order-d-item-img">
                         <img
-                          src={item.imgSource}
-                          alt=""
+                          src={item.image}
+                          alt={item.name}
                           className="object-fit-cover"
                         />
                       </div>
                       <div className="order-d-item-info">
                         <p className="text-xl font-bold">{item.name}</p>
-                        <p className="text-md font-bold">
-                          Color: &nbsp;
-                          <span className="font-medium text-gray">
-                            {item.color}
-                          </span>
-                        </p>
                       </div>
                       <div className="order-d-item-calc">
                         <p className="font-bold text-lg">

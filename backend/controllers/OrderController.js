@@ -44,16 +44,23 @@ exports.createOrder = async (req, res, next) => {
 };
 
 exports.myOrders = async (req, res, next) => {
-    const orders = await Order.find({ customer: req.user.customerId });
-    if (!orders) {
+    try {
+      const orders = await Order.find({ customer: req.user.customerId }).populate('orderItems.product');
+      if (!orders) {
         return res.status(400).json({ message: 'Error loading orders' });
-    }
-    return res.status(200).json({
+      }
+      return res.status(200).json({
         success: true,
         orders
-    });
-};
-
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: 'Server error',
+        error: error.message
+      });
+    }
+  };
+  
 exports.getSingleOrder = async (req, res, next) => {
     const order = await Order.findById(req.params.id).populate('customer', 'firstName lastName');
     if (!order) {
