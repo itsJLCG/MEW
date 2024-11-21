@@ -3,28 +3,8 @@ import { staticImages } from "../utils/images";
 const navMenuData = [
   {
     id: "nav-menu-1",
-    menuLink: "/",
-    menuText: "Shop",
-  },
-  {
-    id: "nav-menu-2",
-    menuLink: "/",
-    menuText: "Men",
-  },
-  {
-    id: "nav-menu-3",
-    menuLink: "/",
-    menuText: "Women",
-  },
-  {
-    id: "nav-menu-4",
-    menuLink: "/",
-    menuText: "Combos",
-  },
-  {
-    id: "nav-menu-5",
-    menuLink: "/",
-    menuText: "Fashion",
+    menuLink: "/home/product",
+    menuText: "Shop Now",
   },
 ];
 
@@ -64,37 +44,33 @@ const sideMenuData = [
 const bannerData = [
   {
     id: "banner-1",
-    topText: "T-shirt / Tops",
-    titleText: "Summer Value Pack",
-    bottomText: "cool / colorful / comfy",
-    buttonLink: "/",
+    titleText: "MEW",
+    bottomText: "Milu Edge Wear",
+    buttonLink: "/home/product",
     buttonText: "Shop Now",
     imgSource: staticImages.hero_img1,
   },
   {
     id: "banner-2",
-    topText: "Quality / Branded",
-    titleText: "Season Of Offers",
-    bottomText: "offers / heavy discount / coupons",
-    buttonLink: "/",
+    titleText: "MEW",
+    bottomText: "Milu Edge Wear",
+    buttonLink: "/home/product",
     buttonText: "Shop Now",
     imgSource: staticImages.hero_img2,
   },
   {
     id: "banner-3",
-    topText: "Seasonal Attire / Collection",
-    titleText: "New Arrivals & Special",
-    bottomText: "stylish / trendy",
-    buttonLink: "/",
+    titleText: "MEW",
+    bottomText: "Milu Edge Wear",
+    buttonLink: "/home/product",
     buttonText: "Shop Now",
     imgSource: staticImages.hero_img3,
   },
   {
     id: "banner-4",
-    topText: "Party & Wedding Dress",
-    titleText: "Fashionable Choice for Occasion",
-    bottomText: "offers / discounts / coupons",
-    buttonLink: "/",
+    titleText: "MEW",
+    bottomText: "Milu Edge Wear",
+    buttonLink: "/home/product",
     buttonText: "Shop Now",
     imgSource: staticImages.hero_img4,
   },
@@ -107,7 +83,7 @@ const featuredData = [
     topText: "Low Price",
     largeText: "High Coziness",
     bottomText: "upto 50% off",
-    buttonLink: "/",
+    buttonLink: "/home/product",
     buttonText: "Explore Items",
   },
   {
@@ -116,7 +92,7 @@ const featuredData = [
     topText: "Beyoung Presents",
     largeText: "Breezy Summer Style",
     bottomText: "upto 30% off",
-    buttonLink: "/",
+    buttonLink: "/home/product",
     buttonText: "Explore Items",
   },
 ];
@@ -160,182 +136,10 @@ const newArrivalData = [
 ];
 
 const savingZoneData = [
-  {
-    id: "saving-z-1",
-    imgSource: staticImages.bigzone1,
-    title: "Hawaiian Shirts",
-    description: "Dress up in summer vibe",
-    discount: 50,
-    isLimited: false,
-  },
-  {
-    id: "saving-z-2",
-    imgSource: staticImages.bigzone2,
-    title: "Printed T-Shirt",
-    description: "New Designs Every Week",
-    discount: 40,
-    isLimited: true,
-  },
-  {
-    id: "saving-z-3",
-    imgSource: staticImages.bigzone3,
-    title: "Cargo Joggers",
-    description: "Move with style & comfort",
-    discount: 50,
-    isLimited: false,
-  },
-  {
-    id: "saving-z-4",
-    imgSource: staticImages.bigzone4,
-    title: "Urban Shirts",
-    description: "Live In Confort",
-    discount: 20,
-    isLimited: false,
-  },
-  {
-    id: "saving-z-5",
-    imgSource: staticImages.bigzone5,
-    title: "Oversized T-Shirts",
-    description: "Street Style Icon",
-    discount: 60,
-    isLimited: false,
-  },
+  
 ];
 
 const products = [
-  {
-    id: 1,
-    imgSource: staticImages.product1,
-    title: "Active wear",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 2,
-    imgSource: staticImages.product2,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 3,
-    imgSource: staticImages.product3,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 4,
-    imgSource: staticImages.product4,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 5,
-    imgSource: staticImages.product5,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 6,
-    imgSource: staticImages.product6,
-    title: "Printed T-Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 7,
-    imgSource: staticImages.product7,
-    title: "Plain T-Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 8,
-    imgSource: staticImages.product8,
-    title: "Polo T-Shirt",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 9,
-    imgSource: staticImages.product9,
-    title: "Hoddies & Sweatshirt",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 10,
-    imgSource: staticImages.product10,
-    title: "Jeans",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 11,
-    imgSource: staticImages.product11,
-    title: "Boxers",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 12,
-    imgSource: staticImages.product12,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 13,
-    imgSource: staticImages.product13,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 14,
-    imgSource: staticImages.product14,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 15,
-    imgSource: staticImages.product15,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 16,
-    imgSource: staticImages.product16,
-    title: "Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 17,
-    imgSource: staticImages.product17,
-    title: "Printed T-Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 18,
-    imgSource: staticImages.product18,
-    title: "Plain T-Shirts",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
-  {
-    id: 19,
-    imgSource: staticImages.product19,
-    title: "Polo T-Shirt",
-    brand: "Jhanvi’s Brand",
-    price: 123.0,
-  },
 ];
 
 const mensCatalog = [...products.slice(4, 11), products[1]];
@@ -345,65 +149,9 @@ const womensCatalog = products.slice(11, 15);
 const limelightCatalog = products.slice(15, 19);
 
 const brandsData = [
-  {
-    id: "brand-1",
-    imgSource: staticImages.brand1,
-  },
-  {
-    id: "brand-2",
-    imgSource: staticImages.brand2,
-  },
-  {
-    id: "brand-3",
-    imgSource: staticImages.brand3,
-  },
-  {
-    id: "brand-4",
-    imgSource: staticImages.brand4,
-  },
-  {
-    id: "brand-5",
-    imgSource: staticImages.brand5,
-  },
 ];
 
 const feedbackData = [
-  {
-    id: "feedback-1",
-    imgSource: staticImages.test1,
-    name: "Floyd Miles",
-    designation: "Marketing Manger",
-    rating: 3,
-    feedbackText:
-      "I am incredibly pleased with my recent shopping experience on this clothing ecommerce website. The user-friendly interface made it a breeze to browse through a wide range of stylish options. The variety of sizes and styles available was impressive, and I found the perfect outfit for a special occasion. ",
-  },
-  {
-    id: "feedback-2",
-    imgSource: staticImages.test2,
-    name: "Ronald Richards",
-    designation: "Teacher",
-    rating: 4,
-    feedbackText:
-      "This clothing ecommerce website has become my go-to destination for fashion finds. The selection is fantastic, catering to various tastes and preferences. From casual wear to elegant pieces, I always discover something unique and stylish. The website's organization and clear product images make it easy to make informed choices. ",
-  },
-  {
-    id: "feedback-3",
-    imgSource: staticImages.test3,
-    name: "Savannah Nguyen",
-    designation: "Student",
-    rating: 4,
-    feedbackText:
-      "I want to express my gratitude for the exceptional service provided by this clothing ecommerce website. Not only is the website intuitive and easy to navigate, but the customer service team also went above and beyond to assist me with a query. ",
-  },
-  {
-    id: "feedback-4",
-    imgSource: staticImages.test4,
-    name: "Arthur Ramsay",
-    designation: "Fashion Designer",
-    rating: 4,
-    feedbackText:
-      "I recently made a purchase from this clothing ecommerce website, and I couldn't be happier with my experience. The website is well-designed, making it easy to navigate and find the items I was looking for. The product descriptions were detailed, helping me make informed decisions.",
-  },
 ];
 
 const footerData = [

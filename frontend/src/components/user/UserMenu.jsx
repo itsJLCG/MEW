@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import Title from "../common/Title";
@@ -64,10 +66,48 @@ const NavMenuWrapper = styled.nav`
 `;
 
 const UserMenu = () => {
+  const [username, setUsername] = useState(""); // Store the username
+  const [loading, setLoading] = useState(true); // Loading state
   const location = useLocation();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("authToken"); // Get token from localStorage
+
+      if (!token) {
+        console.error("No token found");
+        window.location.href = "/login"; // Redirect to login if no token found
+        return;
+      }
+
+      try {
+        // Make an API request to get user data
+        const response = await axios.get("/api/users/all", { // Use your API route
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Assuming the username is in the response data
+        setUsername(response.data.username); // Set the username in the state
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setLoading(false); // Stop loading if there's an error
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Show loading state until data is fetched
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
-      <Title titleText={"Hello Richard"} />
+      <Title titleText={`Hello ${username}`} />
       <p className="text-base font-light italic">Welcome to your account.</p>
 
       <NavMenuWrapper>

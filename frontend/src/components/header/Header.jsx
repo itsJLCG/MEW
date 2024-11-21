@@ -227,46 +227,8 @@ const Header = () => {
               <span className="site-brand-text text-outerspace">MEW.</span>
             </SiteBrandWrapper>
           </div>
-          <NavigationAndSearchWrapper className="flex items-center">
-            <NavigationMenuWrapper>
-              <ul className="nav-menu-list flex items-center">
-                {navMenuData?.map((menu) => {
-                  return (
-                    <li className="nav-menu-item" key={menu.id}>
-                      <Link
-                        to={menu.menuLink}
-                        className="nav-menu-link text-base font-medium text-gray"
-                      >
-                        {menu.menuText}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </NavigationMenuWrapper>
-            <form className="search-form">
-              <InputGroupWrapper className="input-group">
-                <span className="input-icon flex items-center justify-center text-xl text-gray">
-                  <i className="bi bi-search"></i>
-                </span>
-                <Input
-                  type="text"
-                  className="input-control w-full"
-                  placeholder="Search"
-                />
-              </InputGroupWrapper>
-            </form>
-          </NavigationAndSearchWrapper>
 
           <IconLinksWrapper className="flex items-center">
-            <Link
-              to="/home/wishlist"
-              className={`icon-link ${
-                location.pathname === "/home/wishlist" ? "active" : ""
-              } inline-flex items-center justify-center`}
-            >
-              <img src={staticImages.heart} alt="" />
-            </Link>
             <Link
               to="/home/account"
               className={`icon-link ${
@@ -289,6 +251,48 @@ const Header = () => {
                 onClick={handleLogout} // Handle logout on click
               />
             )}
+
+<NavigationMenuWrapper>
+              <ul className="nav-menu-list flex items-center">
+                {navMenuData?.map((menu) => {
+                  return (
+                    <li className="nav-menu-item" key={menu.id}>
+                    <Link to={menu.link}>
+                      {menu.name}
+                    </Link>
+                    {/* Shop Now Button */}
+                    <button
+                      onClick={() => window.location.href = "/home/product"}
+                      style={{
+                        margin: "10px 0 0 10px", // Moves the button slightly off-center
+                        padding: "10px 20px", // Button size
+                        backgroundColor: "rgb(16, 185, 176)", // Background color
+                        color: "white", // Text color
+                        border: "none", // No border
+                        borderRadius: "10px", // Rounded corners
+                        fontSize: "14px", // Font size
+                        fontWeight: "bold", // Bold text
+                        cursor: "pointer", // Pointer cursor
+                        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)", // Subtle shadow
+                        transition: "all 0.3s ease", // Smooth hover effect
+                      }}
+                      onMouseOver={(e) => {
+                        e.target.style.backgroundColor = "rgb(13, 148, 139)"; // Slightly darker on hover
+                        e.target.style.transform = "translateY(-2px)"; // Lift effect
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.backgroundColor = "rgb(16, 185, 176)"; // Reset color
+                        e.target.style.transform = "translateY(0)"; // Reset lift
+                      }}
+                    >
+                      Shop Now
+                    </button>
+                  </li>
+                  );
+                })}
+              </ul>
+            </NavigationMenuWrapper>
+            
           </IconLinksWrapper>
         </div>
       </Container>

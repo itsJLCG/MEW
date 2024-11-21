@@ -21,11 +21,11 @@ import img1 from "../assets/images/img1.jpg";
 import img2 from "../assets/images/img2.jpg";
 
 // hero banner images
-import hero_img4 from "../assets/images/hero_img4.jpg";
+import hero_img4 from "../assets/images/dashboardlogo.jpg";
 import hero_img5 from "../assets/images/hero_img5.jpg";
-import hero_img2 from "../assets/images/hero_img2.jpg";
-import hero_img3 from "../assets/images/hero_img3.jpg";
-import hero_img1 from "../assets/images/hero_img1.jpg";
+import hero_img2 from "../assets/images/logos2.png";
+import hero_img3 from "../assets/images/logos3.png";
+import hero_img1 from "../assets/images/logos.png";
 
 // product images
 import product1 from "../assets/images/product1.jpg";
