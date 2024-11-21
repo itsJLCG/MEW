@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { BaseButtonGreen } from "../../styles/button";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import PropTypes from "prop-types";
+import {useNavigate} from "react-router-dom";
 
 const CartSummaryWrapper = styled.div`
   background-color: ${defaultTheme.color_flash_white};
@@ -33,6 +34,8 @@ const CartSummaryWrapper = styled.div`
 `;
 
 const CartSummary = ({ cartItems }) => {
+  const navigate = useNavigate()
+
   let subtotal = 0;
   for (let i = 0; i < cartItems.length; i++) {
     subtotal += cartItems[i].productId.price * cartItems[i].quantity;
@@ -41,6 +44,9 @@ const CartSummary = ({ cartItems }) => {
   const shippingCost = 5.00; // Example shipping cost
   const grandTotal = subtotal + shippingCost;
 
+  const handleCheckout = () =>{
+    navigate('/home/checkout')
+  }
   return (
     <CartSummaryWrapper>
       <ul className="summary-list">
@@ -59,7 +65,7 @@ const CartSummary = ({ cartItems }) => {
           </span>
         </li>
       </ul>
-      <BaseButtonGreen type="submit" className="checkout-btn">
+      <BaseButtonGreen type="button" className="checkout-btn" onClick={handleCheckout}>
         Proceed To Checkout
       </BaseButtonGreen>
     </CartSummaryWrapper>

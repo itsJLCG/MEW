@@ -130,15 +130,6 @@ const Billing = () => {
               </label>
               <Input type="text" placeholder="Country / Region" />
             </div>
-            <div className="input-elem">
-              <label
-                htmlFor=""
-                className="text-base text-outerspace font-semibold"
-              >
-                Company Name
-              </label>
-              <Input type="text" placeholder="Company (optional)" />
-            </div>
           </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
@@ -149,18 +140,6 @@ const Billing = () => {
                 Street Address*
               </label>
               <Input type="text" placeholder="House number and street name" />
-            </div>
-            <div className="input-elem">
-              <label
-                htmlFor=""
-                className="text-base text-outerspace font-semibold"
-              >
-                Apt, suite, unit
-              </label>
-              <Input
-                type="text"
-                placeholder="apartment, suite, unit, etc. (optional)"
-              />
             </div>
           </div>
           <div className="input-elem-group elem-col-3">
@@ -178,22 +157,7 @@ const Billing = () => {
                 htmlFor=""
                 className="text-base text-outerspace font-semibold"
               >
-                State*
-              </label>
-              <select name="">
-                <option value="" disabled>
-                  State
-                </option>
-                <option value="">State 1</option>
-                <option value="">State 1</option>
-              </select>
-            </div>
-            <div className="input-elem">
-              <label
-                htmlFor=""
-                className="text-base text-outerspace font-semibold"
-              >
-                Postal Code*
+                Zip Code*
               </label>
               <Input type="text" placeholder="Postal Code" />
             </div>

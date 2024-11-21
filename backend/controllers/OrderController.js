@@ -1,0 +1,61 @@
+const Order = require('../models/Orders');
+const Product = require('../models/Products');
+const Customer = require('../models/Customer');
+
+exports.createOrder = async (req, res, next) => {
+     // Fetch associated Customer record
+     const customer = await Customer.findOne({ user: req.user._id });
+
+    const {
+        orderItems,
+        shippingInfo,
+        itemsPrice,
+        taxPrice,
+        shippingPrice,
+        totalPrice,
+        paymentInfo
+
+    } = req.body;
+
+    const order = await Order.create({
+        orderItems,
+        shippingInfo,
+        itemsPrice,
+        taxPrice,
+        shippingPrice,
+        totalPrice,
+        paymentInfo,
+        paidAt: Date.now(),
+        customer
+    })
+
+    return res.status(200).json({
+        success: true,
+        order
+    })
+}
+
+exports.myOrders = async (req, res, next) => {
+    const orders = await Order.find({ customer: req.user.customerId });
+    if (!orders) {
+        return res.status(400).json({ message: 'Error loading orders' });
+    }
+    return res.status(200).json({
+        success: true,
+        orders
+    });
+};
+
+exports.getSingleOrder = async (req, res, next) => {
+    const order = await Order.findById(req.params.id).populate('customer', 'firstName lastName')
+    if (!order) {
+        return res.status(404).json({
+            message: 'No Order found with this ID',
+
+        })
+    }
+    return res.status(200).json({
+        success: true,
+        order
+    })
+}
