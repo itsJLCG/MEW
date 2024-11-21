@@ -95,8 +95,10 @@ function App() {
                     <Route path="checkout" element={<Checkout />} />
                     <Route path="orders" element={<Order />} />
                     <Route path="order_detail" element={<OrderDetail />} />
+
                     <Route path="wishlist" element={<WishList />} />
                     <Route path="empty_wishlist" element={<WishListEmpty />} />
+
                     <Route path="confirm" element={<Confirm />} />
                     <Route path="account" element={<Account />} />
                     <Route path="account/add" element={<Address />} />

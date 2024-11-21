@@ -8,6 +8,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BaseButtonGreen } from "../../styles/button"; // Import BaseButtonGreen
 import { toast } from "react-hot-toast"; // Import toast
+import { useNavigate } from "react-router-dom"; 
 
 const CheckoutScreenWrapper = styled.main`
   padding: 48px 0;
@@ -38,6 +39,7 @@ const CheckoutScreen = () => {
   const [cartItems, setCartItems] = useState([]);
   const [billingDetails, setBillingDetails] = useState({});
   const [paymentDetails, setPaymentDetails] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -97,7 +99,9 @@ const CheckoutScreen = () => {
       if (response.data.success) {
         console.log("Order placed successfully:", response.data.order);
         toast.success("Order placed successfully");
-        // Redirect or show success message
+         // Set localStorage item "hasCart" to false
+         localStorage.setItem("hasCart", false);
+        navigate("/home/confirm");
       } else {
         console.error("Failed to place order:", response.data.message);
         toast.error("Failed to place order");

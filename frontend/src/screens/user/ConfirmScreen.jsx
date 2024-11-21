@@ -38,11 +38,11 @@ const ConfirmScreen = () => {
             <p className="text-4xl font-semibold text-outerspace">
               Your Order is Confirmed
             </p>
-            <BaseLinkGreen to="/">Continue Shopping</BaseLinkGreen>
+            <BaseLinkGreen to="/home/product">Continue Shopping</BaseLinkGreen>
           </div>
         </div>
       </Container>
-    </ConfirmScreenWrapper>
+    </ConfirmScreenWrapper> 
   );
 };
 

@@ -94,7 +94,7 @@ const OrderItem = ({ order }) => {
   return (
     <OrderItemWrapper>
       <div className="order-item-details">
-        <h3 className="text-x order-item-title">Order no: {order.order_no}</h3>
+        <h3 className="text-x order-item-title">Order id: {order.order_no}</h3>
         <div className="order-info-group flex flex-wrap">
           <div className="order-info-item">
             <span className="text-gray font-semibold">Order Date:</span>
@@ -145,7 +145,7 @@ const OrderItem = ({ order }) => {
             </ul>
           </div>
         </div>
-        <BaseLinkGreen to="/order_detail">View Detail</BaseLinkGreen>
+        <BaseLinkGreen to="/home/order_detail">View Detail</BaseLinkGreen>
       </div>
     </OrderItemWrapper>
   );
