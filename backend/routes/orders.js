@@ -22,5 +22,8 @@ router.post('/order/new', isAuthenticatedUser, createOrder);
 router.get('/orders/all', isAuthenticatedUser, myOrders);
 router.get('/order/:id', isAuthenticatedUser, getSingleOrder);
 
+// //admin
+// router.route('/admin/order/:id').put(isAuthenticatedUser, updateOrder).delete(isAuthenticatedUser, deleteOrder);
+
 
 module.exports = router;

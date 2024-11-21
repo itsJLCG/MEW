@@ -73,3 +73,72 @@ exports.getSingleOrder = async (req, res, next) => {
         order
     });
 };
+
+
+// //admin side
+
+// exports.allOrders = async (req, res, next) => {
+//   const orders = await Order.find()
+//   // console.log(orders)
+
+//   if (!orders) {
+//       return res.status(404).json({
+//           message: 'No Orders',
+
+//       })
+//   }
+//   let totalAmount = 0;
+
+//   orders.forEach(order => {
+//       totalAmount += order.totalPrice
+//   })
+
+//   return res.status(200).json({
+//       success: true,
+//       totalAmount,
+//       orders
+//   })
+// }
+
+// exports.updateOrder = async (req, res, next) => {
+//   const order = await Order.findById(req.params.id)
+//   console.log(req.body.order)
+//   if (!order) {
+//       return res.status(404).json({
+//           message: 'No Order found',
+
+//       })
+//   }
+//   if (order.orderStatus === 'Delivered') {
+//       return res.status(400).json({
+//           message: 'You have already delivered this order',
+
+//       })
+//   }
+
+//   order.orderItems.forEach(async item => {
+//       await updateStock(item.product, item.quantity)
+//   })
+
+//   order.orderStatus = req.body.status
+//   order.deliveredAt = Date.now()
+//   await order.save()
+//   return res.status(200).json({
+//       success: true,
+//   })
+// }
+
+// exports.deleteOrder = async (req, res, next) => {
+//   const order = await Order.findByIdAndDelete(req.params.id)
+
+//   if (!order) {
+//       return res.status(400).json({
+//           message: 'No Order found with this ID',
+
+//       })
+//       // return next(new ErrorHandler('No Order found with this ID', 404))
+//   }
+//   return res.status(200).json({
+//       success: true
+//   })
+// };
