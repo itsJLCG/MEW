@@ -1,10 +1,13 @@
+import React from "react";
 import styled from "styled-components";
 import { Input } from "../../styles/form";
 import { BaseButtonGreen } from "../../styles/button";
 import CheckoutSummary from "./CheckoutSummary";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
+import PropTypes from "prop-types";
 
 const BillingOrderWrapper = styled.div`
+  display: grid;
   gap: 60px;
   grid-template-columns: 2fr 1fr;
 
@@ -67,23 +70,11 @@ const BillingDetailsWrapper = styled.div`
       }
     }
 
-    .elem-col-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      column-gap: 24px;
-
-      @media (max-width: ${breakpoints.lg}) {
-        column-gap: 12px;
-      }
-      @media (max-width: ${breakpoints.sm}) {
-        grid-template-columns: 100%;
-      }
-    }
-
     .input-check-group {
       column-gap: 10px;
       margin-top: 16px;
     }
+
     .contd-delivery-btn {
       margin-top: 20px;
 
@@ -94,99 +85,106 @@ const BillingDetailsWrapper = styled.div`
   }
 `;
 
-const Billing = () => {
+const Billing = ({ cartItems }) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission logic here
+  };
+
   return (
     <BillingOrderWrapper className="billing-and-order grid items-start">
       <BillingDetailsWrapper>
         <h4 className="text-xxl font-bold text-outerspace">Billing Details</h4>
-        <form className="checkout-form">
+        <form className="checkout-form" onSubmit={handleSubmit}>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
               <label
-                htmlFor=""
+                htmlFor="firstName"
                 className="text-base text-outerspace font-semibold"
               >
                 First Name*
               </label>
-              <Input type="text" placeholder="First Name" />
+              <Input id="firstName" type="text" placeholder="First Name" />
             </div>
             <div className="input-elem">
               <label
-                htmlFor=""
+                htmlFor="lastName"
                 className="text-base text-outerspace font-semibold"
               >
                 Last Name*
               </label>
-              <Input type="text" placeholder="Last Name" />
+              <Input id="lastName" type="text" placeholder="Last Name" />
             </div>
           </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
               <label
-                htmlFor=""
+                htmlFor="country"
                 className="text-base text-outerspace font-semibold"
               >
                 Country / Region*
               </label>
-              <Input type="text" placeholder="Country / Region" />
+              <Input id="country" type="text" placeholder="Country / Region" />
             </div>
-          </div>
-          <div className="input-elem-group elem-col-2">
             <div className="input-elem">
               <label
-                htmlFor=""
+                htmlFor="address"
                 className="text-base text-outerspace font-semibold"
               >
                 Street Address*
               </label>
-              <Input type="text" placeholder="House number and street name" />
-            </div>
-          </div>
-          <div className="input-elem-group elem-col-3">
-            <div className="input-elem">
-              <label
-                htmlFor=""
-                className="text-base text-outerspace font-semibold"
-              >
-                City*
-              </label>
-              <Input type="text" placeholder="Town / City" />
-            </div>
-            <div className="input-elem">
-              <label
-                htmlFor=""
-                className="text-base text-outerspace font-semibold"
-              >
-                Zip Code*
-              </label>
-              <Input type="text" placeholder="Postal Code" />
+              <Input id="address" type="text" placeholder="House number and street name" />
             </div>
           </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
               <label
-                htmlFor=""
+                htmlFor="city"
+                className="text-base text-outerspace font-semibold"
+              >
+                City*
+              </label>
+              <Input id="city" type="text" placeholder="Town / City" />
+            </div>
+            <div className="input-elem">
+              <label
+                htmlFor="zipCode"
+                className="text-base text-outerspace font-semibold"
+              >
+                Zip Code*
+              </label>
+              <Input id="zipCode" type="text" placeholder="Postal Code" />
+            </div>
+          </div>
+          <div className="input-elem-group elem-col-2">
+            <div className="input-elem">
+              <label
+                htmlFor="phone"
                 className="text-base text-outerspace font-semibold"
               >
                 Phone*
               </label>
-              <Input type="text" placeholder="Phone" />
+              <Input id="phone" type="text" placeholder="Phone" />
             </div>
           </div>
           <BaseButtonGreen type="submit" className="contd-delivery-btn">
             Continue to delivery
           </BaseButtonGreen>
           <div className="input-check-group flex items-center flex-wrap">
-            <Input type="checkbox" />
-            <p className="text-base">
+            <Input type="checkbox" id="saveInfo" />
+            <label htmlFor="saveInfo" className="text-base">
               Save my information for a faster checkout
-            </p>
+            </label>
           </div>
         </form>
       </BillingDetailsWrapper>
-      <CheckoutSummary />
+      <CheckoutSummary cartItems={cartItems} />
     </BillingOrderWrapper>
   );
+};
+
+Billing.propTypes = {
+  cartItems: PropTypes.array.isRequired,
 };
 
 export default Billing;
