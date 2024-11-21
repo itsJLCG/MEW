@@ -1,8 +1,11 @@
+import React, { useState } from "react";
 import styled from "styled-components";
-import { Input } from "../../styles/form";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { cardsData } from "../../data/data";
-import { BaseButtonGreen } from "../../styles/button";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
+import { BaseButtonGreen } from "../../styles/button"; // Import BaseButtonGreen
+import { toast } from "react-hot-toast";
 
 const ShippingPaymentWrapper = styled.div`
   .shipping-addr,
@@ -64,28 +67,11 @@ const ShippingPaymentWrapper = styled.div`
         position: relative;
         width: 80px;
         height: 46px;
-        input {
-          opacity: 0;
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 80px;
-          height: 46px;
-          z-index: 10;
-          cursor: pointer;
+        cursor: pointer;
+        border: 2px solid transparent; /* Default border color */
 
-          &:checked {
-            & + .card-wrapper {
-              .card-selected {
-                position: absolute;
-                top: -8px;
-                right: -5px;
-                width: 14px;
-                height: 14px;
-                display: inline-block;
-              }
-            }
-          }
+        &.selected {
+          border: 2px solid ${defaultTheme.color_sea_green}; /* Selected border color */
         }
 
         .card-wrapper {
@@ -94,6 +80,11 @@ const ShippingPaymentWrapper = styled.div`
           left: 0;
           border-radius: 5px;
           border: 1px solid rgba(0, 0, 0, 0.1);
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
 
           .card-selected {
             display: none;
@@ -127,15 +118,25 @@ const ShippingPaymentWrapper = styled.div`
         border: 1px solid ${defaultTheme.color_platinum};
         border-radius: 6px;
         padding: 16px;
+        transition: border-color 0.3s;
 
         &:focus {
           border-color: ${defaultTheme.color_sea_green};
+        }
+
+        &.required {
+          border-color: red;
         }
 
         @media (max-width: ${breakpoints.sm}) {
           margin-bottom: 10px;
           border-radius: 4px;
         }
+      }
+
+      .error-message {
+        color: red;
+        font-size: 12px;
       }
     }
   }
@@ -147,54 +148,34 @@ const ShippingPaymentWrapper = styled.div`
   }
 `;
 
-const ShippingPayment = () => {
+const validationSchema = Yup.object().shape({
+  cardNumber: Yup.string().required("Card number is required"),
+  cardName: Yup.string().required("Name on card is required"),
+  cardExpiry: Yup.string().required("Expiration date is required"),
+  securityCode: Yup.string().required("Security code is required"),
+});
+
+const ShippingPayment = ({ setPaymentDetails }) => {
+  const [selectedCardName, setSelectedCardName] = useState("");
+
+  const handleCardSelection = (cardId) => {
+    setSelectedCardName(cardId);
+  };
+
+  const initialValues = {
+    cardNumber: "",
+    cardName: "",
+    cardExpiry: "",
+    securityCode: "",
+  };
+
+  const handleSubmit = (values) => {
+    setPaymentDetails(values);
+    toast.success("Payment details saved successfully");
+  };
+
   return (
     <ShippingPaymentWrapper>
-      <div className="shipping-addr">
-        <h3 className="text-xxl shipping-addr-title">Shipping Address</h3>
-        <p className="text-base text-outerspace">
-          Select the address that matches your card or payment method.
-        </p>
-        <div className="list-group">
-          <div className="list-group-item flex items-center">
-            <Input type="radio" name="shipping_addr" />
-            <span className="font-semibold text-lg">
-              Same as Billing address
-            </span>
-          </div>
-          <div className="horiz-line-separator"></div>
-          <div className="list-group-item flex items-center">
-            <Input type="radio" name="shipping_addr" />
-            <span className="font-semibold text-lg">
-              Use a different shipping address
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="shipping-method">
-        <h3 className="text-xxl shipping-method-title">Shipping Address</h3>
-        <p className="text-base text-outerspace">
-          Select the address that matches your card or payment method.
-        </p>
-        <div className="list-group">
-          <div className="list-group-item flex items-center">
-            <span className="font-semibold text-lg">
-              Arrives by Monday, June 7
-            </span>
-          </div>
-          <div className="horiz-line-separator"></div>
-          <div className="list-group-item flex items-start justify-between">
-            <p className="font-semibold text-lg">
-              Delivery Charges &nbsp;
-              <span className="flex text-base font-medium text-gray">
-                Additional fees may apply
-              </span>
-            </p>
-            <span className="font-semibold text-lg">$5.00</span>
-          </div>
-        </div>
-      </div>
-
       <div className="payment-method">
         <h3 className="text-xxl payment-method-title">Payment Method</h3>
         <p className="text-base text-outerspace">
@@ -203,11 +184,6 @@ const ShippingPayment = () => {
         <div className="list-group">
           <div className="list-group-item">
             <div className="flex items-center list-group-item-head">
-              <Input
-                type="radio"
-                className="list-group-item-check"
-                name="payment_method"
-              />
               <p className="font-semibold text-lg">
                 Credit Card
                 <span className="flex text-base font-medium text-gray">
@@ -219,12 +195,21 @@ const ShippingPayment = () => {
               {cardsData?.map((card) => {
                 return (
                   <div
-                    className="payment-card flex items-center justify-center"
+                    className={`payment-card flex items-center justify-center ${
+                      selectedCardName === card.id ? "selected" : ""
+                    }`}
                     key={card.id}
+                    onClick={() => handleCardSelection(card.id)}
                   >
-                    <Input type="radio" name="payment_cards" />
                     <div className="card-wrapper bg-white w-full h-full flex items-center justify-center">
-                      <img src={card.imgSource} alt="" />
+                      <img
+                        src={card.imgSource}
+                        alt={card.id}
+                        style={{
+                          border: selectedCardName === card.id ? `2px solid ${defaultTheme.color_sea_green}` : "none",
+                          borderRadius: "5px",
+                        }}
+                      />
                       <div className="card-selected text-sea-green">
                         <i className="bi bi-check-circle-fill"></i>
                       </div>
@@ -233,62 +218,85 @@ const ShippingPayment = () => {
                 );
               })}
             </div>
-            <div className="payment-details">
-              <div className="form-elem-group">
-                <Input
-                  type="text"
-                  className="form-elem"
-                  placeholder="Card number"
-                />
-                <Input
-                  type="text"
-                  className="form-elem"
-                  placeholder="Name of card"
-                />
-              </div>
-              <div className="form-elem-group">
-                <Input
-                  type="text"
-                  className="form-elem"
-                  placeholder="Expiration date (MM/YY)"
-                />
-                <Input
-                  type="text"
-                  className="form-elem"
-                  placeholder="Security Code"
-                />
-              </div>
-            </div>
+            <Formik
+              initialValues={initialValues}
+              validationSchema={validationSchema}
+              onSubmit={handleSubmit}
+            >
+              {({ errors, touched, setFieldValue }) => (
+                <Form className="payment-details">
+                  <div className="form-elem-group">
+                    <div className="input-elem">
+                      <Field
+                        type="text"
+                        name="cardNumber"
+                        placeholder="Card number"
+                        className={`form-elem ${
+                          errors.cardNumber && touched.cardNumber ? "required" : ""
+                        }`}
+                      />
+                      <ErrorMessage
+                        name="cardNumber"
+                        component="div"
+                        className="error-message"
+                      />
+                    </div>
+                    <div className="input-elem">
+                      <Field
+                        type="text"
+                        name="cardName"
+                        placeholder="Name on card"
+                        className={`form-elem ${
+                          errors.cardName && touched.cardName ? "required" : ""
+                        }`}
+                      />
+                      <ErrorMessage
+                        name="cardName"
+                        component="div"
+                        className="error-message"
+                      />
+                    </div>
+                  </div>
+                  <div className="form-elem-group">
+                    <div className="input-elem">
+                      <Field
+                        type="text"
+                        name="cardExpiry"
+                        placeholder="Expiration date (MM/YY)"
+                        className={`form-elem ${
+                          errors.cardExpiry && touched.cardExpiry ? "required" : ""
+                        }`}
+                      />
+                      <ErrorMessage
+                        name="cardExpiry"
+                        component="div"
+                        className="error-message"
+                      />
+                    </div>
+                    <div className="input-elem">
+                      <Field
+                        type="text"
+                        name="securityCode"
+                        placeholder="Security Code"
+                        className={`form-elem ${
+                          errors.securityCode && touched.securityCode ? "required" : ""
+                        }`}
+                      />
+                      <ErrorMessage
+                        name="securityCode"
+                        component="div"
+                        className="error-message"
+                      />
+                    </div>
+                  </div>
+                  <BaseButtonGreen type="submit">Save Payment Details</BaseButtonGreen>
+                </Form>
+              )}
+            </Formik>
           </div>
-
           <div className="horiz-line-separator"></div>
-          <div className="list-group-item flex items-center">
-            <Input
-              type="radio"
-              className="list-group-item-check"
-              name="payment_method"
-            />
-            <p className="font-semibod text-lg">
-              Cash on delivery
-              <span className="flex text-base font-medium text-gray">
-                Pay with cash upon delivery.
-              </span>
-            </p>
-          </div>
-          <div className="horiz-line-separator"></div>
-          <div className="list-group-item flex items-center">
-            <Input
-              type="radio"
-              className="list-group-item-check"
-              name="payment_method"
-            />
-            <p className="font-semibod text-lg">PayPal</p>
-          </div>
         </div>
       </div>
-      <BaseButtonGreen type="submit" className="pay-now-btn">
-        Pay Now
-      </BaseButtonGreen>
     </ShippingPaymentWrapper>
   );
 };

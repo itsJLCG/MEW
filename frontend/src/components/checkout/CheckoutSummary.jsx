@@ -76,7 +76,7 @@ const CheckoutSummaryWrapper = styled.div`
 
 const CheckoutSummary = ({ cartItems }) => {
   const subtotal = cartItems.reduce((acc, item) => acc + item.productId.price * item.quantity, 0);
-  const shipping = 5.00; // Fixed shipping cost
+  const shipping = 100; // Fixed shipping cost
   const total = subtotal + shipping;
 
   return (

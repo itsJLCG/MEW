@@ -41,7 +41,7 @@ const CartSummary = ({ cartItems }) => {
     subtotal += cartItems[i].productId.price * cartItems[i].quantity;
   }
 
-  const shippingCost = 5.00; // Example shipping cost
+  const shippingCost = 100.00; // Example shipping cost
   const grandTotal = subtotal + shippingCost;
 
   const handleCheckout = () =>{

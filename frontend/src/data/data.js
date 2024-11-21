@@ -782,19 +782,19 @@ const recentViewedData = products.slice(0, 4);
 
 const cardsData = [
   {
-    id: "card_1",
+    id: "Paypal",
     imgSource: staticImages.paypal,
   },
   {
-    id: "card_2",
+    id: "Paypass",
     imgSource: staticImages.paypass,
   },
   {
-    id: "card_3",
+    id: "GooglePay",
     imgSource: staticImages.googlePay,
   },
   {
-    id: "card_4",
+    id: "VISA",
     imgSource: staticImages.visa,
   },
 ];

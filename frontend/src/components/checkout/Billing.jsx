@@ -1,10 +1,12 @@
 import React from "react";
 import styled from "styled-components";
-import { Input } from "../../styles/form";
-import { BaseButtonGreen } from "../../styles/button";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import CheckoutSummary from "./CheckoutSummary";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import PropTypes from "prop-types";
+import { BaseButtonGreen } from "../../styles/button"; // Import BaseButtonGreen
+import { toast } from "react-hot-toast";
 
 const BillingOrderWrapper = styled.div`
   display: grid;
@@ -19,7 +21,6 @@ const BillingOrderWrapper = styled.div`
     grid-template-columns: 100%;
   }
 `;
-
 const BillingDetailsWrapper = styled.div`
   @media (max-width: ${breakpoints.lg}) {
     order: 2;
@@ -38,6 +39,11 @@ const BillingDetailsWrapper = styled.div`
       label {
         margin-bottom: 8px;
         display: block;
+        color: ${defaultTheme.color_outerspace};
+
+        &.required {
+          border-color: red;
+        }
       }
 
       input,
@@ -51,9 +57,23 @@ const BillingDetailsWrapper = styled.div`
         border: 1px solid ${defaultTheme.color_platinum};
         font-size: 12px;
 
+        &:focus {
+          border-color: ${defaultTheme.color_sea_green};
+        }
+
+         &.required {
+          border-color: red;
+        }
+
         &::placeholder {
           font-size: 12px;
         }
+      }
+
+      .error {
+        color: red;
+        font-size: 12px;
+        margin-top: 4px;
       }
     }
 
@@ -74,108 +94,176 @@ const BillingDetailsWrapper = styled.div`
       column-gap: 10px;
       margin-top: 16px;
     }
-
-    .contd-delivery-btn {
-      margin-top: 20px;
-
-      @media (max-width: ${breakpoints.sm}) {
-        width: 100%;
-      }
-    }
   }
 `;
 
-const Billing = ({ cartItems }) => {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-  };
+const Billing = ({ cartItems, setBillingDetails }) => {
+  const formik = useFormik({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      country: "",
+      address: "",
+      city: "",
+      zipCode: "",
+      phoneNumber: "",
+    },
+
+    validationSchema: Yup.object({
+      firstName: Yup.string().required("First Name is required"),
+      lastName: Yup.string().required("Last Name is required"),
+      country: Yup.string().required("Country is required"),
+      address: Yup.string().required("Address is required"),
+      city: Yup.string().required("City is required"),
+      zipCode: Yup.string().required("Zip Code is required"),
+      phoneNumber: Yup.string().required("Phone Number is required"),
+    }),
+    onSubmit: (values) => {
+      setBillingDetails(values);
+      toast.success("Billing details saved successfully");
+    },
+  });
 
   return (
     <BillingOrderWrapper className="billing-and-order grid items-start">
       <BillingDetailsWrapper>
         <h4 className="text-xxl font-bold text-outerspace">Billing Details</h4>
-        <form className="checkout-form" onSubmit={handleSubmit}>
+        <form className="checkout-form" onSubmit={formik.handleSubmit}>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
-              <label
-                htmlFor="firstName"
-                className="text-base text-outerspace font-semibold"
-              >
+              <label htmlFor="firstName" className="text-base font-semibold">
                 First Name*
               </label>
-              <Input id="firstName" type="text" placeholder="First Name" />
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                placeholder="First Name"
+                className="form-control"
+                value={formik.values.firstName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.firstName && formik.errors.firstName ? (
+                <div className="error">{formik.errors.firstName}</div>
+              ) : null}
             </div>
             <div className="input-elem">
-              <label
-                htmlFor="lastName"
-                className="text-base text-outerspace font-semibold"
-              >
+              <label htmlFor="lastName" className="text-base font-semibold">
                 Last Name*
               </label>
-              <Input id="lastName" type="text" placeholder="Last Name" />
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                placeholder="Last Name"
+                className="form-control"
+                value={formik.values.lastName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.lastName && formik.errors.lastName ? (
+                <div className="error">{formik.errors.lastName}</div>
+              ) : null}
             </div>
           </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
-              <label
-                htmlFor="country"
-                className="text-base text-outerspace font-semibold"
-              >
+              <label htmlFor="country" className="text-base font-semibold">
                 Country / Region*
               </label>
-              <Input id="country" type="text" placeholder="Country / Region" />
+              <input
+                id="country"
+                name="country"
+                type="text"
+                placeholder="Country / Region"
+                className="form-control"
+                value={formik.values.country}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.country && formik.errors.country ? (
+                <div className="error">{formik.errors.country}</div>
+              ) : null}
             </div>
             <div className="input-elem">
-              <label
-                htmlFor="address"
-                className="text-base text-outerspace font-semibold"
-              >
+              <label htmlFor="address" className="text-base font-semibold">
                 Street Address*
               </label>
-              <Input id="address" type="text" placeholder="House number and street name" />
+              <input
+                id="address"
+                name="address"
+                type="text"
+                placeholder="House number and street name"
+                className="form-control"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.address && formik.errors.address ? (
+                <div className="error">{formik.errors.address}</div>
+              ) : null}
             </div>
           </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
-              <label
-                htmlFor="city"
-                className="text-base text-outerspace font-semibold"
-              >
+              <label htmlFor="city" className="text-base font-semibold">
                 City*
               </label>
-              <Input id="city" type="text" placeholder="Town / City" />
+              <input
+                id="city"
+                name="city"
+                type="text"
+                placeholder="Town / City"
+                className="form-control"
+                value={formik.values.city}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.city && formik.errors.city ? (
+                <div className="error">{formik.errors.city}</div>
+              ) : null}
             </div>
             <div className="input-elem">
-              <label
-                htmlFor="zipCode"
-                className="text-base text-outerspace font-semibold"
-              >
+              <label htmlFor="zipCode" className="text-base font-semibold">
                 Zip Code*
               </label>
-              <Input id="zipCode" type="text" placeholder="Postal Code" />
+              <input
+                id="zipCode"
+                name="zipCode"
+                type="text"
+                placeholder="Postal Code"
+                className="form-control"
+                value={formik.values.zipCode}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.zipCode && formik.errors.zipCode ? (
+                <div className="error">{formik.errors.zipCode}</div>
+              ) : null}
             </div>
           </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
-              <label
-                htmlFor="phone"
-                className="text-base text-outerspace font-semibold"
-              >
-                Phone*
+              <label htmlFor="phoneNumber" className="text-base font-semibold">
+                Phone Number*
               </label>
-              <Input id="phone" type="text" placeholder="Phone" />
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="text"
+                placeholder="Phone Number"
+                className="form-control"
+                value={formik.values.phoneNumber}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
+                <div className="error">{formik.errors.phoneNumber}</div>
+              ) : null}
             </div>
           </div>
-          <BaseButtonGreen type="submit" className="contd-delivery-btn">
-            Continue to delivery
-          </BaseButtonGreen>
-          <div className="input-check-group flex items-center flex-wrap">
-            <Input type="checkbox" id="saveInfo" />
-            <label htmlFor="saveInfo" className="text-base">
-              Save my information for a faster checkout
-            </label>
-          </div>
+          <BaseButtonGreen type="submit">Save Billing Details</BaseButtonGreen>
         </form>
       </BillingDetailsWrapper>
       <CheckoutSummary cartItems={cartItems} />
@@ -185,6 +273,7 @@ const Billing = ({ cartItems }) => {
 
 Billing.propTypes = {
   cartItems: PropTypes.array.isRequired,
+  setBillingDetails: PropTypes.func.isRequired,
 };
 
 export default Billing;

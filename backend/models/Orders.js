@@ -21,7 +21,7 @@ const orderSchema = mongoose.Schema({
             type: String,
             required: true
         },
-        phoneNo: {
+        phoneNumber: {
             type: String,
             required: true
         },
@@ -61,16 +61,30 @@ const orderSchema = mongoose.Schema({
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
                 ref: 'Product'
-            }
+            },
         }
     ],
     paymentInfo: {
-        id: {
-            type: String
+        cardNumber: 
+        {
+            type: String,
+            required: true
         },
-        status: {
-            type: String
-        }
+        cardName: 
+        {
+            type: String,
+            required: true
+        },
+        cardExpiry: 
+        {
+            type: String,
+            required: true
+        },
+        securityCode:
+        {
+            type: Number,
+            required: true
+        }  
     },
     paidAt: {
         type: Date
