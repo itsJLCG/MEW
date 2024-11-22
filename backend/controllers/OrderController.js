@@ -74,6 +74,66 @@ exports.getSingleOrder = async (req, res, next) => {
     });
 };
 
+// Export to get all orders
+exports.getAllOrders = async (req, res, next) => {
+  try {
+      const orders = await Order.find().populate('customer', 'firstName lastName').populate('orderItems.product');
+      return res.status(200).json({
+          success: true,
+          orders
+      });
+  } catch (error) {
+      return res.status(500).json({
+          message: 'Server error',
+          error: error.message
+      });
+  }
+};
+
+// Export to update order status
+exports.updateOrderStatus = async (req, res, next) => {
+  const { orderId, status } = req.body;
+
+  try {
+    // Check if the order ID and status are provided
+    if (!orderId || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID and status are required',
+      });
+    }
+
+    // Find the order by ID and update the orderStatus field
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId, 
+      { orderStatus: status }, 
+      { new: true, runValidators: true }
+    );
+
+    // If the order wasn't found
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    // Return the updated order
+    return res.status(200).json({
+      success: true,
+      message: 'Order status updated successfully',
+      order: updatedOrder,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: error.message,
+    });
+  }
+};
+
+
 
 // //admin side
 

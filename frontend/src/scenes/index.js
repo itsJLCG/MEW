@@ -18,6 +18,7 @@ import Categories from "./categories";
 import Products from "./products";
 import Promos from "./promos";
 import Users from "./users";
+import OrderInfo from "./orderInfo";
 
 export {
   Navbar,
@@ -40,4 +41,5 @@ export {
   Products,
   Promos,
   Users,
+  OrderInfo,
 };

@@ -53,6 +53,7 @@ import {
   Categories,
   Users,
   Brands,
+  OrderInfo,
 } from "./scenes";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
@@ -158,6 +159,7 @@ function App() {
                       <Route path="line" element={<Line />} />
                       <Route path="faq" element={<FAQ />} />
                       <Route path="geography" element={<Geography />} />
+                      <Route path="orderInfo" element={<OrderInfo/>} />
                     </Route>
                </Route>
 

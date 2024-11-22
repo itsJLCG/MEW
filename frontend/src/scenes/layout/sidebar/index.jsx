@@ -208,7 +208,7 @@ const SideBar = () => {
         >
           <Item
             title="Order Information"
-            path="/form"
+            path="/admin/orderInfo"
             colors={colors}
             icon={<PersonOutlined />}
           />
