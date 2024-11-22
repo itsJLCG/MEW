@@ -47,4 +47,35 @@ const sendRegistrationEmail = async (newUserEmail, verificationUrl) => {
         }
     });
 
-  module.exports = sendRegistrationEmail;
+const sendDeliveryEmail = async (customerEmail, orderItems, subtotal, grandTotal) => {
+try {
+    const itemsHtml = orderItems.map(item => `
+    <li>
+        ${item.name} - Quantity: ${item.quantity} - Price: ${item.price}
+    </li>
+    `).join('');
+
+    const info = await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to: customerEmail,
+    subject: 'Your Order has been Delivered',
+    html: `
+        <p>Your order has been delivered successfully. Here are the details:</p>
+        <ul>
+        ${itemsHtml}
+        </ul>
+        <p>Subtotal: ${subtotal}</p>
+        <p>Grand Total: ${grandTotal}</p>
+    `
+    });
+
+    console.log('Delivery email sent to:', customerEmail);
+} catch (error) {
+    console.error('Error sending delivery email:', error);
+}
+};
+
+module.exports = {
+sendRegistrationEmail,
+sendDeliveryEmail
+};

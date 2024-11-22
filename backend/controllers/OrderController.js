@@ -3,6 +3,7 @@ const Product = require('../models/Products');
 const Customer = require('../models/Customer');
 const Cart = require('../models/Carts'); // Import the Cart model
 const moment = require('moment');
+const {sendDeliveryEmail} = require('../utils/sendEmail'); // Import the sendEmail function
 
 exports.createOrder = async (req, res, next) => {
     // Fetch associated Customer record
@@ -101,12 +102,10 @@ exports.getAllOrders = async (req, res, next) => {
   }
 };
 
-// Export to update order status
 exports.updateOrderStatus = async (req, res, next) => {
   const { orderId, status } = req.body;
 
   try {
-    // Check if the order ID and status are provided
     if (!orderId || !status) {
       return res.status(400).json({
         success: false,
@@ -114,14 +113,12 @@ exports.updateOrderStatus = async (req, res, next) => {
       });
     }
 
-    // Find the order by ID and update the orderStatus field
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId, 
       { orderStatus: status }, 
       { new: true, runValidators: true }
-    );
+    ).populate('customer', 'email firstName lastName').populate('orderItems.product');
 
-    // If the order wasn't found
     if (!updatedOrder) {
       return res.status(404).json({
         success: false,
@@ -129,7 +126,19 @@ exports.updateOrderStatus = async (req, res, next) => {
       });
     }
 
-    // Return the updated order
+    if (status === 'Delivered') {
+      const customerEmail = updatedOrder.customer.email;
+      const orderItems = updatedOrder.orderItems.map(item => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.price
+      }));
+      const subtotal = updatedOrder.itemsPrice;
+      const grandTotal = updatedOrder.totalPrice;
+
+      await sendDeliveryEmail(customerEmail, orderItems, subtotal, grandTotal);
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Order status updated successfully',
