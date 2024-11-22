@@ -11,6 +11,9 @@ import { defaultTheme } from '../../styles/themes/default';
 import { Toaster, toast } from 'react-hot-toast';
 import { Button, TextField } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
+import { Filter } from 'bad-words'; // Use named import
+
+const filter = new Filter(); // Create an instance of the filter
 
 const OrderListScreenWrapper = styled.div`
   padding: 20px 0;
@@ -192,10 +195,13 @@ const OrderListScreen = () => {
 
   const handleSubmitReview = async (productId) => {
     try {
+      // Clean the review text by masking bad words
+      const cleanedReviewText = filter.clean(reviewText);
+  
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
         'http://localhost:4000/api/reviews/review',
-        { productId, reviewText, rating },
+        { productId, reviewText: cleanedReviewText, rating }, // Send the cleaned text
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -203,24 +209,25 @@ const OrderListScreen = () => {
         }
       );
       toast.success('Review submitted successfully!');
-      
-      // Update reviews state with new review (both reviewText and rating)
+  
+      // Update reviews state with the new masked review
       setReviews((prev) => ({
         ...prev,
         [productId]: [
           ...(prev[productId] || []), // Keep existing reviews if any
-          { reviewText, rating },      // Add the new review with text and rating
+          { reviewText: cleanedReviewText, rating }, // Add the cleaned review
         ],
       }));
-      
-      setIsReviewing(null); // Close review form
+  
+      // Reset form
+      setIsReviewing(null);
       setReviewText('');
-      setRating(1); // Reset rating
+      setRating(1);
     } catch (error) {
       console.error(error);
       toast.error('Failed to submit review.');
     }
-  };
+  };  
   
   
 
