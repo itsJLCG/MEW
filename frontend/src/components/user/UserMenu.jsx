@@ -107,14 +107,12 @@ const UserMenu = () => {
 
   return (
     <div>
-      <Title titleText={`Hello ${username}`} />
-      <p className="text-base font-light italic">Welcome to your account.</p>
 
       <NavMenuWrapper>
         <ul className="nav-menu-list grid">
           <li className="nav-menu-item">
             <Link
-              to="/order"
+              to="/home/order"
               className={`nav-menu-link flex items-center ${
                 location.pathname === "/order" ||
                 location.pathname === "/order_detail"
@@ -132,25 +130,7 @@ const UserMenu = () => {
           </li>
           <li className="nav-menu-item">
             <Link
-              to="/wishlist"
-              className={`nav-menu-link flex items-center ${
-                location.pathname === "/wishlist" ||
-                location.pathname === "/empty_wishlist"
-                  ? "active"
-                  : ""
-              }`}
-            >
-              <span className="nav-link-icon flex items-center justify-center">
-                <img src="./assets/icons/ac_heart.svg" alt="" />
-              </span>
-              <span className="text-base font-semibold nav-link-text no-wrap">
-                Wishlist
-              </span>
-            </Link>
-          </li>
-          <li className="nav-menu-item">
-            <Link
-              to="/account"
+              to="/home/account"
               className={`nav-menu-link flex items-center ${
                 location.pathname === "/account" ||
                 location.pathname === "/account/add"
@@ -163,16 +143,6 @@ const UserMenu = () => {
               </span>
               <span className="text-base font-semibold nav-link-text no-wrap">
                 My Account
-              </span>
-            </Link>
-          </li>
-          <li className="nav-menu-item">
-            <Link to="/" className={`nav-menu-link flex items-center`}>
-              <span className="nav-link-icon flex items-center justify-center">
-                <img src="./assets/icons/ac_sign_out.svg" alt="" />
-              </span>
-              <span className="text-base font-semibold nav-link-text no-wrap">
-                Sign out
               </span>
             </Link>
           </li>

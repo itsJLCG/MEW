@@ -19,6 +19,7 @@ import Products from "./products";
 import Promos from "./promos";
 import Users from "./users";
 import OrderInfo from "./orderInfo";
+import MonthlySalesChart from "./charts/MonthlySalesChart";
 
 export {
   Navbar,
@@ -42,4 +43,5 @@ export {
   Promos,
   Users,
   OrderInfo,
+  MonthlySalesChart,
 };

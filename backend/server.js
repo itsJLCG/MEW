@@ -19,6 +19,7 @@ const authRoutes = require("./routes/auth");
 const cartRoutes = require('./routes/carts');    
 // const customerRoutes = require('./routes/customers');   
 const orderRoutes = require('./routes/orders');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 // Mongoose
 mongoose
@@ -59,6 +60,7 @@ app.use('/api', productRoutes);
 app.use('/api', brandRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', promoRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Use the user routes
 app.use("/api/auth", authRoutes);
@@ -76,4 +78,3 @@ app.use("/api", orderRoutes);
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Route not found' });
   });
-

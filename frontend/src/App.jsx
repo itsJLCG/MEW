@@ -54,6 +54,7 @@ import {
   Users,
   Brands,
   OrderInfo,
+  MonthlySalesChart,
 } from "./scenes";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
@@ -160,6 +161,7 @@ function App() {
                       <Route path="faq" element={<FAQ />} />
                       <Route path="geography" element={<Geography />} />
                       <Route path="orderInfo" element={<OrderInfo/>} />
+                      <Route path="monthlysaleschart" element={<MonthlySalesChart/>} />
                     </Route>
                </Route>
 

@@ -245,7 +245,7 @@ const SideBar = () => {
         >
           <Item
             title="Monthly Sales Chart"
-            path="/monthlysaleschart"
+            path="/admin/monthlysaleschart"
             colors={colors}
             icon={<BarChartOutlined />}
           />

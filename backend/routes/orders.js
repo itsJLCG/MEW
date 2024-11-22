@@ -14,6 +14,7 @@ const { createOrder,
     salesPerMonth,
     getAllOrders,
     updateOrderStatus,
+    getMonthlySalesWithDateRange,
 } = require('../controllers/OrderController')
 
 const { isAuthenticatedUser} = require('../middlewares/auth')
@@ -28,6 +29,7 @@ router.get('/order/:id', isAuthenticatedUser, getSingleOrder);
 router.get('/orderInfo', isAuthenticatedUser, getAllOrders);
 // router.put('/orderInfo:id', isAuthenticatedUser, updateOrderStatus);
 router.put('/updateOrderStatus', updateOrderStatus);
+router.get('/sales/monthly', getMonthlySalesWithDateRange);
 
 // //admin
 // router.route('/admin/order/:id').put(isAuthenticatedUser, updateOrder).delete(isAuthenticatedUser, deleteOrder);

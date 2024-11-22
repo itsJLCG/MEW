@@ -39,6 +39,7 @@ import {
   WavesOutlined,
 } from "@mui/icons-material";
 import { tokens } from "../../theme";
+import MonthlySalesChart from "../charts/MonthlySalesChart";
 
 function Dashboard() {
   const theme = useTheme();
@@ -186,6 +187,29 @@ function Dashboard() {
       />
     </Box>
 
+
+<Box
+  gridColumn="span 6"
+  backgroundColor={colors.primary[400]}
+  display="flex"
+  alignItems="center"
+  justifyContent="center"
+  flexDirection="column"
+  height="650px" // Set the desired height for the Box
+  borderRadius="10px"
+  overflow="hidden" // Ensure overflow is hidden to clip any excess
+>
+  <Box
+    width="100%"
+    height="100%" // Make the inner Box fill the parent container
+    display="flex"
+    alignItems="center"
+    justifyContent="center"
+  >
+    <MonthlySalesChart /> {/* Chart Component */}
+  </Box>
+</Box>
+
     {/* Logo/Image Section */}
     <Box
       gridColumn="span 6" // Half the width of the grid
@@ -209,21 +233,10 @@ function Dashboard() {
       />
 </Box>
 
-<Box
-      gridColumn="span 6" // Half the width of the grid
-      backgroundColor={colors.primary[400]}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      flexDirection="column"
-      height="300px"
-      borderRadius="10px"
-    >
-      <p>CHARTS HERE</p>
-</Box>
       </Box>
     </Box>
   );
 }
 
 export default Dashboard;
+
