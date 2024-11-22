@@ -18,6 +18,8 @@ import * as Yup from 'yup';
 //firebase
 import { signInWithEmailAndPassword  } from "firebase/auth";
 import { auth } from "../../components/firebase/firebase"; // Import Firebase auth
+import { getMessaging, getToken, deleteToken } from "firebase/messaging";
+import { messaging } from "../../components/firebase/firebase";
 
 const SignInScreenWrapper = styled.section`
   .form-separator {
@@ -160,6 +162,40 @@ const SignInScreen = () => {
     password: Yup.string().required('Password is required'),
   });
 
+  const onLoginSuccess = async (customerId) => {
+    try {
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('Service Worker registered with scope:', registration.scope);
+
+        // Delete existing FCM token
+        const existingToken = await getToken(messaging, { vapidKey: 'BIq1zeTLBmpI13o48c2ZzQdeEWB_fS5c_ED5lje65DRxAqNVPxmWoMMqcqq5g5q3zc6hyXa4TwhTU2Dj5-GPG1E', serviceWorkerRegistration: registration });
+        if (existingToken) {
+          await deleteToken(messaging);
+          console.log('Existing FCM token deleted');
+        }
+
+        // Request a new FCM token
+        const fcmToken = await getToken(messaging, { vapidKey: 'BIq1zeTLBmpI13o48c2ZzQdeEWB_fS5c_ED5lje65DRxAqNVPxmWoMMqcqq5g5q3zc6hyXa4TwhTU2Dj5-GPG1E', serviceWorkerRegistration: registration });
+
+        if (fcmToken) {
+          console.log('New FCM Token:', fcmToken);
+
+          // Send FCM token to backend
+          await axios.post(`http://localhost:4000/api/auth/store-fcm-token`, { customerId, fcmToken }, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+          });
+
+          console.log('FCM token stored successfully');
+        } else {
+          console.log('No registration token available. Request permission to generate one.');
+        }
+      }
+    } catch (error) {
+      console.error('An error occurred while retrieving token. ', error);
+    }
+  };
+
   // Formik setup
   const formik = useFormik({
     initialValues: {
@@ -192,7 +228,11 @@ const SignInScreen = () => {
         const { customerId } = data; // Corrected from `response.data` to `data`
 
         localStorage.setItem('authToken', data.token);
+        localStorage.setItem('customerId', customerId); // Store customerId in localStorage
         console.log(customerId)
+
+        await onLoginSuccess(customerId);
+
          // After setting authToken and customerId in localStorage
          if (customerId) {
           try {

@@ -58,7 +58,7 @@ exports.Register = async function (req, res) {
             address,
             zipCode,
             profileImage: profileImage,
-            user: savedUser._id // Link the customer to the user
+            user: savedUser._id, // Link the customer to the user
         });
 
         // Save the customer in the database with the same session
@@ -118,8 +118,11 @@ exports.verifyEmail = async function (req, res) {
 
 // Checks if Verified user before sending token
 exports.Login = async function (req, res) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        const { email, password } = req.body;
+        const { email, password, fcmToken } = req.body;
 
         // Check if email and password are provided
         if (!email || !password) {
@@ -152,6 +155,15 @@ exports.Login = async function (req, res) {
         // Generate JWT token
         const token = user.getJwtToken();
 
+         // Update the customer's fcmToken
+         customer.fcmToken = fcmToken;
+         await customer.save({ session });
+        
+         // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+
+
         // Return the token, user information, and customer ID
         return res.status(201).json({
             success: true,
@@ -159,9 +171,53 @@ exports.Login = async function (req, res) {
             token,
             customerId: customer._id
         });
+
+        
+       
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Store FCM token
+exports.storeFcmToken = async function (req, res) {
+    try {
+        const { customerId, fcmToken } = req.body;
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        customer.fcmToken = fcmToken;
+        await customer.save();
+
+        res.status(200).json({ message: 'FCM token updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Clear FCM token on logout
+exports.logout = async function (req, res) {
+    try {
+        const { customerId } = req.body;
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        customer.fcmToken = null;
+        await customer.save();
+
+        res.status(200).json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 

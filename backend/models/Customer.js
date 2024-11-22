@@ -76,6 +76,10 @@ const customerSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    fcmToken: {
+        type: String,
+        required: false,
+    },
 });
 
 module.exports = mongoose.model("Customer", customerSchema);

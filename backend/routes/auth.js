@@ -5,7 +5,9 @@ const { Register,
      Login, 
     //  getUserProfile, 
     //  updateProfile, 
-     verifyEmail } = require('../controllers/auth');
+     verifyEmail,
+     storeFcmToken,
+     logout } = require('../controllers/auth');
 // const { isAuthenticatedUser} = require('../middlewares/auth');
 const upload = require("../utils/multer");
 
@@ -16,6 +18,12 @@ router.post("/signup", upload.single('profileImage'), Register);
 
 // Email verification route
 router.get('/verify-email/:token', verifyEmail);
+
+// Route to store FCM token
+router.post('/store-fcm-token', storeFcmToken);
+
+// Route to clear FCM token on logout
+router.post('/logout', logout);
 
 //Profile w/ Middleware Routes
 // router.get('/profile', isAuthenticatedUser, getUserProfile);

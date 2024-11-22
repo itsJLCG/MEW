@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const LogoutButton = styled(LogoutIcon)`
   cursor: pointer;
@@ -186,12 +187,28 @@ const Header = () => {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken'); // Remove the authToken
-    localStorage.removeItem('hasCart'); 
-    setHasCart(false);
-    toast.success("Logout successfully!");
-    navigate('/auth/sign_in'); // Redirect to login page
+  const handleLogout = async () => {
+    try {
+      const customerId = localStorage.getItem('customerId'); // Retrieve customerId from localStorage
+
+      if (!customerId) {
+        toast.error('Customer ID not found. Please try again.');
+        return;
+      }
+
+      await axios.post('http://localhost:4000/api/auth/logout', { customerId }, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+      });
+
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('hasCart');
+      localStorage.removeItem('customerId'); // Remove customerId from localStorage
+      toast.success('Logged out successfully!');
+      navigate('/auth/sign_in');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Logout failed. Please try again.');
+    }
   };
 
   const handleCartClick = () => {
