@@ -92,6 +92,19 @@ const OrderListScreenWrapper = styled.div`
       font-size: 16px;
       font-weight: bold;
     }
+
+    .update-button {
+          background-color: #10b9b0;
+          color: white;
+          padding: 5px 10px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #e374a1;
+          }
+    }
   }
 `;
 
@@ -229,7 +242,15 @@ const OrderListScreen = () => {
     }
   };  
   
-  
+  const handleEditReview = (productId) => {
+    const productReviews = reviews[productId];
+    if (productReviews && productReviews.length > 0) {
+      const { reviewText, rating } = productReviews[0]; // Load the first review
+      setReviewText(reviewText);
+      setRating(rating);
+      setIsReviewing(productId);
+    }
+  };
 
   const handleCloseReviewForm = () => {
     setIsReviewing(null); // Close the review form
@@ -283,21 +304,71 @@ const OrderListScreen = () => {
                           )}
                           {reviews[item.product] && reviews[item.product].length > 0 ? (
                             <div>
-                              <h5>Reviews:</h5>
-                              {reviews[item.product].map((review, idx) => (
-                                <div key={idx}>
-                                  <p>{review.reviewText}</p> {/* Display the review text */}
-                                  <p>Rating: {review.rating} <StarIcon style={{ color: 'gold' }} /></p> {/* Display the rating */}
-                                </div>
-                              ))}
-                            </div>
+                            <h5>Reviews:</h5>
+                            {reviews[item.product].map((review, idx) => (
+                              <div key={idx}>
+                                {/* Display the review text */}
+                                <p>{review.reviewText}</p>
+                                {/* Display the rating */}
+                                <p>
+                                  Rating: {review.rating} <StarIcon style={{ color: 'gold' }} />
+                                </p>
+                              </div>
+                            ))}
+                            {order.orderStatus === 'Completed' && reviews[item.product] && (
+                              <>
+                                <button
+                                  className="update-button"
+                                  onClick={() => handleEditReview(item.product)}
+                                >
+                                  Edit Review
+                                </button>
+                                {isReviewing === item.product && (
+                                  <ReviewFormWrapper>
+                                    <TextField
+                                      multiline
+                                      rows={4}
+                                      fullWidth
+                                      value={reviewText}
+                                      onChange={(e) => setReviewText(e.target.value)}
+                                      label="Edit your review"
+                                      variant="outlined"
+                                      style={{ marginBottom: '10px' }}
+                                    />
+                                    <div className="rating">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <span
+                                          key={star}
+                                          style={{
+                                            cursor: 'pointer',
+                                            color: star <= rating ? 'gold' : 'gray',
+                                          }}
+                                          onClick={() => setRating(star)}
+                                        >
+                                          <StarIcon />
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <Button
+                                      variant="contained"
+                                      onClick={() => handleUpdateReview(item.product)}
+                                    >
+                                      Update Review
+                                    </Button>
+                                    <Button onClick={handleCloseReviewForm}>Cancel</Button>
+                                  </ReviewFormWrapper>
+                                )}
+                              </>
+                            )}
+                          </div>
+                          
+                            
                           ) : isReviewing === item.product && (
                             <ReviewFormWrapper>
                               <TextField
                                 multiline
                                 rows={4}
                                 fullWidth
-                                value={reviewText}
                                 onChange={(e) => setReviewText(e.target.value)}
                                 label="Write your review"
                                 variant="outlined"

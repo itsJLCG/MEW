@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import styled from "styled-components";
 import { Container, ContentStylings, Section } from "../../styles/styles";
@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import ProductList from "../../components/product/ProductList";
 import Title from "../../components/common/Title";
 import ProductFilter from "../../components/product/ProductFilter";
+import { Pagination } from "@mui/material";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 
 const ProductsContent = styled.div`
@@ -35,7 +36,6 @@ const ProductsContentRight = styled.div`
   padding: 16px 40px;
   height: 100%;
   overflow-y: auto;
-  max-height: 950px;
 
   .products-right-top {
     display: flex;
@@ -72,15 +72,6 @@ const ProductsContentRight = styled.div`
     padding-left: 0;
     padding-right: 0;
   }
-
-  .product-card-list {
-    grid-template-columns: repeat(auto-fill, repeat(290px, auto));
-  }
-
-  .product-card {
-    padding-left: 0;
-    padding-right: 0;
-  }
 `;
 
 const DescriptionContent = styled.div`
@@ -95,20 +86,19 @@ const DescriptionContent = styled.div`
 const ProductListScreen = () => {
   const [products, setProducts] = useState([]);
   const [displayedProducts, setDisplayedProducts] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollContainerRef = useRef(null); // Reference to the scroll container
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
 
-  const productsPerPage = 100; // Define products per page for pagination
+  const productsPerPage = 6;
 
   const breadcrumbItems = [
     { label: "Home", link: "/home" },
     { label: "Products", link: "" },
   ];
 
-  // Fetch products, categories, and brands on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -136,6 +126,7 @@ const ProductListScreen = () => {
         }));
 
         setProducts(productsWithNames);
+        setTotalPages(Math.ceil(productsWithNames.length / productsPerPage));
         setDisplayedProducts(productsWithNames.slice(0, productsPerPage));
       } catch (error) {
         console.error("Failed to fetch data", error);
@@ -145,10 +136,10 @@ const ProductListScreen = () => {
     fetchProducts();
   }, []);
 
-  // Filter products based on selected category, brand, or price range
   useEffect(() => {
-    const filterProducts = () => {
+    const filterAndPaginateProducts = () => {
       let filtered = [...products];
+
       if (selectedCategory) {
         filtered = filtered.filter(
           (product) => product.category === selectedCategory
@@ -164,42 +155,19 @@ const ProductListScreen = () => {
             product.price <= selectedPriceRange[1]
         );
       }
-      // Reset the displayed products when filters are applied
-      setDisplayedProducts(filtered.slice(0, productsPerPage)); // Start from first filtered page
+
+      const start = (currentPage - 1) * productsPerPage;
+      const end = start + productsPerPage;
+      setDisplayedProducts(filtered.slice(start, end));
+      setTotalPages(Math.ceil(filtered.length / productsPerPage));
     };
 
-    filterProducts();
-  }, [selectedCategory, selectedBrand, selectedPriceRange, products]);
+    filterAndPaginateProducts();
+  }, [selectedCategory, selectedBrand, selectedPriceRange, products, currentPage]);
 
-  // Handle infinite scroll
-  const handleScroll = () => {
-    const container = scrollContainerRef.current;
-
-    if (!container) return;
-
-    const { scrollTop, clientHeight, scrollHeight } = container;
-
-    // Check if user is near the bottom
-    if (scrollTop + clientHeight >= scrollHeight) {
-      // After reaching the last product, jump back to the first product
-      if (currentIndex + productsPerPage >= products.length) {
-        setCurrentIndex(0);
-        container.scrollTo(0, 0); // Scroll back to the top
-      } else {
-        setCurrentIndex((prev) => prev + productsPerPage); // Load the next set of products
-      }
-    }
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
   };
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-
-    // Add scroll event listener
-    container?.addEventListener("scroll", handleScroll);
-
-    // Cleanup event listener
-    return () => container?.removeEventListener("scroll", handleScroll);
-  }, [currentIndex, products]);
 
   return (
     <main className="page-py-spacing">
@@ -207,7 +175,7 @@ const ProductListScreen = () => {
         <Breadcrumb items={breadcrumbItems} />
         <ProductsContent className="grid items-start">
           <ProductsContentLeft>
-            <ProductFilter 
+            <ProductFilter
               selectedCategory={selectedCategory}
               selectedBrand={selectedBrand}
               setSelectedCategory={setSelectedCategory}
@@ -216,24 +184,19 @@ const ProductListScreen = () => {
               selectedPriceRange={selectedPriceRange}
             />
           </ProductsContentLeft>
-          <ProductsContentRight ref={scrollContainerRef}>
-            <div className="products-right-top flex items-center justify-between">
+          <ProductsContentRight>
+          <div className="products-right-top flex items-center justify-between">
               <h4 className="text-xxl">MEW Clothing</h4>
               <ul className="products-right-nav flex items-center justify-end flex-wrap">
-                <li>
-                  <Link to="/home/product" className="active text-lg font-semibold">
-                    New
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/home/product" className="text-lg font-semibold">
-                    Recommended
-                  </Link>
-                </li>
+                <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}
+              />
               </ul>
             </div>
-
-            {/* Display Products starting from the current index */}
             <ProductList products={displayedProducts} />
           </ProductsContentRight>
         </ProductsContent>
