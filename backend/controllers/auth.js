@@ -223,114 +223,192 @@ exports.logout = async function (req, res) {
     }
 };
 
+exports.googleLogin = async function (req, res) {
+    const session = await mongoose.startSession(); // Start a session for transaction
+    session.startTransaction();
 
-// // Uncommented example: Get user profile function
-// exports.getUserProfile = async function (req, res, next) {
-//     try {
-//         // Fetch user by ID
-//         const user = await User.findById(req.user.id);
+    try {
+        const { email, firebaseUid } = req.body;
+        console.log("Received Google login request:", { email, firebaseUid });
 
-//         // Fetch customer details linked to this user
-//         const customer = await Customer.findOne({ user: req.user.id });
+        // Check if the user already exists
+        let user = await User.findOne({ email });
+        if (!user) {
+            console.log("User not found, creating a new user");
 
-//         // Check if both user and customer exist
-//         if (!user || !customer) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: "User or customer details not found"
-//             });
-//         }
+            // Create a new User instance if not exists
+            user = new User({
+                email,
+                firebaseUid,
+                role: "customer", // Set role as customer
+                verified: true, // Google users are considered verified
+                status: "active" // Google users are considered active
+            });
 
-//         // Return user and customer details in the response
-//         return res.status(200).json({
-//             success: true,
-//             user: {
-//                 _id: user._id,
-//                 username: user.username,
-//                 email: user.email,
-//                 role: user.role
-//             },
-//             customer: {
-//                 _id: customer._id,
-//                 firstName: customer.firstName,
-//                 lastName: customer.lastName,
-//                 phoneNumber: customer.phoneNumber,
-//                 address: customer.address,
-//                 zipCode: customer.zipCode,
-//                 profileImage: customer.profileImage
-//             }
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: "Error fetching user profile" });
-//     }
-// }
+            // Save the user in the database with the transaction session
+            await user.save({ session });
+            console.log("New user created and saved:", user);
 
-// // Uncommented example: Update User and Customer profile function
-// exports.updateProfile = async function (req, res, next) {
-//     try {
-//         const { username, email, firstName, lastName, phoneNumber, address, zipCode } = req.body;
+            // Create a new Customer instance reference to the User with default values
+            const newCustomer = new Customer({
+                user: user._id, // Link the customer to the user
+                firstName: 'FirstName',
+                lastName: 'LastName',
+                phoneNumber: '09283447155',
+                address: 'Default Address',
+                zipCode: '1700',
+                profileImage: {
+                    public_id: 'register/users/kbr9b1dcvxicc618sejk',
+                    url: 'https://res.cloudinary.com/dutui5dbt/image/upload/v1732375637/register/users/kbr9b1dcvxicc618sejk.png'
+                }
+            });
 
-//         // Initialize a new user data object
-//         const newUserData = {
-//             username,
-//             email
-//         };
+            // Save the customer in the database with the same session
+            await newCustomer.save({ session });
+            console.log("New customer created and saved:", newCustomer);
+        } else {
+            console.log("User found:", user);
+        }
 
-//         // Start transaction session to update both User and Customer
-//         const session = await mongoose.startSession();
-//         session.startTransaction();
+        // Retrieve the associated customer
+        const customer = await Customer.findOne({ user: user._id }).session(session);
+        if (!customer) {
+            console.log("Customer details not found for user:", user._id);
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).json({ message: 'Customer details not found' });
+        }
+        console.log("Customer found:", customer);
 
-//         // Update the user details
-//         const updatedUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
-//             new: true,
-//             runValidators: true,
-//             session
-//         });
+        // Generate JWT token
+        const token = user.getJwtToken();
+        console.log("Generated JWT token:", token);
 
-//         // Initialize new customer data object
-//         const newCustomerData = {
-//             firstName,
-//             lastName,
-//             phoneNumber,
-//             address,
-//             zipCode
-//         };
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
 
-//         // Update profile image for customer if provided
-//         if (req.file) {
-//             const result = await cloudinary.uploader.upload(req.file.path, {
-//                 folder: 'users',
-//                 width: 150,
-//                 crop: "scale"
-//             });
-//             newCustomerData.profileImage = {
-//                 public_id: result.public_id,
-//                 url: result.secure_url
-//             };
-//         }
+        // Return the token and customer ID
+        return res.status(200).json({
+            success: true,
+            token,
+            customerId: customer._id
+        });
 
-//         const updatedCustomer = await Customer.findOneAndUpdate(
-//             { user: req.user.id },
-//             newCustomerData,
-//             { new: true, runValidators: true, session }
-//         );
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error("Error during Google login:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
 
-//         // Commit the transaction
-//         await session.commitTransaction();
-//         session.endSession();
+exports.getUserProfile = async function (req, res, next) {
+    try {
+        // Fetch user by ID
+        const user = await User.findById(req.user.id);
 
-//         // Respond with updated user and customer details
-//         return res.status(200).json({
-//             success: true,
-//             message: "Profile updated successfully",
-//             user: updatedUser,
-//             customer: updatedCustomer
-//         });
+        // Fetch customer details linked to this user
+        const customer = await Customer.findOne({ user: req.user.id });
 
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ message: "Error updating profile", error: error.message });
-//     }
-// }
+        // Check if both user and customer exist
+        if (!user || !customer) {
+            return res.status(404).json({
+                success: false,
+                message: "User or customer details not found"
+            });
+        }
+
+        // Return user and customer details in the response
+        return res.status(200).json({
+            success: true,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            },
+            customer: {
+                _id: customer._id,
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                phoneNumber: customer.phoneNumber,
+                address: customer.address,
+                zipCode: customer.zipCode,
+                profileImage: customer.profileImage
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching user profile" });
+    }
+}
+
+// Uncommented example: Update User and Customer profile function
+exports.updateProfile = async function (req, res, next) {
+    try {
+        const { username, email, firstName, lastName, phoneNumber, address, zipCode } = req.body;
+
+        // Initialize a new user data object
+        const newUserData = {
+            username,
+            email
+        };
+
+        // Start transaction session to update both User and Customer
+        const session = await mongoose.startSession();
+        session.startTransaction();
+
+        // Update the user details
+        const updatedUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
+            new: true,
+            runValidators: true,
+            session
+        });
+
+        // Initialize new customer data object
+        const newCustomerData = {
+            firstName,
+            lastName,
+            phoneNumber,
+            address,
+            zipCode
+        };
+
+        // Update profile image for customer if provided
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'users',
+                width: 150,
+                crop: "scale"
+            });
+            newCustomerData.profileImage = {
+                public_id: result.public_id,
+                url: result.secure_url
+            };
+        }
+
+        const updatedCustomer = await Customer.findOneAndUpdate(
+            { user: req.user.id },
+            newCustomerData,
+            { new: true, runValidators: true, session }
+        );
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+
+        // Respond with updated user and customer details
+        return res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            user: updatedUser,
+            customer: updatedCustomer
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error updating profile", error: error.message });
+    }
+}
 

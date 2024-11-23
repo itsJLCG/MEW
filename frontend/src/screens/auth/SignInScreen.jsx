@@ -9,14 +9,14 @@ import { BaseButtonBlack } from "../../styles/button";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 
 import axios from 'axios';
-import {EyeInvisibleOutlined, EyeTwoTone, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { EyeInvisibleOutlined, EyeTwoTone, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 //firebase
-import { signInWithEmailAndPassword  } from "firebase/auth";
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../components/firebase/firebase"; // Import Firebase auth
 import { getMessaging, getToken, deleteToken } from "firebase/messaging";
 import { messaging } from "../../components/firebase/firebase";
@@ -96,13 +96,12 @@ const SignInScreenWrapper = styled.section`
     width: 100%;
     position: relative;
   }
-   .custom-input-wrapper {
-   position: relative;
-  }
+
   .custom-input-wrapper-error {
     color: red;
     font-size: 15px; /* Adjust the font size here */
   }
+
   .input-icon {
     position: absolute;
     right: 10px;
@@ -130,23 +129,21 @@ const SignInScreenWrapper = styled.section`
   }
 
   .password-toggle-btn {
-  position: absolute;
-  right: 4px; /* Adjust based on your design needs */
-  top: 8px; /* Move to the top of the input field */
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  color: ${defaultTheme.color_purple};
-  font-weight: 500;
+    position: absolute;
+    right: 4px; /* Adjust based on your design needs */
+    top: 8px; /* Move to the top of the input field */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: ${defaultTheme.color_purple};
+    font-weight: 500;
 
-  &:hover {
-    color: ${defaultTheme.color_black};
+    &:hover {
+      color: ${defaultTheme.color_black};
+    }
   }
-}
-
 `;
-
 
 const SignInScreen = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -154,10 +151,10 @@ const SignInScreen = () => {
   const [error, setError] = useState('');
   const [hasCart, setHasCart] = useState(false);
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-   // Yup validation schema
-   const validationSchema = Yup.object({
+  // Yup validation schema
+  const validationSchema = Yup.object({
     email: Yup.string().email('Invalid email format').required('Email is required'),
     password: Yup.string().required('Password is required'),
   });
@@ -218,7 +215,7 @@ const SignInScreen = () => {
         });
 
         console.log("Response data:", data);
-        
+
         const user = data.user || data.users; // Adjust to match the response structure
         if (!user.verified) {
           toast.error('Account not verified. Please check your email.');
@@ -233,12 +230,12 @@ const SignInScreen = () => {
 
         await onLoginSuccess(customerId);
 
-         // After setting authToken and customerId in localStorage
-         if (customerId) {
+        // After setting authToken and customerId in localStorage
+        if (customerId) {
           try {
             const cartResponse = await axios.get(`http://localhost:4000/api/cart/${customerId}`);
             const hasCart = cartResponse.data && cartResponse.data.cartItems.length > 0;
-            
+
             // Store cart status in localStorage for access in Header
             // Update localStorage with cart status
             localStorage.setItem('hasCart', hasCart);
@@ -252,7 +249,6 @@ const SignInScreen = () => {
         toast.success('Login successful!');
         navigate('/home');
 
-       
       } catch (err) {
         // Log error details to help with debugging
         console.error("Login error:", err);
@@ -281,13 +277,41 @@ const SignInScreen = () => {
     },
   });
 
-  
+  // Function to handle Google sign-in
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Send the user information to your backend to create or update the user record
+      const url = 'http://localhost:4000/api/auth/google-login';
+      const { data } = await axios.post(url, {
+        email: user.email,
+        firebaseUid: user.uid,
+      });
+
+      // Store the token and customerId in localStorage
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('customerId', data.customerId);
+
+      // Handle FCM token storage
+      await onLoginSuccess(data.customerId);
+
+      // Show toast notification to update profile
+      toast.success('Login successful! Please update your profile.');
+
+      navigate('/home');
+    } catch (error) {
+      console.error("Google sign-in failed", error);
+      toast.error(error.message || "Google sign-in failed");
+    }
+  };
 
   // Function to toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
   };
-
 
   return (
     <SignInScreenWrapper>
@@ -305,7 +329,7 @@ const SignInScreen = () => {
                 <h3>Sign In</h3>
               </FormTitle>
 
-              <AuthOptions />
+              <AuthOptions handleGoogleSignUp={handleGoogleSignIn} />
 
               <div className="form-separator flex items-center justify-center">
                 <span className="separator-line"></span>
@@ -332,17 +356,17 @@ const SignInScreen = () => {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   />
-                   {formik.touched.email && formik.errors.email ? (
-                        <CloseCircleOutlined className="input-icon" style={{ color: 'red' }} />
-                      ) : formik.touched.email && !formik.errors.email ? (
-                        <CheckCircleOutlined className="input-icon" style={{ color: 'green' }} />
-                      ) : null}
+                  {formik.touched.email && formik.errors.email ? (
+                    <CloseCircleOutlined className="input-icon" style={{ color: 'red' }} />
+                  ) : formik.touched.email && !formik.errors.email ? (
+                    <CheckCircleOutlined className="input-icon" style={{ color: 'green' }} />
+                  ) : null}
                 </div>
                 {formik.touched.email && formik.errors.email && (
-                          <div className="custom-input-wrapper-error">
-                            {formik.errors.email}
-                          </div>
-                        )}
+                  <div className="custom-input-wrapper-error">
+                    {formik.errors.email}
+                  </div>
+                )}
 
                 {/* Password */}
                 <div className="custom-input-wrapper">
@@ -362,28 +386,28 @@ const SignInScreen = () => {
                     onBlur={formik.handleBlur}
                     value={formik.values.password}
                   />
-                    {formik.touched.password && formik.errors.password ? (
-                        <CloseCircleOutlined className="input-icon" style={{ color: 'red' }} />
-                      ) : formik.touched.password && !formik.errors.password ? (
-                        <CheckCircleOutlined className="input-icon" style={{ color: 'green' }} />
-                      ) : null}
+                  {formik.touched.password && formik.errors.password ? (
+                    <CloseCircleOutlined className="input-icon" style={{ color: 'red' }} />
+                  ) : formik.touched.password && !formik.errors.password ? (
+                    <CheckCircleOutlined className="input-icon" style={{ color: 'green' }} />
+                  ) : null}
                   <button
                     type="button"
                     className="password-toggle-btn"
                     onClick={togglePasswordVisibility}
                   >
                     {showPassword ? (
-                              <EyeInvisibleOutlined style={{ fontSize: '15px' }} />
-                            ) : (
-                              <EyeTwoTone style={{ fontSize: '15px' }} />
-                            )}
+                      <EyeInvisibleOutlined style={{ fontSize: '15px' }} />
+                    ) : (
+                      <EyeTwoTone style={{ fontSize: '15px' }} />
+                    )}
                   </button>
                 </div>
                 {formik.touched.password && formik.errors.password && (
-                      <div className="custom-input-wrapper-error">
-                        {formik.errors.password}
-                      </div>
-                    )}
+                  <div className="custom-input-wrapper-error">
+                    {formik.errors.password}
+                  </div>
+                )}
 
                 {/* Forgot Password */}
                 <Link to="/reset" className="form-elem-text text-end font-medium">

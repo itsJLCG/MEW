@@ -3,12 +3,13 @@ const router = express.Router();
 
 const { Register, 
      Login, 
-    //  getUserProfile, 
-    //  updateProfile, 
+     getUserProfile, 
+     updateProfile, 
      verifyEmail,
      storeFcmToken,
-     logout } = require('../controllers/auth');
-// const { isAuthenticatedUser} = require('../middlewares/auth');
+     logout,
+     googleLogin } = require('../controllers/auth');
+const { isAuthenticatedUser} = require('../middlewares/auth');
 const upload = require("../utils/multer");
 
 
@@ -25,9 +26,12 @@ router.post('/store-fcm-token', storeFcmToken);
 // Route to clear FCM token on logout
 router.post('/logout', logout);
 
+// Google Login
+router.post('/google-login', googleLogin);
+
 //Profile w/ Middleware Routes
-// router.get('/profile', isAuthenticatedUser, getUserProfile);
-// router.put('/profile/update', isAuthenticatedUser,  upload.single("profileImage"), updateProfile)
+router.get('/profile', isAuthenticatedUser, getUserProfile);
+router.put('/profile/update', isAuthenticatedUser,  upload.single("profileImage"), updateProfile)
 
 
 

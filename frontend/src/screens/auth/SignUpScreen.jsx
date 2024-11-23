@@ -14,13 +14,12 @@ import { FormElement, Input } from "../../styles/form";
 import { Link } from "react-router-dom";
 import { BaseButtonBlack } from "../../styles/button";
 import axios from "axios";
-import {EyeInvisibleOutlined, EyeTwoTone, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { EyeInvisibleOutlined, EyeTwoTone, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from "react-router-dom";
 
-
 //firebase
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../components/firebase/firebase"; // Import Firebase auth
 
 const SignUpScreenWrapper = styled.section`
@@ -84,6 +83,7 @@ const SignUpScreenWrapper = styled.section`
 const SignUpScreen = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleSignUp, setIsGoogleSignUp] = useState(false); // State to track Google Sign-Up
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevState) => !prevState);
@@ -125,23 +125,24 @@ const SignUpScreen = () => {
     validationSchema,
     onSubmit: async (values) => {
       try {
-        // Firebase authentication - create a user
-        const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
-        const firebaseUser = userCredential.user;
-
-        // Proceed with Axios call to save additional user details on the server
         const formData = new FormData();
         formData.append("username", values.username);
         formData.append("email", values.email);
-        formData.append("password", values.password);
         formData.append("firstName", values.firstName);
         formData.append("lastName", values.lastName);
         formData.append("phoneNumber", values.phoneNumber);
         formData.append("address", values.address);
         formData.append("zipCode", values.zipCode);
-        formData.append("firebaseUid", firebaseUser.uid);
         if (values.profileImage) {
           formData.append("profileImage", values.profileImage);
+        }
+
+        if (!isGoogleSignUp) {
+          // Firebase authentication - create a user
+          const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+          const firebaseUser = userCredential.user;
+          formData.append("password", values.password);
+          formData.append("firebaseUid", firebaseUser.uid);
         }
 
         const url = "http://localhost:4000/api/auth/signup";
@@ -160,9 +161,27 @@ const SignUpScreen = () => {
     },
   });
 
+  const handleGoogleSignUp = async () => {
+    console.log("Google Sign-Up clicked"); // Debugging log
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Set Google Sign-Up state
+      setIsGoogleSignUp(true);
+
+      // Redirect to sign-in page
+      toast.success("Google Sign-Up successful!");
+      navigate("/auth/sign_in");
+    } catch (error) {
+      console.error("Google sign-up failed", error); // Debugging log
+      toast.error(error.message || "Google sign-up failed");
+    }
+  };
+
   return (
     <SignUpScreenWrapper>
-    
       <FormGridWrapper>
         <Container>
           <div className="form-grid-content">
@@ -180,7 +199,7 @@ const SignUpScreen = () => {
                   Sign up for free to access to in any of our products
                 </p>
               </FormTitle>
-              <AuthOptions />
+              <AuthOptions handleGoogleSignUp={handleGoogleSignUp} />
               <form onSubmit={formik.handleSubmit}>
                 <FormElement className="form-grid">
                   {/* Username */}
@@ -246,48 +265,49 @@ const SignUpScreen = () => {
                   </div>
 
                   {/* Password */}
-                  <div className="form-elem-block">
-                    <label htmlFor="password" className="forme-elem-label">
-                      Password
+                  {!isGoogleSignUp && (
+                    <div className="form-elem-block">
+                      <label htmlFor="password" className="forme-elem-label">
+                        Password
 
-                      <button
-                        type="button"
-                        className="password-toggle-btn"
-                        onClick={togglePasswordVisibility}
-                      >
-                         {showPassword ? (
-                              <EyeInvisibleOutlined style={{ fontSize: '15px' }} />
-                            ) : (
-                              <EyeTwoTone style={{ fontSize: '15px' }} />
-                            )}
-                      </button>
-                    </label>
-                    <div className="input-wrapper">
-                      <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter Your Password"
-                        className="form-elem-control"
-                        style={{
-                          borderColor: formik.touched.password && formik.errors.password ? 'red' : formik.touched.password && !formik.errors.password ? 'green' : 'initial',
-                        }}
-                        onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
-                        value={formik.values.password}
-                      />
-                      {formik.touched.password && formik.errors.password ? (
-                        <CloseCircleOutlined className="input-icon" style={{ color: 'red' }} />
-                      ) : formik.touched.password && !formik.errors.password ? (
-                        <CheckCircleOutlined className="input-icon" style={{ color: 'green' }} />
-                      ) : null}
-                      
-                    </div>
-                    {formik.touched.password && formik.errors.password && (
-                      <div className="form-elem-error">
-                        {formik.errors.password}
+                        <button
+                          type="button"
+                          className="password-toggle-btn"
+                          onClick={togglePasswordVisibility}
+                        >
+                          {showPassword ? (
+                            <EyeInvisibleOutlined style={{ fontSize: '15px' }} />
+                          ) : (
+                            <EyeTwoTone style={{ fontSize: '15px' }} />
+                          )}
+                        </button>
+                      </label>
+                      <div className="input-wrapper">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter Your Password"
+                          className="form-elem-control"
+                          style={{
+                            borderColor: formik.touched.password && formik.errors.password ? 'red' : formik.touched.password && !formik.errors.password ? 'green' : 'initial',
+                          }}
+                          onChange={formik.handleChange}
+                          onBlur={formik.handleBlur}
+                          value={formik.values.password}
+                        />
+                        {formik.touched.password && formik.errors.password ? (
+                          <CloseCircleOutlined className="input-icon" style={{ color: 'red' }} />
+                        ) : formik.touched.password && !formik.errors.password ? (
+                          <CheckCircleOutlined className="input-icon" style={{ color: 'green' }} />
+                        ) : null}
                       </div>
-                    )}
-                  </div>
+                      {formik.touched.password && formik.errors.password && (
+                        <div className="form-elem-error">
+                          {formik.errors.password}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* First Name */}
                   <div className="form-elem-block">
@@ -470,7 +490,6 @@ const SignUpScreen = () => {
                       </div>
                     )}
                   </div>
-
                   <BaseButtonBlack type="submit">
                     Sign Up
                   </BaseButtonBlack>

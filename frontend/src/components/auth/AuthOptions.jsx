@@ -28,21 +28,15 @@ const SignOptions = styled.div`
   }
 `;
 
-const AuthOptions = () => {
+const AuthOptions = ({ handleGoogleSignUp }) => {
   return (
     <SignOptions className="grid">
-      <Link to="/" className="sign-option flex items-center justify-center">
+      <div onClick={handleGoogleSignUp} className="sign-option flex items-center justify-center">
         <span className="sign-opt-icon flex items-center justify-center">
           <img src={staticImages.google} />
         </span>
         <span className="sign-opt-text font-medium">Continue With Google</span>
-      </Link>
-      {/* <Link to="/" className="sign-option flex items-center justify-center">
-        <span className="sign-opt-icon flex items-center justify-center">
-          <img src={staticImages.twitter} />
-        </span>
-        <span className="sign-opt-text font-medium">Continue With Twitter</span>
-      </Link> */}
+      </div>
     </SignOptions>
   );
 };
