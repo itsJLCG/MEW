@@ -3,7 +3,7 @@ const User = require("../models/User");
 const Customer = require("../models/Customer");
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
-const sendRegistrationEmail = require('../utils/sendEmail');
+const {sendRegistrationEmail} = require('../utils/sendEmail');
 const crypto = require('crypto');
 
 // Register both User and Customer

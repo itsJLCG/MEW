@@ -1,6 +1,7 @@
 const Order = require('../models/Orders');
 const Product = require('../models/Products');
 const Customer = require('../models/Customer');
+const User = require('../models/User');
 const Cart = require('../models/Carts'); // Import the Cart model
 const moment = require('moment');
 const {sendDeliveryEmail} = require('../utils/sendEmail'); // Import the sendEmail function
@@ -101,7 +102,6 @@ exports.getAllOrders = async (req, res, next) => {
       });
   }
 };
-
 exports.updateOrderStatus = async (req, res, next) => {
   const { orderId, status } = req.body;
 
@@ -117,7 +117,7 @@ exports.updateOrderStatus = async (req, res, next) => {
       orderId, 
       { orderStatus: status }, 
       { new: true, runValidators: true }
-    ).populate('customer', 'email firstName lastName').populate('orderItems.product');
+    ).populate('customer', 'user firstName lastName').populate('orderItems.product');
 
     if (!updatedOrder) {
       return res.status(404).json({
@@ -127,11 +127,15 @@ exports.updateOrderStatus = async (req, res, next) => {
     }
 
     if (status === 'Delivered') {
-      const customerEmail = updatedOrder.customer.email;
+      const customer = updatedOrder.customer;
+      const user = await User.findById(customer.user); // Fetch the user associated with the customer
+      const customerEmail = user.email; // Get the email from the user
+      console.log('Customer Email:', customerEmail); // Debugging statement
       const orderItems = updatedOrder.orderItems.map(item => ({
         name: item.product.name,
         quantity: item.quantity,
-        price: item.price
+        price: item.price,
+        image: item.product.image,
       }));
       const subtotal = updatedOrder.itemsPrice;
       const grandTotal = updatedOrder.totalPrice;
@@ -152,7 +156,6 @@ exports.updateOrderStatus = async (req, res, next) => {
     });
   }
 };
-
 // Export to get sales data for a date range
 exports.getMonthlySalesWithDateRange = async (req, res, next) => {
   const { startDate, endDate } = req.query;
