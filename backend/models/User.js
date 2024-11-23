@@ -39,6 +39,11 @@ const userSchema = new mongoose.Schema({
     verificationToken: {
         type: String
     }, 
+    firebaseUid: {
+        type: String,
+        required: true,
+        unique: true
+      },
 });
 
 userSchema.methods.getJwtToken = function () {

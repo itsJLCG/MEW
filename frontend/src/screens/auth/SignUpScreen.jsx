@@ -139,6 +139,7 @@ const SignUpScreen = () => {
         formData.append("phoneNumber", values.phoneNumber);
         formData.append("address", values.address);
         formData.append("zipCode", values.zipCode);
+        formData.append("firebaseUid", firebaseUser.uid);
         if (values.profileImage) {
           formData.append("profileImage", values.profileImage);
         }

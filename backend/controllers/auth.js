@@ -12,7 +12,7 @@ exports.Register = async function (req, res) {
     session.startTransaction();
 
     try {
-        const { username, email, password, firstName, lastName, phoneNumber, address, zipCode } = req.body;
+        const { username, email, password, firstName, lastName, phoneNumber, address, zipCode, firebaseUid } = req.body;
 
         // Check if the email is already registered
         const existingUser = await User.findOne({ email });
@@ -29,7 +29,9 @@ exports.Register = async function (req, res) {
             email,
             password: hashedPassword,
             role: "customer", // Set role as customer
-            verified: false // Not verified yet
+            verified: false, // Not verified yet
+            firebaseUid
+
         });
 
         // Save the user in the database with the transaction session

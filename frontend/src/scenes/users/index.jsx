@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import { Delete, Edit } from "@mui/icons-material";
+import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Select, MenuItem, Button } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 import { Box } from "@mui/system";
-import AddUserModal from "./AddUserModal"; // Import your new modal component
-import UpdateUserModal from "./UpdateUserModal";
-import { confirm } from "material-ui-confirm"; // Import the Confirm component
+import { confirm } from "material-ui-confirm";
 
 const Users = () => {
   const [data, setData] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [updateModalOpen, setUpdateModalOpen] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState(null); // State to hold the slug of the user to update
-  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
-  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,12 +18,12 @@ const Users = () => {
         const users = response.data.users.map((user, index) => ({
           id: index + 1,
           _id: user._id,
-          name: user.name,
           email: user.email,
-          address: user.address,
-          slug: user.slug,
-          images: handleUserImages(user.image), // Process images
-          actions: user.slug // Return slug for actions
+          role: user.role,
+          status: user.status,
+          verified: user.verified ? "Yes" : "No",
+          firebaseUid: user.firebaseUid, // Add firebaseUid
+          actions: user._id
         }));
         setData(users);
       } catch (error) {
@@ -39,61 +34,56 @@ const Users = () => {
     fetchData();
   }, []);
 
-  // Function to handle rendering user images
-  const handleUserImages = (imageData) => {
-    if (Array.isArray(imageData) && imageData.length) {
-      return (
-        <Box display="flex" gap={1}>
-          {imageData.map((image, index) => (
-            <img
-              key={index}
-              src={image}
-              alt={`User Image ${index + 1}`}
-              style={{ width: 50, height: 50, objectFit: "cover" }}
-            />
-          ))}
-        </Box>
-      );
-    } else if (typeof imageData === "string" && imageData.length > 0) {
-      return (
-        <img
-          src={imageData}
-          alt="User"
-          style={{ width: 50, height: 50, objectFit: "cover" }}
-        />
-      );
-    }
-    return <img src="/default-user.png" alt="Default User" style={{ width: 50, height: 50 }} />;
-  };
-
-  const deleteUser = async (userSlug) => {
+  const deleteUser = async (userId) => {
     try {
-      const response = await axios.delete(`http://localhost:4000/api/users/${userSlug}`);
-      setData((prevData) => prevData.filter((row) => row.slug !== userSlug));
+      const response = await axios.delete(`http://localhost:4000/api/users/${userId}`);
+      setData((prevData) => prevData.filter((row) => row._id !== userId));
       setDialogMessage(response.data.message || "User deleted successfully");
     } catch (error) {
       setDialogMessage(error.response?.data?.error || "Error deleting user");
     } finally {
-      setDialogOpen(true); // Open dialog to show message
+      setDialogOpen(true);
     }
   };
 
-  const confirmDeleteUser = (userSlug) => {
+  const confirmDeleteUser = (userId) => {
     confirm({ description: "Are you sure you want to delete this user?" })
-      .then(() => deleteUser(userSlug))
+      .then(() => deleteUser(userId))
       .catch(() => console.log("Delete action canceled"));
   };
 
-  const renderActions = (slug) => (
+  const handleRoleChange = async (userId, newRole) => {
+    try {
+      console.log(`Updating role for user ${userId} to ${newRole}`);
+      const response = await axios.put(`http://localhost:4000/api/users/role/${userId}`, { role: newRole });
+      setData((prevData) =>
+        prevData.map((user) =>
+          user._id === userId ? { ...user, role: newRole } : user
+        )
+      );
+      setDialogMessage(response.data.message || "User role updated successfully");
+    } catch (error) {
+      console.error("Error updating user role", error);
+      setDialogMessage(error.response?.data?.error || "Error updating user role");
+    } finally {
+      setDialogOpen(true);
+    }
+  };
+
+  const renderRoleDropdown = (userId, currentRole) => (
+    <Select
+      value={currentRole}
+      onChange={(e) => handleRoleChange(userId, e.target.value)}
+    >
+      <MenuItem value="admin">Admin</MenuItem>
+      <MenuItem value="customer">Customer</MenuItem>
+    </Select>
+  );
+
+  const renderActions = (id) => (
     <Box display="flex" gap={1}>
-      <IconButton onClick={() => confirmDeleteUser(slug)}>
+      <IconButton onClick={() => confirmDeleteUser(id)}>
         <Delete style={{ color: "red" }} />
-      </IconButton>
-      <IconButton onClick={() => {
-        setSelectedSlug(slug); // Set selected slug
-        setUpdateModalOpen(true); // Open update modal
-      }}>
-        <Edit style={{ color: "blue" }} />
       </IconButton>
     </Box>
   );
@@ -116,14 +106,6 @@ const Users = () => {
       },
     },
     {
-      name: "name",
-      label: "Name",
-      options: {
-        filter: true,
-        sort: true,
-      },
-    },
-    {
       name: "email",
       label: "Email",
       options: {
@@ -132,28 +114,36 @@ const Users = () => {
       },
     },
     {
-      name: "address",
-      label: "Address",
+      name: "role",
+      label: "Role",
+      options: {
+        filter: true,
+        sort: true,
+        customBodyRender: (value, tableMeta) => renderRoleDropdown(tableMeta.rowData[1], value),
+      },
+    },
+    {
+      name: "status",
+      label: "Status",
       options: {
         filter: true,
         sort: true,
       },
     },
     {
-      name: "slug",
-      label: "Slug",
+      name: "verified",
+      label: "Verified",
       options: {
         filter: true,
         sort: true,
       },
     },
     {
-      name: "images",
-      label: "Images",
+      name: "firebaseUid",
+      label: "Firebase UID",
       options: {
         filter: false,
-        sort: false,
-        customBodyRender: (value) => value, // This will render the images
+        sort: true,
       },
     },
     {
@@ -169,7 +159,7 @@ const Users = () => {
 
   const options = {
     filterType: "checkbox",
-    selectableRows: "none", // To remove checkbox column
+    selectableRows: "none",
     responsive: "standard",
     download: true,
     print: true,
@@ -178,31 +168,13 @@ const Users = () => {
     jumpToPage: true,
   };
 
-  // Callback function to add new user data
-  const handleUserAdded = (newUser) => {
-    setData((prevData) => [
-      ...prevData,
-      {
-        id: prevData.length + 1, // Update the ID accordingly
-        ...newUser,
-      },
-    ]);
-  };
-
   return (
     <div style={{ margin: "20px" }}>
-      <Box mb={2}>
-        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
-          Add User
-        </Button>
-      </Box>
       <MUIDataTable title={"User List"} data={data} columns={columns} options={options} />
-      <AddUserModal open={modalOpen} handleClose={() => setModalOpen(false)} onUserAdded={handleUserAdded} />
-      <UpdateUserModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
 
       {/* Dialog for showing delete confirmation messages */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-        <DialogTitle>User Deletion</DialogTitle>
+        <DialogTitle>User Update</DialogTitle>
         <DialogContent>
           <DialogContentText>{dialogMessage}</DialogContentText>
         </DialogContent>
