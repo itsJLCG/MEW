@@ -20,6 +20,7 @@ import Promos from "./promos";
 import Users from "./users";
 import OrderInfo from "./orderInfo";
 import MonthlySalesChart from "./charts/MonthlySalesChart";
+import Reviews from "./reviews/Review";
 
 export {
   Navbar,
@@ -44,4 +45,5 @@ export {
   Users,
   OrderInfo,
   MonthlySalesChart,
+  Reviews,
 };

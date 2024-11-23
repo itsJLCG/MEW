@@ -53,4 +53,9 @@ router.get('/reviews/:productId', async (req, res) => {
   }
 });
 
+const { getAllReviews, deleteReview, } = require('../controllers/ReviewController');
+
+router.get('/reviewAll/list', getAllReviews);
+router.delete('/review/delete/:id', deleteReview);
+
 module.exports = router;

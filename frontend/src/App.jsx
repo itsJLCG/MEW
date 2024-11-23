@@ -4,7 +4,7 @@ import { GlobalStyles } from "./styles/global/GlobalStyles";
 import { Toaster } from "react-hot-toast"; 
 import { createContext, useState } from "react";
 import { Provider } from "react-redux";  // Import Provider
-import {store} from "./redux/store"; // Import your Redux store
+import { store } from "./redux/store"; // Import your Redux store
 
 // Layouts
 import BaseLayout from "./components/layout/BaseLayout";
@@ -55,6 +55,7 @@ import {
   Brands,
   OrderInfo,
   MonthlySalesChart,
+  Reviews
 } from "./scenes";
 import { ColorModeContext, useMode } from "./theme";
 import { Navbar, SideBar } from "./scenes";
@@ -162,6 +163,7 @@ function App() {
                       <Route path="geography" element={<Geography />} />
                       <Route path="orderInfo" element={<OrderInfo/>} />
                       <Route path="monthlysaleschart" element={<MonthlySalesChart/>} />
+                      <Route path="reviews" element={<Reviews/>} />
                     </Route>
                </Route>
 
