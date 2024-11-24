@@ -24,7 +24,10 @@ exports.sendRegistrationEmail = async (newUserEmail, verificationUrl) => {
             to: newUserEmail,
             subject: 'Please Verify Your Email',
             text: `Please verify your email by clicking the following link: ${verificationUrl}`,
-            html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">Verify Email</a></p>`
+            html: `
+                <p>Please verify your email by clicking the following link: <a href="${verificationUrl}">Verify Email</a></p>
+                <p>If you have already verified your email, you can now log in.</p>
+            `
         });
 
         console.log('Verification email sent to:', newUserEmail);

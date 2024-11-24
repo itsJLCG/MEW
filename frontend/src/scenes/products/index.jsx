@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from "react";
 import MUIDataTable from "mui-datatables";
 import axios from "axios";
-import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, Collapse } from "@mui/material";
+import { IconButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box } from "@mui/material";
 import { Delete, Edit } from "@mui/icons-material";
 import AddProductModal from "./AddProductModal";
 import UpdateProductModal from "./UpdateProductModal";
-import { confirm } from "material-ui-confirm"; // Import the Confirm component
+import { confirm } from "material-ui-confirm";
 
 const Products = () => {
   const [data, setData] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedSlug, setSelectedSlug] = useState(null);
-  const [dialogOpen, setDialogOpen] = useState(false); // State for the dialog
-  const [dialogMessage, setDialogMessage] = useState(""); // Message to display in the dialog
-  const [selectedRows, setSelectedRows] = useState([]); // State for selected rows
-  const [expandedRow, setExpandedRow] = useState(null); // Track expanded row
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [expandedRow, setExpandedRow] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,18 +27,12 @@ const Products = () => {
         ]);
 
         const products = productsResponse.data.products;
-        const categories = categoriesResponse.data.categories; 
-        const brands = brandsResponse.data.brands; 
-        
-        console.log("Products:", products);
-        console.log("Categories:", categories);
-        console.log("Brands:", brands);
+        const categories = categoriesResponse.data.categories;
+        const brands = brandsResponse.data.brands;
 
-        // Create a mapping for categories and brands by ID
         const categoryMap = Object.fromEntries(categories.map((category) => [category._id, category.name]));
         const brandMap = Object.fromEntries(brands.map((brand) => [brand._id, brand.name]));
 
-        // Map the products into rows, including category and brand names
         const rows = products.map((product, index) => ({
           id: index + 1,
           _id: product._id,
@@ -62,7 +56,6 @@ const Products = () => {
     fetchData();
   }, []);
 
-  // Function to handle rendering product images
   const handleProductImages = (imageData) => {
     if (Array.isArray(imageData) && imageData.length) {
       return (
@@ -97,7 +90,7 @@ const Products = () => {
     } catch (error) {
       setDialogMessage(error.response?.data?.error || "Error deleting product");
     } finally {
-      setDialogOpen(true); // Open dialog to show message
+      setDialogOpen(true);
     }
   };
 
@@ -109,7 +102,7 @@ const Products = () => {
     } catch (error) {
       setDialogMessage(error.response?.data?.error || "Error deleting selected products");
     } finally {
-      setDialogOpen(true); // Open dialog to show message
+      setDialogOpen(true);
     }
   };
 
@@ -271,7 +264,7 @@ const Products = () => {
     },
     onRowClick: (rowData, rowMeta) => {
       const rowIndex = rowMeta.rowIndex;
-      toggleExpandRow(rowIndex); // Toggle expand on row click
+      toggleExpandRow(rowIndex);
     },
     rowsPerPage: 10,
     rowsPerPageOptions: [5, 10, 20],
@@ -290,10 +283,55 @@ const Products = () => {
       ...prevData,
       {
         id: prevData.length + 1,
-        ...newProduct,
+        _id: newProduct._id,
+        name: newProduct.name,
+        description: newProduct.description,
+        price: newProduct.price,
+        stock: newProduct.stock,
+        slug: newProduct.slug,
+        categoryName: newProduct.categoryName,
+        brandName: newProduct.brandName,
+        images: handleProductImages(newProduct.image),
+        actions: newProduct.slug,
       },
     ]);
   };
+
+  const handleProductUpdated = (updatedProduct) => {
+    setData((prevData) =>
+      prevData.map((item) =>
+        item.slug === updatedProduct.slug
+          ? {
+              ...item,
+              name: updatedProduct.name,
+              description: updatedProduct.description,
+              price: updatedProduct.price,
+              stock: updatedProduct.stock,
+              categoryName: updatedProduct.categoryName,
+              brandName: updatedProduct.brandName,
+              images: handleProductImages(updatedProduct.image),
+            }
+          : item
+      )
+    );
+    
+  };
+
+  useEffect(() => {
+    if (updateModalOpen && selectedSlug) {
+      const fetchProductData = async () => {
+        try {
+          const response = await axios.get(`http://localhost:4000/api/products/${selectedSlug}`);
+          const updatedProduct = response.data.product;
+          handleProductUpdated(updatedProduct);
+        } catch (error) {
+          console.error("Error fetching updated product data", error);
+        }
+      };
+
+      fetchProductData();
+    }
+  }, [updateModalOpen, selectedSlug]);
 
   return (
     <div style={{ margin: "20px" }}>
@@ -305,16 +343,15 @@ const Products = () => {
         variant="contained" 
         color="secondary" 
         onClick={confirmDeleteSelected} 
-        disabled={selectedRows.length === 0} // Disable if no rows are selected
+        disabled={selectedRows.length === 0} 
         style={{ marginLeft: '10px' }}>
         Delete Selected
       </Button>
       </Box>
       <MUIDataTable title={"Product List"} data={data} columns={columns} options={options} />
       <AddProductModal open={modalOpen} handleClose={() => setModalOpen(false)} onProductAdded={handleProductAdded} />
-      <UpdateProductModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} />
+      <UpdateProductModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} onProductUpdated={handleProductUpdated} />
 
-      {/* Dialog for showing delete confirmation messages */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>Product Deletion</DialogTitle>
         <DialogContent>

@@ -14,7 +14,7 @@ import { Hearts } from '@agney/react-loading';
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
-const UpdateProductModal = ({ open, handleClose, slug }) => {
+const UpdateProductModal = ({ open, handleClose, slug, onProductUpdated }) => {
   const initialProductState = {
     name: "",
     description: "",
@@ -74,7 +74,6 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
     category: Yup.string().required("Please select a category"),
     brand: Yup.string().required("Please select a brand"),
   });
-  
 
   const submitForm = async (values, { resetForm }) => {
     setLoading(true);
@@ -92,14 +91,16 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
     });
 
     try {
-      await axios.put(`http://localhost:4000/api/products/${slug}`, formData, {
+      const response = await axios.put(`http://localhost:4000/api/products/${slug}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      onProductUpdated(response.data.product); 
       toast.success("Product updated successfully", { position: "top-right" });
       handleClose();
       resetForm();
+      window.location.reload(); // Reload the page after a successful update
     } catch (error) {
       console.error("Error updating product:", error);
       toast.error("Failed to update product", { position: "top-right" });
@@ -138,7 +139,7 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
           onSubmit={submitForm}
           enableReinitialize
         >
-          {({ setFieldValue }) => (
+          {({ values, handleChange, errors, touched }) => (
             <Form style={{ width: '100%' }}>
               <Field
                 as={TextField}
@@ -146,40 +147,96 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                 margin="normal"
                 label="Product Name"
                 name="name"
-                required
+                value={values.name}
+                onChange={handleChange}
+                error={touched.name && !!errors.name}
+                helperText={touched.name && errors.name ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.name}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.name && errors.name ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.name && errors.name ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.name && errors.name ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
-              <ErrorMessage name="name" component="div" style={{ color: "red" }} />
-              
               <Field
                 as={TextField}
                 fullWidth
                 margin="normal"
                 label="Description"
                 name="description"
-                required
+                value={values.description}
+                onChange={handleChange}
+                error={touched.description && !!errors.description}
+                helperText={touched.description && errors.description ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.description}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.description && errors.description ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.description && errors.description ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.description && errors.description ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
-              <ErrorMessage name="description" component="div" style={{ color: "red" }} />
-
               <Field
                 as={TextField}
                 fullWidth
                 margin="normal"
                 label="Price"
                 name="price"
-                required
+                value={values.price}
+                onChange={handleChange}
+                error={touched.price && !!errors.price}
+                helperText={touched.price && errors.price ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.price}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.price && errors.price ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.price && errors.price ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.price && errors.price ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
-              <ErrorMessage name="price" component="div" style={{ color: "red" }} />
-              
               <Field
                 as={TextField}
                 fullWidth
                 margin="normal"
                 label="Stock"
                 name="stock"
-                required
+                value={values.stock}
+                onChange={handleChange}
+                error={touched.stock && !!errors.stock}
+                helperText={touched.stock && errors.stock ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.stock}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.stock && errors.stock ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.stock && errors.stock ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.stock && errors.stock ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
-              <ErrorMessage name="stock" component="div" style={{ color: "red" }} />
-              
               <Field
                 as={TextField}
                 select
@@ -187,7 +244,23 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                 margin="normal"
                 label="Category"
                 name="category"
-                required
+                value={values.category}
+                onChange={handleChange}
+                error={touched.category && !!errors.category}
+                helperText={touched.category && errors.category ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.category}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.category && errors.category ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.category && errors.category ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.category && errors.category ? 'red' : 'default',
+                    },
+                  },
+                }}
               >
                 {categories.map((cat) => (
                   <MenuItem key={cat._id} value={cat._id}>
@@ -195,8 +268,6 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                   </MenuItem>
                 ))}
               </Field>
-              <ErrorMessage name="category" component="div" style={{ color: "red" }} />
-              
               <Field
                 as={TextField}
                 select
@@ -204,7 +275,23 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                 margin="normal"
                 label="Brand"
                 name="brand"
-                required
+                value={values.brand}
+                onChange={handleChange}
+                error={touched.brand && !!errors.brand}
+                helperText={touched.brand && errors.brand ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.brand}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.brand && errors.brand ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.brand && errors.brand ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.brand && errors.brand ? 'red' : 'default',
+                    },
+                  },
+                }}
               >
                 {brands.map((br) => (
                   <MenuItem key={br._id} value={br._id}>
@@ -212,7 +299,6 @@ const UpdateProductModal = ({ open, handleClose, slug }) => {
                   </MenuItem>
                 ))}
               </Field>
-              <ErrorMessage name="brand" component="div" style={{ color: "red" }} />
 
               <div className="inputGroup">
                 <label>Current Images:</label>

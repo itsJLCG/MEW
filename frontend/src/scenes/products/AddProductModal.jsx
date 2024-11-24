@@ -57,7 +57,7 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
       const response = await axios.post("http://localhost:4000/api/products", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      onProductAdded(response.data.product);
+      onProductAdded(response.data.product); // Call the callback with the new product data
       toast.success(response.data.message, { position: "top-right" });
       handleClose();
       resetForm();
@@ -106,7 +106,7 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ values, handleChange, setFieldValue }) => (
+          {({ values, handleChange, errors, touched }) => (
             <Form style={{ width: "100%" }}>
               <Field
                 as={TextField}
@@ -116,8 +116,21 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 name="name"
                 value={values.name}
                 onChange={handleChange}
-                helperText={<ErrorMessage name="name" />}
-                error={!!ErrorMessage.name}
+                error={touched.name && !!errors.name}
+                helperText={touched.name && errors.name ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.name}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.name && errors.name ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.name && errors.name ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.name && errors.name ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
               <Field
                 as={TextField}
@@ -127,8 +140,21 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 name="description"
                 value={values.description}
                 onChange={handleChange}
-                helperText={<ErrorMessage name="description" />}
-                error={!!ErrorMessage.description}
+                error={touched.description && !!errors.description}
+                helperText={touched.description && errors.description ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.description}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.description && errors.description ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.description && errors.description ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.description && errors.description ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
               <Field
                 as={TextField}
@@ -138,8 +164,21 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 name="price"
                 value={values.price}
                 onChange={handleChange}
-                helperText={<ErrorMessage name="price" />}
-                error={!!ErrorMessage.price}
+                error={touched.price && !!errors.price}
+                helperText={touched.price && errors.price ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.price}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.price && errors.price ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.price && errors.price ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.price && errors.price ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
               <Field
                 as={TextField}
@@ -149,8 +188,21 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 name="stock"
                 value={values.stock}
                 onChange={handleChange}
-                helperText={<ErrorMessage name="stock" />}
-                error={!!ErrorMessage.stock}
+                error={touched.stock && !!errors.stock}
+                helperText={touched.stock && errors.stock ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.stock}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.stock && errors.stock ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.stock && errors.stock ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.stock && errors.stock ? 'red' : 'default',
+                    },
+                  },
+                }}
               />
               <Field
                 as={TextField}
@@ -161,8 +213,21 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 name="category"
                 value={values.category}
                 onChange={handleChange}
-                helperText={<ErrorMessage name="category" />}
-                error={!!ErrorMessage.category}
+                error={touched.category && !!errors.category}
+                helperText={touched.category && errors.category ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.category}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.category && errors.category ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.category && errors.category ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.category && errors.category ? 'red' : 'default',
+                    },
+                  },
+                }}
               >
                 {categories.map((cat) => (
                   <MenuItem key={cat._id} value={cat._id}>
@@ -179,8 +244,21 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
                 name="brand"
                 value={values.brand}
                 onChange={handleChange}
-                helperText={<ErrorMessage name="brand" />}
-                error={!!ErrorMessage.brand}
+                error={touched.brand && !!errors.brand}
+                helperText={touched.brand && errors.brand ? <span style={{ color: 'red', fontSize: '14px' }}>{errors.brand}</span> : null}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                      borderColor: touched.brand && errors.brand ? 'red' : 'default',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: touched.brand && errors.brand ? 'red' : 'default',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: touched.brand && errors.brand ? 'red' : 'default',
+                    },
+                  },
+                }}
               >
                 {brands.map((br) => (
                   <MenuItem key={br._id} value={br._id}>

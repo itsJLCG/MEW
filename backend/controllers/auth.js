@@ -103,7 +103,7 @@ exports.verifyEmail = async function (req, res) {
         // Find the user with the matching token
         const user = await User.findOne({ verificationToken: token });
         if (!user) {
-            return res.status(400).json({ message: "Invalid or expired verification token." });
+            return res.status(400).send('<h1>Invalid or expired verification token.</h1>');
         }
 
         // Verify the user
@@ -111,12 +111,12 @@ exports.verifyEmail = async function (req, res) {
         user.verificationToken = undefined; // Remove the token
         await user.save();
 
-        res.status(200).json({ message: "Email verified successfully. You can now log in." });
+        res.status(200).send('<h1>Email verified successfully. You can now log in.</h1>');
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).send('<h1>Server error. Please try again later.</h1>');
     }
-}
+};
 
 // Checks if Verified user before sending token
 exports.Login = async function (req, res) {

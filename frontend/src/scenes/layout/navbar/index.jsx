@@ -16,6 +16,9 @@ import {
   SearchOutlined,
   SettingsOutlined,
 } from "@mui/icons-material";
+import LogoutIcon from '@mui/icons-material/Logout'; 
+import { toast } from "react-hot-toast";
+
 import { ToggledContext } from "../../../App";
 const Navbar = () => {
   const theme = useTheme();
@@ -24,6 +27,15 @@ const Navbar = () => {
   const isMdDevices = useMediaQuery("(max-width:768px)");
   const isXsDevices = useMediaQuery("(max-width:466px)");
   const colors = tokens(theme.palette.mode);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    toast.success("Logged out successfully");
+    setTimeout(() => {
+      window.location.href = '/auth/sign_in'; // Redirect to login page or any other page
+    }, 1000); // Delay to allow the toast to be visible
+  };
+
   return (
     <Box
       display="flex"
@@ -60,14 +72,8 @@ const Navbar = () => {
             <DarkModeOutlined />
           )}
         </IconButton>
-        <IconButton>
-          <NotificationsOutlined />
-        </IconButton>
-        <IconButton>
-          <SettingsOutlined />
-        </IconButton>
-        <IconButton>
-          <PersonOutlined />
+        <IconButton onClick={handleLogout}>
+          <LogoutIcon />
         </IconButton>
       </Box>
     </Box>
