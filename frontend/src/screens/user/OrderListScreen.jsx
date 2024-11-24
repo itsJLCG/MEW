@@ -12,6 +12,8 @@ import { Toaster, toast } from 'react-hot-toast';
 import { Button, TextField } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import { Filter } from 'bad-words'; // Use named import
+import CartEmpty from '../cart/CartEmptyScreen';
+
 
 const filter = new Filter(); // Create an instance of the filter
 
@@ -245,12 +247,61 @@ const OrderListScreen = () => {
   const handleEditReview = (productId) => {
     const productReviews = reviews[productId];
     if (productReviews && productReviews.length > 0) {
-      const { reviewText, rating } = productReviews[0]; // Load the first review
+      const { reviewText, rating, _id } = productReviews[0]; // Load the first review
       setReviewText(reviewText);
       setRating(rating);
-      setIsReviewing(productId);
+      setIsReviewing(productId); // Set the productId for which review is being edited
     }
   };
+  
+
+  const handleUpdateReview = async (productId) => {
+    try {
+      // Clean the review text by masking bad words
+      const cleanedReviewText = filter.clean(reviewText);
+      
+      const token = localStorage.getItem('authToken');
+      
+      // Find the review ID associated with this product
+      const productReviews = reviews[productId];
+      if (!productReviews || productReviews.length === 0) {
+        toast.error('No review to update.');
+        return;
+      }
+  
+      const reviewId = productReviews[0]._id; // Assuming you want to update the first review
+      const response = await axios.put(
+        `http://localhost:4000/api/reviews/review/update/${reviewId}`,
+        { reviewText: cleanedReviewText, rating },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      toast.success('Review updated successfully!');
+      
+      // Update the review in the state with the new data
+      setReviews((prev) => ({
+        ...prev,
+        [productId]: prev[productId].map((review) =>
+          review._id === reviewId
+            ? { ...review, reviewText: cleanedReviewText, rating } // Update the review
+            : review
+        ),
+      }));
+  
+      // Reset form after updating
+      setIsReviewing(null);
+      setReviewText('');
+      setRating(1);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to update review.');
+    }
+  };
+  
 
   const handleCloseReviewForm = () => {
     setIsReviewing(null); // Close the review form
@@ -268,7 +319,7 @@ const OrderListScreen = () => {
           <UserContent>
             <Title titleText={'My Orders'} />
             {orders.length === 0 ? (
-              <p>No orders found.</p>
+              <p><CartEmpty /></p>
             ) : (
               <div className="order-tabs-contents">
                 {orders.map((order) => (
@@ -303,7 +354,7 @@ const OrderListScreen = () => {
                             </button>
                           )}
                           {reviews[item.product] && reviews[item.product].length > 0 ? (
-                            <div>
+                          <div>
                             <h5>Reviews:</h5>
                             {reviews[item.product].map((review, idx) => (
                               <div key={idx}>
@@ -351,7 +402,7 @@ const OrderListScreen = () => {
                                     </div>
                                     <Button
                                       variant="contained"
-                                      onClick={() => handleUpdateReview(item.product)}
+                                      onClick={() => handleUpdateReview(item.product)} // Update the review
                                     >
                                       Update Review
                                     </Button>
@@ -361,42 +412,40 @@ const OrderListScreen = () => {
                               </>
                             )}
                           </div>
-                          
-                            
-                          ) : isReviewing === item.product && (
-                            <ReviewFormWrapper>
-                              <TextField
-                                multiline
-                                rows={4}
-                                fullWidth
-                                onChange={(e) => setReviewText(e.target.value)}
-                                label="Write your review"
-                                variant="outlined"
-                                style={{ marginBottom: '10px' }}
-                              />
-                              <div className="rating">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <span
-                                    key={star}
-                                    style={{
-                                      cursor: 'pointer',
-                                      color: star <= rating ? 'gold' : 'gray',
-                                    }}
-                                    onClick={() => setRating(star)}
-                                  >
-                                    <StarIcon />
-                                  </span>
-                                ))}
-                              </div>
-                              <Button
-                                variant="contained"
-                                onClick={() => handleSubmitReview(item.product)}
-                              >
-                                Submit Review
-                              </Button>
-                              <Button onClick={handleCloseReviewForm}>Cancel</Button>
-                            </ReviewFormWrapper>
-                          )}
+                        ) : isReviewing === item.product && (
+                          <ReviewFormWrapper>
+                            <TextField
+                              multiline
+                              rows={4}
+                              fullWidth
+                              onChange={(e) => setReviewText(e.target.value)}
+                              label="Write your review"
+                              variant="outlined"
+                              style={{ marginBottom: '10px' }}
+                            />
+                            <div className="rating">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                  key={star}
+                                  style={{
+                                    cursor: 'pointer',
+                                    color: star <= rating ? 'gold' : 'gray',
+                                  }}
+                                  onClick={() => setRating(star)}
+                                >
+                                  <StarIcon />
+                                </span>
+                              ))}
+                            </div>
+                            <Button
+                              variant="contained"
+                              onClick={() => handleSubmitReview(item.product)}
+                            >
+                              Submit Review
+                            </Button>
+                            <Button onClick={handleCloseReviewForm}>Cancel</Button>
+                          </ReviewFormWrapper>
+                        )}
                         </div>
                       ))}
                     </div>

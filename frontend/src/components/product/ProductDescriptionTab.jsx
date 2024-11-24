@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
 import { productDescriptionTabHeads } from "../../data/data";
 import Title from "../common/Title";
 import { ContentStylings } from "../../styles/styles";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import ProductDescriptionMedia from "./ProductDescriptionMedia";
+import axios from "axios";
 
 const DetailsContent = styled.div`
   margin-top: 60px;
@@ -120,10 +121,34 @@ const ProductDescriptionTab = ({ product }) => {  // Accept product prop
   const [activeDesTab, setActiveDesTab] = useState(
     productDescriptionTabHeads[0].tabHead
   );
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get("http://localhost:4000/api/reviews/reviewAll/list");
+        const productReviews = response.data.data.filter(
+          (review) => review.productId === product._id
+        );
+        setReviews(productReviews);
+      } catch (err) {
+        setError("Failed to fetch reviews.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [product._id]);
 
   const handleTabChange = (tabHead) => {
     setActiveDesTab(tabHead);
   };
+
+  if (loading) return <div>Loading reviews...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <DetailsContent>
@@ -172,22 +197,24 @@ const ProductDescriptionTab = ({ product }) => {  // Accept product prop
                 activeDesTab === "tabComments" ? "show" : ""
               }`}
             >
-              User comments here.
-            </div>
-            <div
-              className={`tabs-content content-stylings ${
-                activeDesTab === "tabQNA" ? "show" : ""
-              }`}
-            >
-              Question & Answers
+              {reviews.length === 0 ? (
+                <p>No reviews yet.</p>
+              ) : (
+                reviews.map((review) => (
+                  <div key={review._id}>
+                    <p>{review.reviewText}</p>
+                    <p>
+                      Rating: {review.rating} <span style={{ color: "gold" }}>⭐</span>
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </DescriptionTabsWrapper>
-        <ProductDescriptionMedia />
       </div>
     </DetailsContent>
   );
 };
-
 
 export default ProductDescriptionTab;

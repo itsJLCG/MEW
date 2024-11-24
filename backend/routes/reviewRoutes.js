@@ -53,9 +53,10 @@ router.get('/reviews/:productId', async (req, res) => {
   }
 });
 
-const { getAllReviews, deleteReview, } = require('../controllers/ReviewController');
+const { getAllReviews, deleteReview, updateReview } = require('../controllers/ReviewController');
 
 router.get('/reviewAll/list', getAllReviews);
 router.delete('/review/delete/:id', deleteReview);
+router.put('/review/update/:id', updateReview);
 
 module.exports = router;

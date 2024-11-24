@@ -127,7 +127,7 @@ const OrderInfo = () => {
                         <MenuItem value="Processing">Processing</MenuItem>
                         <MenuItem value="Shipped">Shipped</MenuItem>
                         <MenuItem value="Delivered">Delivered</MenuItem>
-                        <MenuItem value="Cancelled">Cancelled</MenuItem>
+                        <MenuItem value="Completed">Completed</MenuItem>
                     </Select>
                 </FormControl>
 

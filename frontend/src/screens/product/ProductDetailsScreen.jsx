@@ -192,8 +192,6 @@ const ProductColorWrapper = styled.div`
 `;
 
 const ProductDetailsScreen = () => {
-  const staticRating = 4.5; // Replace with a static rating value
-  const staticCommentsCount = 12; // Replace with a static comments count value
   const { slug } = useParams();
   const [product, setProduct] = useState(null);
   const [categoryMap, setCategoryMap] = useState({});
@@ -278,15 +276,6 @@ const ProductDetailsScreen = () => {
     imgSource: imgSrc, // Assign the image source
   }));
   
-  const stars = Array.from({ length: 5 }, (_, index) => {
-    if (index < Math.floor(staticRating)) {
-      return <BsStarFill key={index} className="text-yellow" />;
-    } else if (index < staticRating) {
-      return <BsStarHalf key={index} className="text-yellow" />;
-    } else {
-      return <BsStar key={index} className="text-yellow" />;
-    }
-  });
   
   const handleAddToCart = async () => { 
     try {
@@ -356,15 +345,12 @@ const ProductDetailsScreen = () => {
             <h2 className="prod-title">{product.name}</h2>
             <div className="flex items-center rating-and-comments flex-wrap">
               <div className="prod-rating flex items-center">
-                {stars}
-                <span className="text-gray text-xs">{staticRating}</span>
               </div>
               <div className="prod-comments flex items-start">
                 <span className="prod-comment-icon text-gray">
                   <i className="bi bi-chat-left-text"></i>
                 </span>
                 <span className="prod-comment-text text-sm text-gray">
-                {staticCommentsCount} comment(s)
                 </span>
               </div>
             </div>
@@ -409,7 +395,6 @@ const ProductDetailsScreen = () => {
           </ProductDetailsWrapper>
         </DetailsContent>
         <ProductDescriptionTab  product={product}/>
-        <ProductSimilar />
       </Container>
     </DetailsScreenWrapper>
   );

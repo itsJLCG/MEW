@@ -34,7 +34,7 @@ const CartEmptyScreen = () => {
           </div>
           <div className="empty-cart-msg w-full flex flex-col justify-center items-center">
             <p className="text-4xl text-center font-semibold text-outerspace">
-              Your cart is empty and sad :(
+              Empty For Now :(
             </p>
             <p className="text-gray italic">Add something to fill it!</p>
             <BaseLinkGreen to="/home/product">Continue Shopping</BaseLinkGreen>
@@ -46,3 +46,4 @@ const CartEmptyScreen = () => {
 };
 
 export default CartEmptyScreen;
+

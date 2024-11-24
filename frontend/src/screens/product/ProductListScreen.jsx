@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import ProductList from "../../components/product/ProductList";
 import Title from "../../components/common/Title";
 import ProductFilter from "../../components/product/ProductFilter";
+import ProductItem from "../../components/product/ProductItem";
 import { Pagination } from "@mui/material";
 import { breakpoints, defaultTheme } from "../../styles/themes/default";
 
@@ -86,18 +87,21 @@ const DescriptionContent = styled.div`
 const ProductListScreen = () => {
   const [products, setProducts] = useState([]);
   const [displayedProducts, setDisplayedProducts] = useState([]);
+  const [updatedProducts, setUpdatedProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
+  const [selectedRating, setSelectedRating] = useState(null);
 
-  const productsPerPage = 6;
+  const productsPerPage = 9;
 
   const breadcrumbItems = [
     { label: "Home", link: "/home" },
     { label: "Products", link: "" },
   ];
+
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -126,6 +130,7 @@ const ProductListScreen = () => {
         }));
 
         setProducts(productsWithNames);
+        setUpdatedProducts(productsWithNames);  // Initialize the updated products state
         setTotalPages(Math.ceil(productsWithNames.length / productsPerPage));
         setDisplayedProducts(productsWithNames.slice(0, productsPerPage));
       } catch (error) {
@@ -137,8 +142,35 @@ const ProductListScreen = () => {
   }, []);
 
   useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get("http://localhost:4000/api/reviews/reviewAll/list");
+        if (response.data.success) {
+          const reviews = response.data.data;
+
+          const updatedProducts = products.map((product) => {
+            const productReviews = reviews.filter((review) => review.productId === product._id);
+            if (productReviews.length > 0) {
+              const totalRating = productReviews.reduce((acc, review) => acc + review.rating, 0);
+              const average = totalRating / productReviews.length;
+              return { ...product, averageRating: Math.round(average) };
+            }
+            return { ...product, averageRating: 0 }; // Default to 0 if no reviews
+          });
+
+          setUpdatedProducts(updatedProducts); // Update only the updatedProducts state
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+
+    fetchReviews();
+  }, [products]);
+
+  useEffect(() => {
     const filterAndPaginateProducts = () => {
-      let filtered = [...products];
+      let filtered = [...updatedProducts];
 
       if (selectedCategory) {
         filtered = filtered.filter(
@@ -156,6 +188,16 @@ const ProductListScreen = () => {
         );
       }
 
+      if (selectedRating) {
+        console.log("Filtering by rating:", selectedRating);
+        filtered = filtered.filter((product) => {
+          const isIncluded = product.averageRating === selectedRating; // Change this to check for exact match
+          console.log(`Product: ${product.name}, Average Rating: ${product.averageRating}, Included: ${isIncluded}`);
+          return isIncluded;
+        });
+      }
+      
+
       const start = (currentPage - 1) * productsPerPage;
       const end = start + productsPerPage;
       setDisplayedProducts(filtered.slice(start, end));
@@ -163,7 +205,7 @@ const ProductListScreen = () => {
     };
 
     filterAndPaginateProducts();
-  }, [selectedCategory, selectedBrand, selectedPriceRange, products, currentPage]);
+  }, [selectedCategory, selectedBrand, selectedPriceRange, updatedProducts, currentPage, selectedRating]);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -182,22 +224,27 @@ const ProductListScreen = () => {
               setSelectedBrand={setSelectedBrand}
               setSelectedPriceRange={setSelectedPriceRange}
               selectedPriceRange={selectedPriceRange}
+              setSelectedRating={setSelectedRating}
             />
           </ProductsContentLeft>
           <ProductsContentRight>
-          <div className="products-right-top flex items-center justify-between">
+            <div className="products-right-top flex items-center justify-between">
               <h4 className="text-xxl">MEW Clothing</h4>
               <ul className="products-right-nav flex items-center justify-end flex-wrap">
                 <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={handlePageChange}
-              color="primary"
-              style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}
-              />
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  style={{ marginTop: "20px", display: "flex", justifyContent: "center" }}
+                />
               </ul>
             </div>
-            <ProductList products={displayedProducts} />
+            {displayedProducts.length === 0 ? (
+              <p>No products match the selected filters.</p>
+            ) : (
+              <ProductList products={displayedProducts} />
+            )}
           </ProductsContentRight>
         </ProductsContent>
       </Container>

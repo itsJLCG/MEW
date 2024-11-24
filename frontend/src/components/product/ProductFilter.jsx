@@ -9,13 +9,15 @@ const ProductFilter = ({
   setSelectedPriceRange, 
   selectedCategory, 
   selectedBrand, 
-  selectedPriceRange 
+  selectedPriceRange,
+  setSelectedRating, // Add this prop
 }) => {
   const [isProductFilterOpen, setProductFilterOpen] = useState(true);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState(selectedPriceRange ? selectedPriceRange[0] : "");  // Default to selected range or empty
   const [maxPrice, setMaxPrice] = useState(selectedPriceRange ? selectedPriceRange[1] : "");  // Default to selected range or empty
+  const [selectedRating, setSelectedRatingState] = useState(null);
 
   const toggleFilter = (filter) => {
     switch (filter) {
@@ -80,6 +82,17 @@ const ProductFilter = ({
     setMinPrice("");
     setMaxPrice("");
     setSelectedPriceRange(null); // Clear the price filter
+  };
+
+  const handleRatingClick = (rating) => {
+    setSelectedRatingState(rating);
+    setSelectedRating(rating);
+  };
+
+  const clearRatingFilter = (e) => {
+    e.stopPropagation();
+    setSelectedRatingState(null);
+    setSelectedRating(null);
   };
 
   return (
@@ -246,7 +259,50 @@ const ProductFilter = ({
           </div>
         </FilterWrap>
       </ProductCategoryFilter>
+
+      {/* Rating Filter */}
+      <ProductCategoryFilter>
+        <FilterTitle
+          className="filter-title flex items-center justify-between"
+          onClick={() => toggleFilter("rating")}
+        >
+          <p className="filter-title-text text-gray text-base font-semibold text-lg" style={{ color: "#10b9b0" }}>
+            Ratings
+          </p>
+          <FaTimesCircle
+            className="delete-icon"
+            onClick={clearRatingFilter}
+            style={{
+              cursor: "pointer",
+              color: "#ff5c5c",
+              fontSize: "20px",
+            }}
+          />
+        </FilterTitle>
+        <FilterWrap className={`${!isProductFilterOpen ? "hide" : "show"}`}>
+          {[5, 4, 3, 2, 1].map((rating) => (
+            <div
+              key={rating}
+              onClick={() => handleRatingClick(rating)}
+              style={{
+                backgroundColor: selectedRating === rating ? "#8fdf82" : "transparent",
+                color: selectedRating === rating ? "#fff" : "#000",
+                borderRadius: "8px",
+                padding: "8px",
+                cursor: "pointer",
+                fontWeight: selectedRating === rating ? "bold" : "normal",
+              }}
+            >
+              <span className="filter-head-title text-base text-gray font-semibold">
+                {rating} Stars
+              </span>
+            </div>
+          ))}
+        </FilterWrap>
+      </ProductCategoryFilter>
     </>
+
+    
   );
 };
 

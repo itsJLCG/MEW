@@ -408,15 +408,8 @@ const productDescriptionTabHeads = [
     id: "tab-comments",
     tabHead: "tabComments",
     tabText: "User Comments",
-    badgeValue: 10,
+    badgeValue: null,
     badgeColor: "purple",
-  },
-  {
-    id: "tab-QNA",
-    tabHead: "tabQNA",
-    tabText: "Question & Answer",
-    badgeValue: 4,
-    badgeColor: "outerspace",
   },
 ];
 

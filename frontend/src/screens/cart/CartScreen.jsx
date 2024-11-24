@@ -4,7 +4,6 @@ import Breadcrumb from "../../components/common/Breadcrumb";
 import { Link } from "react-router-dom";
 import CartTable from "../../components/cart/CartTable";
 import { breakpoints } from "../../styles/themes/default";
-import CartDiscount from "../../components/cart/CartDiscount";
 import CartSummary from "../../components/cart/CartSummary";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -98,7 +97,6 @@ const CartScreen = () => {
             <CartTable cartItems={cartItems} setCartItems={setCartItems} onUpdate={handleUpdate} />
           </div>
           <div className="grid cart-content-right">
-            <CartDiscount />
             <CartSummary cartItems={cartItems} />
           </div>
         </CartContent>

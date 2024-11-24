@@ -56,9 +56,6 @@ exports.myOrders = async (req, res) => {
       // Fetch orders for the authenticated customer
       const orders = await Order.find({ customer: req.user.customerId });
 
-      if (orders.length === 0) {
-          return res.status(404).json({ success: false, message: 'No orders found for this customer' });
-      }
 
       res.status(200).json({
           success: true,

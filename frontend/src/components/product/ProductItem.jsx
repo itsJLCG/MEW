@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import Carousel from "react-material-ui-carousel";
 import { commonCardStyles } from "../../styles/card";
 import { defaultTheme } from "../../styles/themes/default";
+import axios from "axios";
 
 const ProductCardWrapper = styled.div`
   ${commonCardStyles}
@@ -33,31 +34,6 @@ const ProductCardWrapper = styled.div`
       object-fit: cover;
     }
 
-    .product-wishlist-icon {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background-color: white;
-      color: ${defaultTheme.color_black};
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      cursor: pointer;
-      transition: background-color 0.3s, color 0.3s;
-
-      &:hover {
-        background-color: ${defaultTheme.color_yellow};
-        color: ${defaultTheme.color_white};
-      }
-
-      i {
-        font-size: 1.2rem;
-      }
-    }
   }
 
   .product-info {
@@ -100,75 +76,84 @@ const ProductCardLink = styled(Link)`
 `;
 
 const ProductItem = ({ product }) => {
-  const { name, price, brandName, categoryName, image, slug } = product;
+  const { _id, name, price, brandName, categoryName, image, slug } = product;
 
-  // Prevent link navigation when wishlist icon or carousel button is clicked
-  const handleClick = (e) => {
-    e.stopPropagation(); // Stops the click event from bubbling up to the ProductCardLink
+  const [averageRating, setAverageRating] = useState(null);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get("http://localhost:4000/api/reviews/reviewAll/list");
+        if (response.data.success) {
+          const reviews = response.data.data;
+          const productReviews = reviews.filter((review) => review.productId === _id);
+  
+          if (productReviews.length > 0) {
+            const totalRating = productReviews.reduce((acc, review) => acc + review.rating, 0);
+            const average = totalRating / productReviews.length;
+            setAverageRating(Math.round(average)); // Round the average rating to the nearest whole number
+          } else {
+            setAverageRating(0);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
+    };
+  
+    fetchReviews();
+  }, [_id]);
+  
+
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+    const emptyStars = 5 - fullStars - halfStar;
+
+    return (
+      <>
+        {"★".repeat(fullStars)}
+        {halfStar ? "☆" : ""}
+        {"☆".repeat(emptyStars)}
+      </>
+    );
   };
 
   return (
     <ProductCardWrapper>
-      <div className="product-img" onClick={handleClick}>
-        {/* Only render carousel if more than 1 image */}
+      <div className="product-img">
         {Array.isArray(image) && image.length > 1 ? (
-          <Carousel
-            autoPlay={false}
-            indicators={false}
-            navButtonsAlwaysVisible
-            onClick={(e) => e.stopPropagation()} // Prevent link navigation when clicking the carousel itself
-          >
+          <Carousel autoPlay={false} indicators={false} navButtonsAlwaysVisible>
             {image.map((imageUrl, index) => (
               <div key={index} className="carousel-slide">
-                <img
-                  src={imageUrl || "/path/to/default-image.jpg"}
-                  alt={`Product Image ${index + 1}`}
-                />
-                <button
-                  type="button"
-                  className="product-wishlist-icon"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent navigation
-                    handleClick(e);
-                  }}
-                >
-                  <i className="bi bi-heart"></i>
-                </button>
+                <img src={imageUrl || "/path/to/default-image.jpg"} alt={`Product Image ${index + 1}`} />
               </div>
             ))}
           </Carousel>
         ) : (
           <div className="carousel-slide">
-            <img
-              src={image?.[0] || "/path/to/default-image.jpg"}
-              alt={name}
-            />
-            <button
-              type="button"
-              className="product-wishlist-icon"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent navigation
-                handleClick(e);
-              }}
-            >
-              <i className="bi bi-heart"></i>
-            </button>
+            <img src={image?.[0] || "/path/to/default-image.jpg"} alt={name} />
           </div>
         )}
       </div>
-  
+
       <ProductCardLink to={`/home/product/details/${slug}`}>
         <div className="product-info">
           <div className="product-name">{name}</div>
           <span className="info-highlight brand-highlight">{brandName}</span>
           <span className="info-highlight category-highlight">{categoryName}</span>
           <span className="product-price">₱ {price.toFixed(2)}</span>
+          {averageRating !== null && (
+            <div className="product-rating">
+              <span className="stars">{renderStars(averageRating)}</span>
+              <span className="average-rating">({averageRating})</span> {/* Display the whole number rating */}
+            </div>
+          )}
         </div>
       </ProductCardLink>
     </ProductCardWrapper>
-  );  
+  );
 };
-
 
 ProductItem.propTypes = {
   product: PropTypes.shape({
