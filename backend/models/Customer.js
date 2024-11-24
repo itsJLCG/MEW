@@ -12,7 +12,7 @@ const customerSchema = new mongoose.Schema({
         maxlength: [50, 'First Name must be less than 50 characters'],
         validate: {
             validator: function (v) {
-                return /^[a-zA-Z]+$/.test(v); // Letters only (no numbers or special characters)
+                return /^[a-zA-Z]+$/.test(v); 
             },
             message: props => `${props.value} is not a valid First Name`
         }
