@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Cart = require('../models/Carts'); // Import the Cart model
 const moment = require('moment');
 const { sendDeliveryEmail } = require('../utils/sendEmail'); // Import the sendEmail function
-
+const admin = require('../firebasebackend/firebaseAdmin'); // Import Firebase Admin
 exports.createOrder = async (req, res, next) => {
     // Fetch associated Customer record
     const customer = await Customer.findOne({ user: req.user._id });
@@ -107,60 +107,110 @@ exports.getAllOrders = async (req, res, next) => {
       });
   }
 };
+
+// Function to send FCM notification
+const sendFCMNotification = async (fcmToken, title, body) => {
+  const message = {
+      notification: {
+          title,
+          body,
+      },
+      token: fcmToken,
+  };
+
+  try {
+      await admin.messaging().send(message);
+      console.log('FCM notification sent successfully');
+  } catch (error) {
+      console.error('Error sending FCM notification:', error);
+  }
+};
+
 exports.updateOrderStatus = async (req, res, next) => {
   const { orderId, status } = req.body;
 
   try {
-    if (!orderId || !status) {
-      return res.status(400).json({
-        success: false,
-        message: 'Order ID and status are required',
-      });
-    }
+      if (!orderId || !status) {
+          return res.status(400).json({
+              success: false,
+              message: 'Order ID and status are required',
+          });
+      }
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId, 
-      { orderStatus: status }, 
-      { new: true, runValidators: true }
-    ).populate('customer', 'user firstName lastName').populate('orderItems.product');
+      const updatedOrder = await Order.findByIdAndUpdate(
+          orderId,
+          { orderStatus: status },
+          { new: true, runValidators: true }
+      ).populate('customer', 'user firstName lastName fcmToken').populate('orderItems.product');
 
-    if (!updatedOrder) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found',
-      });
-    }
+      if (!updatedOrder) {
+          return res.status(404).json({
+              success: false,
+              message: 'Order not found',
+          });
+      }
 
-    if (status === 'Delivered') {
       const customer = updatedOrder.customer;
       const user = await User.findById(customer.user); // Fetch the user associated with the customer
       const customerEmail = user.email; // Get the email from the user
       console.log('Customer Email:', customerEmail); // Debugging statement
       const orderItems = updatedOrder.orderItems.map(item => ({
-        name: item.product.name,
-        quantity: item.quantity,
-        price: item.price,
-        image: item.product.image,
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.product.image,
       }));
       const subtotal = updatedOrder.itemsPrice;
       const grandTotal = updatedOrder.totalPrice;
 
-      await sendDeliveryEmail(customerEmail, orderItems, subtotal, grandTotal);
-    }
+      if (status === 'Delivered') {
+          await sendDeliveryEmail(customerEmail, orderItems, subtotal, grandTotal);
+      }
 
-    return res.status(200).json({
-      success: true,
-      message: 'Order status updated successfully',
-      order: updatedOrder,
-    });
+      // Send FCM notification based on order status
+      const fcmToken = customer.fcmToken;
+      if (fcmToken) {
+          let notificationTitle = 'Order Update';
+          let notificationBody = `Dear ${customer.firstName}, your order status has been updated to ${status}.`;
+
+          switch (status) {
+              case 'Completed':
+                  notificationTitle = 'Order Completed';
+                  notificationBody = `Dear ${customer.firstName}, your order has been completed successfully. You can rate your experience.`;
+                  break;
+              case 'Delivered':
+                  notificationTitle = 'Order Delivered';
+                  notificationBody = `Dear ${customer.firstName}, your order has been delivered. Kindly check the receipt.`;
+                  break;
+              case 'Processing':
+                  notificationTitle = 'Order Processing';
+                  notificationBody = `Dear ${customer.firstName}, your order is being processed.`;
+                  break;
+              case 'Shipped':
+                  notificationTitle = 'Order Shipped';
+                  notificationBody = `Dear ${customer.firstName}, your order has been shipped.`;
+                  break;
+              default:
+                  break;
+          }
+
+          await sendFCMNotification(fcmToken, notificationTitle, notificationBody);
+      }
+
+      return res.status(200).json({
+          success: true,
+          message: 'Order status updated successfully',
+          order: updatedOrder,
+      });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: error.message,
-    });
+      return res.status(500).json({
+          success: false,
+          message: 'Server error',
+          error: error.message,
+      });
   }
 };
+
 // Export to get sales data for a date range
 exports.getMonthlySalesWithDateRange = async (req, res, next) => {
   const { startDate, endDate } = req.query;

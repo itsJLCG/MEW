@@ -1,7 +1,6 @@
 const Cart = require("../models/Carts");
 
 // Add an item to the cart
-
 exports.addToCart = async (req, res) => {
   const { productId } = req.body;
   const quantity = req.body.quantity || 1; // Default to 1 if quantity is not provided
@@ -32,7 +31,6 @@ exports.addToCart = async (req, res) => {
     return res.status(500).json({ success: false, message: "Failed to add item to cart." });
   }
 };
-
 
 
 // Delete an item from the cart

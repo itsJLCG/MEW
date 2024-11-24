@@ -112,6 +112,7 @@ function App() {
                 <Route path="/auth" element={<AuthLayout />}>
                   <Route path="sign_in" element={<SignIn />} />
                   <Route path="sign_up" element={<SignUp />} />
+                  
                   <Route path="reset" element={<Reset />} />
                   <Route path="change_password" element={<ChangePassword />} />
                   <Route path="check_mail" element={<CheckMail />} />

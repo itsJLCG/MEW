@@ -22,4 +22,7 @@ const CartSchema = new mongoose.Schema({
   timestamps: true // Automatically manage createdAt and updatedAt fields
 });
 
+// Ensure a customer can only have one unique product in the cart
+CartSchema.index({ customerId: 1, productId: 1 }, { unique: true });
+
 module.exports = mongoose.model("Cart", CartSchema);
