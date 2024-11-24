@@ -412,3 +412,35 @@ exports.updateProfile = async function (req, res, next) {
     }
 }
 
+exports.fetchCustomerDetails = async function (req, res, next) {
+    try {
+        // Fetch user by ID
+        const user = await User.findById(req.user.id);
+
+        // Fetch customer details linked to this user
+        const customer = await Customer.findOne({ user: req.user.id });
+
+        // Check if both user and customer exist
+        if (!user || !customer) {
+            return res.status(404).json({
+                success: false,
+                message: "User or customer details not found"
+            });
+        }
+
+        // Return only the required customer details in the response
+        return res.status(200).json({
+            success: true,
+            customer: {
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                address: customer.address,
+                zipCode: customer.zipCode,
+                phoneNumber: customer.phoneNumber
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching customer details" });
+    }
+}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -7,6 +7,7 @@ import { breakpoints, defaultTheme } from "../../styles/themes/default";
 import PropTypes from "prop-types";
 import { BaseButtonGreen } from "../../styles/button"; // Import BaseButtonGreen
 import { toast } from "react-hot-toast";
+import axios from "axios";
 
 const BillingOrderWrapper = styled.div`
   display: grid;
@@ -98,25 +99,47 @@ const BillingDetailsWrapper = styled.div`
 `;
 
 const Billing = ({ cartItems, setBillingDetails }) => {
-  const formik = useFormik({
-    initialValues: {
-      firstName: "",
-      lastName: "",
-      country: "",
-      address: "",
-      city: "",
-      zipCode: "",
-      phoneNumber: "",
-    },
+  const [initialValues, setInitialValues] = useState({
+    firstName: "",
+    lastName: "",
+    address: "",
+    zipCode: "",
+    phoneNumber: "",
+    country: "",
+    city: "",
+  });
 
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      try {
+        const token = localStorage.getItem("authToken"); // Assuming the token is stored in localStorage
+        const response = await axios.get("http://localhost:4000/api/auth/customer-details", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const { firstName, lastName, address, zipCode, phoneNumber } = response.data.customer;
+        setInitialValues({ firstName, lastName, address, zipCode, phoneNumber, country: "", city: "" });
+      } catch (error) {
+        console.error("Error fetching customer details:", error);
+        toast.error("Failed to fetch customer details");
+      }
+    };
+
+    fetchCustomerDetails();
+  }, []);
+
+  const formik = useFormik({
+    initialValues,
+    enableReinitialize: true,
     validationSchema: Yup.object({
       firstName: Yup.string().required("First Name is required"),
       lastName: Yup.string().required("Last Name is required"),
-      country: Yup.string().required("Country is required"),
-      address: Yup.string().required("Address is required"),
-      city: Yup.string().required("City is required"),
+      address: Yup.string().required("Street Address is required"),
       zipCode: Yup.string().required("Zip Code is required"),
       phoneNumber: Yup.string().required("Phone Number is required"),
+      country: Yup.string().required("Country is required"),
+      city: Yup.string().required("City is required"),
     }),
     onSubmit: (values) => {
       setBillingDetails(values);
@@ -167,6 +190,62 @@ const Billing = ({ cartItems, setBillingDetails }) => {
               ) : null}
             </div>
           </div>
+          <div className="input-elem">
+            <label htmlFor="address" className="text-base font-semibold">
+              Street Address*
+            </label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              placeholder="House number and street name"
+              className="form-control"
+              value={formik.values.address}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+            />
+            {formik.touched.address && formik.errors.address ? (
+              <div className="error">{formik.errors.address}</div>
+            ) : null}
+          </div>
+          <div className="input-elem-group elem-col-2">
+            <div className="input-elem">
+              <label htmlFor="zipCode" className="text-base font-semibold">
+                Zip Code*
+              </label>
+              <input
+                id="zipCode"
+                name="zipCode"
+                type="text"
+                placeholder="Postal Code"
+                className="form-control"
+                value={formik.values.zipCode}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.zipCode && formik.errors.zipCode ? (
+                <div className="error">{formik.errors.zipCode}</div>
+              ) : null}
+            </div>
+            <div className="input-elem">
+              <label htmlFor="phoneNumber" className="text-base font-semibold">
+                Phone Number*
+              </label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="text"
+                placeholder="Phone Number"
+                className="form-control"
+                value={formik.values.phoneNumber}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
+                <div className="error">{formik.errors.phoneNumber}</div>
+              ) : null}
+            </div>
+          </div>
           <div className="input-elem-group elem-col-2">
             <div className="input-elem">
               <label htmlFor="country" className="text-base font-semibold">
@@ -187,26 +266,6 @@ const Billing = ({ cartItems, setBillingDetails }) => {
               ) : null}
             </div>
             <div className="input-elem">
-              <label htmlFor="address" className="text-base font-semibold">
-                Street Address*
-              </label>
-              <input
-                id="address"
-                name="address"
-                type="text"
-                placeholder="House number and street name"
-                className="form-control"
-                value={formik.values.address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.address && formik.errors.address ? (
-                <div className="error">{formik.errors.address}</div>
-              ) : null}
-            </div>
-          </div>
-          <div className="input-elem-group elem-col-2">
-            <div className="input-elem">
               <label htmlFor="city" className="text-base font-semibold">
                 City*
               </label>
@@ -222,44 +281,6 @@ const Billing = ({ cartItems, setBillingDetails }) => {
               />
               {formik.touched.city && formik.errors.city ? (
                 <div className="error">{formik.errors.city}</div>
-              ) : null}
-            </div>
-            <div className="input-elem">
-              <label htmlFor="zipCode" className="text-base font-semibold">
-                Zip Code*
-              </label>
-              <input
-                id="zipCode"
-                name="zipCode"
-                type="text"
-                placeholder="Postal Code"
-                className="form-control"
-                value={formik.values.zipCode}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.zipCode && formik.errors.zipCode ? (
-                <div className="error">{formik.errors.zipCode}</div>
-              ) : null}
-            </div>
-          </div>
-          <div className="input-elem-group elem-col-2">
-            <div className="input-elem">
-              <label htmlFor="phoneNumber" className="text-base font-semibold">
-                Phone Number*
-              </label>
-              <input
-                id="phoneNumber"
-                name="phoneNumber"
-                type="text"
-                placeholder="Phone Number"
-                className="form-control"
-                value={formik.values.phoneNumber}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
-                <div className="error">{formik.errors.phoneNumber}</div>
               ) : null}
             </div>
           </div>

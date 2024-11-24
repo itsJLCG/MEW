@@ -8,7 +8,8 @@ const { Register,
      verifyEmail,
      storeFcmToken,
      logout,
-     googleLogin } = require('../controllers/auth');
+     googleLogin,
+fetchCustomerDetails} = require('../controllers/auth');
 const { isAuthenticatedUser} = require('../middlewares/auth');
 const upload = require("../utils/multer");
 
@@ -32,6 +33,9 @@ router.post('/google-login', googleLogin);
 //Profile w/ Middleware Routes
 router.get('/profile', isAuthenticatedUser, getUserProfile);
 router.put('/profile/update', isAuthenticatedUser,  upload.single("profileImage"), updateProfile)
+
+//fetch customer details
+router.get('/customer-details', isAuthenticatedUser, fetchCustomerDetails)
 
 
 
