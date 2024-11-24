@@ -4,7 +4,7 @@ const Customer = require('../models/Customer');
 const User = require('../models/User');
 const Cart = require('../models/Carts'); // Import the Cart model
 const moment = require('moment');
-const {sendDeliveryEmail} = require('../utils/sendEmail'); // Import the sendEmail function
+const { sendDeliveryEmail } = require('../utils/sendEmail'); // Import the sendEmail function
 
 exports.createOrder = async (req, res, next) => {
     // Fetch associated Customer record
@@ -31,6 +31,14 @@ exports.createOrder = async (req, res, next) => {
         paidAt: Date.now(),
         customer
     });
+
+    // Update stock for each product in the order
+    for (const item of orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+            await product.updateStock(item.quantity);
+        }
+    }
 
     // Delete the cart items after successfully creating the order
     try {

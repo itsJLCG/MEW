@@ -44,4 +44,10 @@ productSchema.pre('save', function (next) {
   next();
 });
 
+// Add a method to update the stock
+productSchema.methods.updateStock = async function (quantity) {
+  this.stock = this.stock - quantity;
+  await this.save();
+};
+
 module.exports = mongoose.model('Product', productSchema);
