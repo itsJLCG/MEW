@@ -193,16 +193,23 @@ const OrderListScreen = () => {
         const response = await axios.get(
           `http://localhost:4000/api/reviews/reviews/${productId}?orderId=${orderId}` // Use the correct URL format
         );
-
+    
         console.log('Reviews fetched:', response.data);
+    
+        // Check if reviews exist and update the state accordingly
         setReviews((prev) => ({
           ...prev,
-          [`${productId}_${orderId}`]: response.data.reviews || [], // Store reviews by productId and orderId
+          [`${productId}_${orderId}`]: response.data.reviews || [], // If no reviews, store an empty array
         }));
       } catch (err) {
-        console.error('Failed to fetch reviews', err);
+        // You can choose to not update the state or update it with an empty array instead of showing an error
+        setReviews((prev) => ({
+          ...prev,
+          [`${productId}_${orderId}`]: [], // If error occurs, set empty array (no reviews)
+        }));
       }
     };
+    
 
     if (orders.length > 0) {
       orders.forEach((order) => {
@@ -217,7 +224,7 @@ const OrderListScreen = () => {
     try {
       // Clean the review text by masking bad words
       const cleanedReviewText = filter.clean(reviewText);
-
+  
       const token = localStorage.getItem('authToken');
       const response = await axios.post(
         'http://localhost:4000/api/reviews/review',
@@ -229,13 +236,12 @@ const OrderListScreen = () => {
         }
       );
       toast.success('Review submitted successfully!');
-
+  
       if (!productId || !orderId) {
         toast.error('Product or Order ID is missing.');
         return;
       }
-      
-
+  
       // Update reviews state with the new masked review
       setReviews((prev) => ({
         ...prev,
@@ -244,17 +250,15 @@ const OrderListScreen = () => {
           { reviewText: cleanedReviewText, rating }, // Add new review
         ],
       }));
-
+  
       // Reset form
       setIsReviewing(null);
       setReviewText('');
       setRating(1);
-      handleCloseReviewForm();
-      setIsEditing(null);   // Ensure no editing form is open
-      handleCancelEdit();
-    setIsEditing(null); 
-    setEditReviewText('');
-    setEditRating(1);
+    setIsEditing(null);   // Ensure no edit state is triggered
+    setRating(1);
+    console.log('isReviewing:', isReviewing);
+    console.log('isEditing:', isEditing);
     } catch (error) {
       console.error(error);
       toast.error('Failed to submit review.');
@@ -370,94 +374,92 @@ const OrderListScreen = () => {
 
                           {/* Display reviews for the corresponding product and order */}
                           {reviews[`${item.product}_${order._id}`]?.length > 0 ? (
-  <div>
-    <h5>Reviews:</h5>
-    {reviews[`${item.product}_${order._id}`].map((review, idx) => (
-      <div key={idx}>
-        <p>{review.reviewText}</p>
-        <p>
-          Rating: {review.rating} <StarIcon style={{ color: 'gold' }} />
-        </p>
-        {/* Add Edit button for each review */}
-        {isEditing?.reviewId === review._id ? (
-          <ReviewFormWrapper>
-            <TextField
-              multiline
-              rows={4}
-              fullWidth
-              value={editReviewText} // Controlled input for editing
-              onChange={(e) => setEditReviewText(e.target.value)}
-              label="Edit your review"
-              variant="outlined"
-              style={{ marginBottom: '10px' }}
-            />
-            <div className="rating">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  style={{
-                    cursor: 'pointer',
-                    color: star <= editRating ? 'gold' : 'gray',
-                  }}
-                  onClick={() => setEditRating(star)}
-                >
-                  <StarIcon />
-                </span>
-              ))}
-            </div>
-            <Button variant="contained" onClick={handleSubmitUpdatedReview}>
-              Update Review
-            </Button>
-            <Button onClick={handleCancelEdit}>Cancel</Button>
-          </ReviewFormWrapper>
-        ) : (
-          <button
-            className="edit-button"
-            onClick={() => handleEditReview(item.product, order._id, review)}
-          >
-            Edit Review
-          </button>
-        )}
-      </div>
-    ))}
-  </div>
-) : isReviewing?.productId === item.product && isReviewing?.orderId === order._id && (
-  <ReviewFormWrapper>
-    <TextField
-      multiline
-      rows={4}
-      fullWidth
-      value={reviewText} // Controlled input for new reviews
-      onChange={(e) => setReviewText(e.target.value)}
-      label="Write your review"
-      variant="outlined"
-      style={{ marginBottom: '10px' }}
-    />
-    <div className="rating">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <span
-          key={star}
-          style={{
-            cursor: 'pointer',
-            color: star <= rating ? 'gold' : 'gray',
-          }}
-          onClick={() => setRating(star)}
-        >
-          <StarIcon />
-        </span>
-      ))}
-    </div>
-    <Button
-      variant="contained"
-      onClick={() => handleSubmitReview(item.product, order._id)}
-    >
-      Submit Review
-    </Button>
-    <Button onClick={handleCloseReviewForm}>Cancel</Button>
-  </ReviewFormWrapper>
-)}
-
-
+                          <div>
+                            <h5>Reviews:</h5>
+                            {reviews[`${item.product}_${order._id}`].map((review, idx) => (
+                              <div key={idx}>
+                                <p>{review.reviewText}</p>
+                                <p>
+                                  Rating: {review.rating} <StarIcon style={{ color: 'gold' }} />
+                                </p>
+                                {/* Add Edit button for each review */}
+                                {isEditing?.reviewId === review._id ? (
+                                  <ReviewFormWrapper>
+                                    <TextField
+                                      multiline
+                                      rows={4}
+                                      fullWidth
+                                      value={editReviewText} // Controlled input for editing
+                                      onChange={(e) => setEditReviewText(e.target.value)}
+                                      label="Edit your review"
+                                      variant="outlined"
+                                      style={{ marginBottom: '10px' }}
+                                    />
+                                    <div className="rating">
+                                      {[1, 2, 3, 4, 5].map((star) => (
+                                        <span
+                                          key={star}
+                                          style={{
+                                            cursor: 'pointer',
+                                            color: star <= editRating ? 'gold' : 'gray',
+                                          }}
+                                          onClick={() => setEditRating(star)}
+                                        >
+                                          <StarIcon />
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <Button variant="contained" onClick={handleSubmitUpdatedReview}>
+                                      Update Review
+                                    </Button>
+                                    <Button onClick={handleCancelEdit}>Cancel</Button>
+                                  </ReviewFormWrapper>
+                                ) : (
+                                  <button
+                                    className="edit-button"
+                                    onClick={() => handleEditReview(item.product, order._id, review)}
+                                  >
+                                    Edit Review
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : isReviewing?.productId === item.product && isReviewing?.orderId === order._id && (
+                          <ReviewFormWrapper>
+                            <TextField
+                              multiline
+                              rows={4}
+                              fullWidth
+                              value={reviewText} // Controlled input for new reviews
+                              onChange={(e) => setReviewText(e.target.value)}
+                              label="Write your review"
+                              variant="outlined"
+                              style={{ marginBottom: '10px' }}
+                            />
+                            <div className="rating">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                  key={star}
+                                  style={{
+                                    cursor: 'pointer',
+                                    color: star <= rating ? 'gold' : 'gray',
+                                  }}
+                                  onClick={() => setRating(star)}
+                                >
+                                  <StarIcon />
+                                </span>
+                              ))}
+                            </div>
+                            <Button
+                              variant="contained"
+                              onClick={() => handleSubmitReview(item.product, order._id)}
+                            >
+                              Submit Review
+                            </Button>
+                            <Button onClick={handleCloseReviewForm}>Cancel</Button>
+                          </ReviewFormWrapper>
+                        )}
                         </div>
                       ))}
                     </div>

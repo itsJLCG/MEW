@@ -51,15 +51,24 @@ router.get('/reviews/:productId', async (req, res) => {
       .exec();
 
     if (!reviews || reviews.length === 0) {
-      return res.status(404).json({ message: 'No reviews found for this product and order.' });
+      return res.status(200).json({
+        message: 'No reviews found for this product and order.',
+        productId,       // Return the productId
+        orderId,         // Return the orderId (if it exists)
+      });
     }
 
     res.status(200).json({ reviews });
   } catch (error) {
-    console.error('Error fetching reviews:', error);
-    res.status(500).json({ message: 'Error fetching reviews' });
+    return res.status(200).json({
+      message: 'No reviews found for this product and order.',
+      productId,       // Return the productId
+      orderId,         // Return the orderId (if it exists)
+      warning: true
+    });
   }
 });
+
 
 
 const { getAllReviews, deleteReview, updateReview } = require('../controllers/ReviewController');

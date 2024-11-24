@@ -20,7 +20,6 @@ const getAllReviews = async (req, res) => {
         // Handle errors
         res.status(500).json({
             success: false,
-            message: 'Failed to fetch reviews',
             error: error.message,
         });
     }
