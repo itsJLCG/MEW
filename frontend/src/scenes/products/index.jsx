@@ -16,6 +16,8 @@ const Products = () => {
   const [dialogMessage, setDialogMessage] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,6 +31,9 @@ const Products = () => {
         const products = productsResponse.data.products;
         const categories = categoriesResponse.data.categories;
         const brands = brandsResponse.data.brands;
+
+        setCategories(categories);
+        setBrands(brands);
 
         const categoryMap = Object.fromEntries(categories.map((category) => [category._id, category.name]));
         const brandMap = Object.fromEntries(brands.map((brand) => [brand._id, brand.name]));
@@ -279,6 +284,9 @@ const Products = () => {
   };
 
   const handleProductAdded = (newProduct) => {
+    const categoryMap = Object.fromEntries(categories.map((category) => [category._id, category.name]));
+    const brandMap = Object.fromEntries(brands.map((brand) => [brand._id, brand.name]));
+
     setData((prevData) => [
       ...prevData,
       {
@@ -289,8 +297,8 @@ const Products = () => {
         price: newProduct.price,
         stock: newProduct.stock,
         slug: newProduct.slug,
-        categoryName: newProduct.categoryName,
-        brandName: newProduct.brandName,
+        categoryName: categoryMap[newProduct.category] || 'Unknown',
+        brandName: brandMap[newProduct.brand] || 'Unknown',
         images: handleProductImages(newProduct.image),
         actions: newProduct.slug,
       },
@@ -349,7 +357,7 @@ const Products = () => {
       </Button>
       </Box>
       <MUIDataTable title={"Product List"} data={data} columns={columns} options={options} />
-      <AddProductModal open={modalOpen} handleClose={() => setModalOpen(false)} onProductAdded={handleProductAdded} />
+      <AddProductModal open={modalOpen} handleClose={() => setModalOpen(false)} onProductAdded={handleProductAdded} categories={categories} brands={brands} />
       <UpdateProductModal open={updateModalOpen} handleClose={() => setUpdateModalOpen(false)} slug={selectedSlug} onProductUpdated={handleProductUpdated} />
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>

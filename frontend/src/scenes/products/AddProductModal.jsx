@@ -57,7 +57,12 @@ const AddProductModal = ({ open, handleClose, onProductAdded }) => {
       const response = await axios.post("http://localhost:4000/api/products", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      onProductAdded(response.data.product); // Call the callback with the new product data
+
+      const newProduct = response.data.product;
+      newProduct.categoryName = categories.find(cat => cat._id === newProduct.category)?.name || 'Unknown';
+      newProduct.brandName = brands.find(br => br._id === newProduct.brand)?.name || 'Unknown';
+
+      onProductAdded(newProduct); // Call the callback with the new product data
       toast.success(response.data.message, { position: "top-right" });
       handleClose();
       resetForm();
