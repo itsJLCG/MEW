@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Route to add a review for a product
 router.post('/review', isAuthenticatedUser, async (req, res) => {
-  const { productId, reviewText, rating } = req.body;
+  const { productId, reviewText, rating, orderId } = req.body;
   const userId = req.user._id; // Assuming `req.user` contains the authenticated user
 
   if (!productId || !reviewText || !rating) {
@@ -20,6 +20,7 @@ router.post('/review', isAuthenticatedUser, async (req, res) => {
   try {
     const review = new Review({
       productId,
+      orderId,
       reviewText,
       rating,
       user: userId,
@@ -36,27 +37,35 @@ router.post('/review', isAuthenticatedUser, async (req, res) => {
 // Route to get all reviews for a product
 router.get('/reviews/:productId', async (req, res) => {
   const { productId } = req.params;
+  const { orderId } = req.query; // Extract orderId from query parameters
 
   try {
-    const reviews = await Review.find({ productId })
-      .populate('user', 'name email') // Optional: populate the user details (name, email)
+    // Build the query object dynamically
+    const query = { productId };
+    if (orderId) {
+      query.orderId = orderId; // Add orderId to the query if provided
+    }
+
+    const reviews = await Review.find(query)
+      .populate('user', 'name email') // Populate user details (name, email)
       .exec();
 
     if (!reviews || reviews.length === 0) {
-      return res.status(404).json({ message: 'No reviews found for this product.' });
+      return res.status(404).json({ message: 'No reviews found for this product and order.' });
     }
 
     res.status(200).json({ reviews });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching reviews:', error);
     res.status(500).json({ message: 'Error fetching reviews' });
   }
 });
+
 
 const { getAllReviews, deleteReview, updateReview } = require('../controllers/ReviewController');
 
 router.get('/reviewAll/list', getAllReviews);
 router.delete('/review/delete/:id', deleteReview);
-router.put('/review/update/:id', updateReview);
+router.put('/review/update/:productId/:orderId', updateReview);
 
 module.exports = router;

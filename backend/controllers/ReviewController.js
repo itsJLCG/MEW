@@ -70,21 +70,13 @@ const deleteReview = async (req, res) => {
  */
 const updateReview = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { reviewText, rating } = req.body;
+        const { productId, orderId } = req.params; // Get productId and orderId from URL params
+        const { reviewText, rating } = req.body; // Get reviewText and rating from request body
 
         console.log('Request Body:', req.body);
 
-        // Find the review
-        const review = await Review.findById(id);
-        if (review) {
-            review.reviewText = reviewText || review.reviewText;
-            review.rating = rating || review.rating;
-            const updatedReview = await review.save();
-            console.log('Updated Review:', updatedReview);
-        }
-
-        console.log('Found Review:', review);
+        // Find the review by productId and orderId
+        const review = await Review.findOne({ productId, orderId });
 
         if (!review) {
             return res.status(404).json({
@@ -93,7 +85,7 @@ const updateReview = async (req, res) => {
             });
         }
 
-        // Update fields
+        // Update review fields if provided
         if (reviewText !== undefined) review.reviewText = reviewText;
         if (rating !== undefined) review.rating = rating;
 
@@ -116,6 +108,7 @@ const updateReview = async (req, res) => {
         });
     }
 };
+
 
 
 // Export all functions

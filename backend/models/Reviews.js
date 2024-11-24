@@ -7,6 +7,11 @@ const reviewSchema = new mongoose.Schema(
       ref: 'Product',  // Reference to the Product collection
       required: true,
     },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',  // Reference to the Product collection
+      required: true,
+    },
     reviewText: {
       type: String,
       required: true,
