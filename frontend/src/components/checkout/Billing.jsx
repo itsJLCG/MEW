@@ -98,6 +98,15 @@ const BillingDetailsWrapper = styled.div`
   }
 `;
 
+const countries = [
+  "Philippines",
+  "United States",
+  "Canada",
+  "Australia",
+  "United Kingdom",
+  // Add more countries as needed
+];
+
 const Billing = ({ cartItems, setBillingDetails }) => {
   const [initialValues, setInitialValues] = useState({
     firstName: "",
@@ -251,16 +260,21 @@ const Billing = ({ cartItems, setBillingDetails }) => {
               <label htmlFor="country" className="text-base font-semibold">
                 Country / Region*
               </label>
-              <input
+              <select
                 id="country"
                 name="country"
-                type="text"
-                placeholder="Country / Region"
                 className="form-control"
                 value={formik.values.country}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-              />
+              >
+                <option value="">Select Country</option>
+                {countries.map((country) => (
+                  <option key={country} value={country}>
+                    {country}
+                  </option>
+                ))}
+              </select>
               {formik.touched.country && formik.errors.country ? (
                 <div className="error">{formik.errors.country}</div>
               ) : null}
